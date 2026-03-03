@@ -10,9 +10,39 @@
     <style>
         body { font-family: 'Kanit', sans-serif; scroll-behavior: smooth; }
         .house-card:hover { transform: translateY(-10px); }
+        /* สไตล์พิเศษสำหรับ Popup */
+        #welcomePopup { transition: opacity 0.4s ease-out; }
+        #popupContent { transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 overflow-x-hidden">
+
+    <div id="welcomePopup" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 hidden opacity-0">
+        <div id="popupContent" class="bg-white rounded-3xl overflow-hidden shadow-2xl max-w-md w-full mx-4 relative transform scale-90">
+            <button onclick="closePopup()" class="absolute top-4 right-4 text-white/80 hover:text-white z-10">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+
+            <div class="bg-gradient-to-br from-blue-500 to-indigo-600 h-40 flex flex-col items-center justify-center text-white">
+                <i class="fas fa-gift text-5xl mb-2 animate-bounce"></i>
+                <h2 class="text-2xl font-bold">Special Offer!</h2>
+            </div>
+            
+            <div class="p-8 text-center">
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">ยินดีต้อนรับสู่ HomeHub</h3>
+                <p class="text-gray-600 mb-6">ฉลองเปิดตัวเว็บไซต์ใหม่! ลงทะเบียนรับ <span class="text-blue-600 font-bold">บัตรกำนัลตรวจเช็คบ้านฟรี</span> หรือส่วนลดงานซ่อม 15%</p>
+                
+                <div class="space-y-3">
+                    <button onclick="closePopup()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all active:scale-95">
+                        รับสิทธิ์ของฉันเลย
+                    </button>
+                    <button onclick="closePopup()" class="w-full text-gray-400 text-sm hover:text-gray-600 hover:underline transition">
+                        ขอบคุณ, ฉันขอดูก่อน
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <nav class="bg-white shadow-lg sticky top-0 z-50">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -29,14 +59,13 @@
         </div>
     </nav>
 
-    <header class="bg-gradient-to-r dark:from-blue-700 from-blue-600 to-indigo-700 text-white py-20 px-6 text-center">
+    <header class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-20 px-6 text-center">
         <h1 class="text-4xl md:text-6xl font-bold mb-4">เปลี่ยนเรื่องบ้าน ให้เป็นเรื่องง่าย</h1>
         <p class="text-xl opacity-90 mb-8">ครบเครื่องเรื่องที่อยู่อาศัย ออกแบบ ก่อสร้าง ซ่อมบำรุง และดีลสุดพิเศษ</p>
-        <a href="#build" class="bg-white text-blue-600 px-8 py-3 rounded-full font-bold shadow-lg hover:bg-gray-100 transition">เริ่มสร้างบ้านของคุณ</a>
+        <a href="#build" class="bg-white text-blue-600 px-8 py-3 rounded-full font-bold shadow-lg hover:bg-gray-100 transition inline-block">เริ่มสร้างบ้านของคุณ</a>
     </header>
 
     <main class="container mx-auto px-6 py-12">
-
         <section id="build" class="mb-20">
             <div class="text-center mb-12">
                 <h2 class="text-3xl font-bold text-gray-800 mb-2">แบบบ้านยอดนิยม</h2>
@@ -44,16 +73,16 @@
             </div>
 
             <div class="flex justify-center space-x-4 mb-10">
-                <button onclick="filterHouse('all')" class="px-6 py-2 bg-blue-600 text-white rounded-full shadow-md hover:bg-blue-700">ทั้งหมด</button>
-                <button onclick="filterHouse('small')" class="px-6 py-2 bg-white text-gray-600 rounded-full shadow-sm border hover:bg-gray-50">บ้านขนาดเล็ก</button>
-                <button onclick="filterHouse('large')" class="px-6 py-2 bg-white text-gray-600 rounded-full shadow-sm border hover:bg-gray-50">บ้านครอบครัวใหญ่</button>
+                <button onclick="filterHouse('all')" class="px-6 py-2 bg-blue-600 text-white rounded-full shadow-md hover:bg-blue-700 transition">ทั้งหมด</button>
+                <button onclick="filterHouse('small')" class="px-6 py-2 bg-white text-gray-600 rounded-full shadow-sm border hover:bg-gray-50 transition">บ้านขนาดเล็ก</button>
+                <button onclick="filterHouse('large')" class="px-6 py-2 bg-white text-gray-600 rounded-full shadow-sm border hover:bg-gray-50 transition">บ้านครอบครัวใหญ่</button>
             </div>
 
             <div class="grid md:grid-cols-3 gap-8" id="house-list">
                 <div class="house-card bg-white rounded-3xl shadow-md overflow-hidden transition-all duration-300 border border-gray-100" data-type="small">
-                    <div class="h-60 bg-gray-200 flex items-center justify-center relative">
-                        <span class="absolute top-4 left-4 bg-blue-600 text-white text-xs px-3 py-1 rounded-full">ยอดนิยม</span>
-                        <i class="fas fa-image text-gray-400 text-5xl"></i>
+                    <div class="h-60 bg-gray-200 flex items-center justify-center relative text-gray-400">
+                        <span class="absolute top-4 left-4 bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-bold">ยอดนิยม</span>
+                        <i class="fas fa-image text-5xl"></i>
                     </div>
                     <div class="p-6">
                         <h3 class="text-xl font-bold mb-4">Model S1: Smart Minimal</h3>
@@ -65,17 +94,17 @@
                         </div>
                         <div class="flex justify-between items-end border-t pt-4">
                             <div>
-                                <p class="text-xs text-gray-400 uppercase tracking-wider">ราคาประมาณการ</p>
+                                <p class="text-xs text-gray-400 uppercase tracking-wider font-bold">ราคาเริ่มต้น</p>
                                 <p class="text-2xl font-bold text-blue-600">฿1,250,000</p>
                             </div>
-                            <button class="bg-blue-50 text-blue-700 p-3 rounded-xl hover:bg-blue-600 hover:text-white"><i class="fas fa-chevron-right"></i></button>
+                            <button class="bg-blue-50 text-blue-700 p-3 rounded-xl hover:bg-blue-600 hover:text-white transition"><i class="fas fa-chevron-right"></i></button>
                         </div>
                     </div>
                 </div>
 
                 <div class="house-card bg-white rounded-3xl shadow-md overflow-hidden transition-all duration-300 border border-gray-100" data-type="large">
-                    <div class="h-60 bg-gray-200 flex items-center justify-center">
-                        <i class="fas fa-image text-gray-400 text-5xl"></i>
+                    <div class="h-60 bg-gray-200 flex items-center justify-center text-gray-400">
+                        <i class="fas fa-image text-5xl"></i>
                     </div>
                     <div class="p-6">
                         <h3 class="text-xl font-bold mb-4">Model M2: Modern Loft</h3>
@@ -87,17 +116,17 @@
                         </div>
                         <div class="flex justify-between items-end border-t pt-4">
                             <div>
-                                <p class="text-xs text-gray-400 uppercase tracking-wider">ราคาประมาณการ</p>
+                                <p class="text-xs text-gray-400 uppercase tracking-wider font-bold">ราคาเริ่มต้น</p>
                                 <p class="text-2xl font-bold text-blue-600">฿2,890,000</p>
                             </div>
-                            <button class="bg-blue-50 text-blue-700 p-3 rounded-xl hover:bg-blue-600 hover:text-white"><i class="fas fa-chevron-right"></i></button>
+                            <button class="bg-blue-50 text-blue-700 p-3 rounded-xl hover:bg-blue-600 hover:text-white transition"><i class="fas fa-chevron-right"></i></button>
                         </div>
                     </div>
                 </div>
 
                 <div class="house-card bg-white rounded-3xl shadow-md overflow-hidden transition-all duration-300 border border-gray-100" data-type="large">
-                    <div class="h-60 bg-gray-200 flex items-center justify-center">
-                        <i class="fas fa-image text-gray-400 text-5xl"></i>
+                    <div class="h-60 bg-gray-200 flex items-center justify-center text-gray-400">
+                        <i class="fas fa-image text-5xl"></i>
                     </div>
                     <div class="p-6">
                         <h3 class="text-xl font-bold mb-4">Model L3: Luxury Villa</h3>
@@ -109,10 +138,10 @@
                         </div>
                         <div class="flex justify-between items-end border-t pt-4">
                             <div>
-                                <p class="text-xs text-gray-400 uppercase tracking-wider">ราคาประมาณการ</p>
+                                <p class="text-xs text-gray-400 uppercase tracking-wider font-bold">ราคาเริ่มต้น</p>
                                 <p class="text-2xl font-bold text-blue-600">฿4,500,000</p>
                             </div>
-                            <button class="bg-blue-50 text-blue-700 p-3 rounded-xl hover:bg-blue-600 hover:text-white"><i class="fas fa-chevron-right"></i></button>
+                            <button class="bg-blue-50 text-blue-700 p-3 rounded-xl hover:bg-blue-600 hover:text-white transition"><i class="fas fa-chevron-right"></i></button>
                         </div>
                     </div>
                 </div>
@@ -148,29 +177,6 @@
                 </button>
             </div>
         </section>
-
-        <section id="rent" class="mb-20">
-            <h3 class="text-3xl font-bold mb-8">เช่า & เช่าซื้อ</h3>
-            <div class="grid md:grid-cols-2 gap-8">
-                <div class="relative rounded-2xl overflow-hidden h-64 shadow-lg group">
-                    <div class="absolute inset-0 bg-black opacity-40 group-hover:opacity-20 transition"></div>
-                    <div class="absolute inset-0 flex flex-col justify-end p-8 text-white">
-                        <h4 class="text-2xl font-bold">คอนโดให้เช่า</h4>
-                        <p>เริ่มต้น 8,000.- / เดือน</p>
-                    </div>
-                    <div class="h-full bg-gray-400"></div>
-                </div>
-                <div class="relative rounded-2xl overflow-hidden h-64 shadow-lg group">
-                    <div class="absolute inset-0 bg-black opacity-40 group-hover:opacity-20 transition"></div>
-                    <div class="absolute inset-0 flex flex-col justify-end p-8 text-white">
-                        <h4 class="text-2xl font-bold">โครงการเช่าซื้อ (Lease-to-own)</h4>
-                        <p>ไม่ต้องใช้เงินก้อน ผ่อนตรงกับโครงการ</p>
-                    </div>
-                    <div class="h-full bg-gray-500"></div>
-                </div>
-            </div>
-        </section>
-
     </main>
 
     <footer class="bg-gray-900 text-gray-400 py-12 px-6">
@@ -199,6 +205,36 @@
     </footer>
 
     <script>
+        // 1. Popup Functions
+        function showPopup() {
+            const popup = document.getElementById('welcomePopup');
+            const content = document.getElementById('popupContent');
+            
+            // แสดง Overlay
+            popup.classList.remove('hidden');
+            
+            // เลื่อนเวลาเพื่อให้ CSS Transition ทำงาน
+            setTimeout(() => {
+                popup.classList.replace('opacity-0', 'opacity-100');
+                content.classList.replace('scale-90', 'scale-100');
+            }, 10);
+        }
+
+        function closePopup() {
+            const popup = document.getElementById('welcomePopup');
+            const content = document.getElementById('popupContent');
+            
+            // เริ่มต้น Effect ขาออก
+            popup.classList.replace('opacity-100', 'opacity-0');
+            content.classList.replace('scale-100', 'scale-90');
+            
+            // ซ่อน element เมื่อ Transition จบลง
+            setTimeout(() => {
+                popup.classList.add('hidden');
+            }, 400);
+        }
+
+        // 2. Filter Function
         function filterHouse(type) {
             const items = document.querySelectorAll('[data-type]');
             items.forEach(item => {
@@ -209,6 +245,11 @@
                 }
             });
         }
+
+        // 3. Auto Show Popup on Load
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(showPopup, 1000); // แสดงหลังจาก 1 วินาที
+        });
     </script>
 </body>
 </html>
