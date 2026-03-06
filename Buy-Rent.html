@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FixHome | ค้นหาและซื้อ เช่าอสังหาริมทรัพย์</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0066cc;
+            --primary-dark: #0047a3;
+            --secondary: #ff9800;
+            --accent: #ffc107;
+            --text-dark: #1a1a1a;
+            --text-light: #666;
+            --bg-light: #f4f6fb;
+            --white: #ffffff;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background: var(--bg-light);
+            overflow-x: hidden;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--white);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+        }
+
+        header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        header a {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        nav {
+            display: flex;
+            gap: 30px;
+        }
+
+        nav a {
+            font-size: 14px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.3s ease;
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* ===== HERO SECTION ===== */
+        .hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+                        url('https://images.unsplash.com/photo-1568605114967-8130f3a36994') center/cover;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--white);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0, 102, 204, 0.7) 0%, rgba(0, 71, 163, 0.7) 100%);
+            z-index: 0;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            animation: slideInUp 0.8s ease 0.2s both;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            line-height: 1.2;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero p {
+            font-size: 18px;
+            opacity: 0.95;
+            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* ===== FILTER SECTION ===== */
+        .filter-section {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 40px;
+        }
+
+        .filter-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filter-input,
+        .filter-input select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .filter-input:focus,
+        .filter-input select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-search {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 150px;
+        }
+
+        .btn-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 102, 204, 0.3);
+        }
+
+        .btn-clear {
+            background: #f0f0f0;
+            color: var(--text-dark);
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-clear:hover {
+            background: #e0e0e0;
+        }
+
+        /* ===== PROPERTY LIST ===== */
+        .properties-header {
+            margin-bottom: 30px;
+        }
+
+        .properties-header h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .properties-header h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+
+        .properties-count {
+            color: var(--text-light);
+            font-size: 14px;
+            margin-top: 15px;
+        }
+
+        #property-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            min-height: 300px;
+        }
+
+        .loading-container {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-state i {
+            font-size: 60px;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            color: var(--text-light);
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: #999;
+        }
+
+        /* ===== PROPERTY CARD ===== */
+        .property-card {
+            background: var(--white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .property-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .property-image-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        }
+
+        .property-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .property-card:hover .property-image {
+            transform: scale(1.1);
+        }
+
+        .property-badges {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+
+        .badge-status {
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--white);
+        }
+
+        .badge-sell {
+            background: rgba(76, 175, 80, 0.9);
+            color: var(--white);
+        }
+
+        .badge-rent {
+            background: rgba(255, 152, 0, 0.9);
+            color: var(--white);
+        }
+
+        .badge-count {
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--white);
+        }
+
+        .property-body {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .property-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .property-location {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .property-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 13px;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--text-light);
+        }
+
+        .detail-item i {
+            color: var(--primary);
+            width: 14px;
+        }
+
+        .property-price {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .property-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn-view,
+        .btn-action {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn-view {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-view:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-action {
+            background: var(--secondary);
+            color: var(--white);
+        }
+
+        .btn-action:hover {
+            background: #f57c00;
+            transform: translateY(-2px);
+        }
+
+        /* ===== MODAL ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--white);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #f0f0f0;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .modal-close:hover {
+            background: #e0e0e0;
+            transform: rotate(90deg);
+        }
+
+        .modal-header {
+            padding: 30px 30px 0;
+        }
+
+        .modal-images {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: #f0f0f0;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .modal-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .modal-image.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-image-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            color: var(--white);
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-image-nav:hover {
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .modal-image-prev {
+            left: 15px;
+        }
+
+        .modal-image-next {
+            right: 15px;
+        }
+
+        .modal-image-counter {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--white);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .modal-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+
+        .modal-location {
+            color: var(--text-light);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .modal-body {
+            padding: 0 30px;
+        }
+
+        .modal-price {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .modal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .modal-item {
+            border-left: 3px solid var(--primary);
+            padding-left: 15px;
+        }
+
+        .modal-item-label {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-item-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .modal-description {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .modal-description h4 {
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+
+        .modal-description p {
+            color: var(--text-light);
+            line-height: 1.8;
+        }
+
+        .modal-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            padding: 30px;
+            background: #f9f9f9;
+            border-top: 1px solid #e0e0e0;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .btn-modal {
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 15px;
+        }
+
+        .btn-buy {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: var(--white);
+        }
+
+        .btn-buy:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-rent {
+            background: linear-gradient(135deg, var(--secondary), #f57c00);
+            color: var(--white);
+        }
+
+        .btn-rent:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 152, 0, 0.3);
+        }
+
+        /* ===== ACTION MODAL ===== */
+        .action-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 2100;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .action-modal.active {
+            display: flex;
+        }
+
+        .action-modal-content {
+            background: var(--white);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 450px;
+            padding: 30px;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            animation: slideInUp 0.3s ease;
+        }
+
+        .action-modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #f0f0f0;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .action-modal-close:hover {
+            background: #e0e0e0;
+        }
+
+        .action-modal h3 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text-dark);
+        }
+
+        .action-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 102, 204, 0.3);
+        }
+
+        .form-hint {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: -5px;
+        }
+
+        .error-message {
+            background: #ffebee;
+            border: 1px solid #f48fb1;
+            color: #c2185b;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            display: none;
+            margin-bottom: 10px;
+        }
+
+        .success-message {
+            background: #e8f5e9;
+            border: 1px solid #81c784;
+            color: #2e7d32;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            display: none;
+            margin-bottom: 10px;
+            animation: slideInUp 0.3s ease;
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            header {
+                padding: 12px 20px;
+            }
+
+            header h1 {
+                font-size: 20px;
+            }
+
+            nav {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .hero p {
+                font-size: 16px;
+            }
+
+            main {
+                padding: 20px 15px;
+            }
+
+            .filter-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            }
+
+            .filter-buttons {
+                grid-column: 1 / -1;
+            }
+
+            .btn-search,
+            .btn-clear {
+                flex: 1;
+                min-width: auto;
+            }
+
+            #property-list {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                max-width: 100%;
+                max-height: 100vh;
+            }
+
+            .modal-images {
+                height: 250px;
+            }
+
+            .modal-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-actions {
+                grid-template-columns: 1fr;
+            }
+
+            .action-modal-content {
+                width: 95%;
+                max-width: 100%;
+            }
+
+            .property-details {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 18px;
+            }
+
+            .hero h1 {
+                font-size: 24px;
+            }
+
+            .hero p {
+                font-size: 14px;
+            }
+
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .properties-header h2 {
+                font-size: 24px;
+            }
+
+            .modal-title {
+                font-size: 22px;
+            }
+
+            .modal-price {
+                font-size: 24px;
+            }
+
+            .btn-view,
+            .btn-action {
+                font-size: 12px;
+                padding: 8px 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- HEADER -->
+    <header>
+        <h1><a href="index.html" style="color: inherit; text-decoration: none;">🔧 FixHome</a></h1>
+        <nav>
+            <a href="index.html">หน้าแรก</a>
+            <a href="#properties">ค้นหา</a>
+            <a href="Technician.html">ซ่อมแซม</a>
+            <a href="index.html#contact">ติดต่อเรา</a>
+        </nav>
+        <button class="mobile-menu-btn"><i class="fas fa-bars"></i></button>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1><i class="fas fa-home"></i> ค้นหาอสังหาริมทรัพย์</h1>
+            <p>ซื้อ • ขาย • เช่า บ้าน คอนโด ที่ดิน อย่างง่ายดาย</p>
+        </div>
+    </section>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        <!-- FILTER SECTION -->
+        <div class="filter-section">
+            <div class="filter-title">
+                <i class="fas fa-filter"></i> ค้นหาตามเงื่อนไข
+            </div>
+            
+            <div class="filter-grid">
+                <select id="filterStatus" class="filter-input">
+                    <option value="">สถานะ</option>
+                    <option value="ขาย">ขาย</option>
+                    <option value="เช่า">เช่า</option>
+                </select>
+
+                <select id="filterType" class="filter-input">
+                    <option value="">ประเภท</option>
+                    <option value="บ้าน">บ้าน</option>
+                    <option value="คอนโด">คอนโด</option>
+                    <option value="ที่ดิน">ที่ดิน</option>
+                </select>
+
+                <input type="number" id="minPrice" placeholder="ราคาต่ำสุด" class="filter-input">
+                <input type="number" id="maxPrice" placeholder="ราคาสูงสุด" class="filter-input">
+
+                <input type="text" id="filterProvince" placeholder="จังหวัด" class="filter-input">
+                <input type="text" id="filterDistrict" placeholder="อำเภอ" class="filter-input">
+                <input type="text" id="filterSubdistrict" placeholder="ตำบล" class="filter-input">
+
+                <div></div>
+            </div>
+
+            <div class="filter-buttons">
+                <button onclick="applyFilter()" class="btn-search">
+                    <i class="fas fa-search"></i> ค้นหา
+                </button>
+                <button onclick="clearFilter()" class="btn-clear">
+                    <i class="fas fa-redo"></i> รีเซ็ต
+                </button>
+            </div>
+        </div>
+
+        <!-- PROPERTIES SECTION -->
+        <div class="properties-header" id="properties">
+            <h2>รายการอสังหาริมทรัพย์</h2>
+            <div class="properties-count">
+                <span id="count-text">กำลังโหลด...</span>
+            </div>
+        </div>
+
+        <div id="property-list"></div>
+    </main>
+
+    <!-- DETAIL MODAL -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <button onclick="closeModal()" class="modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <div id="modalContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ACTION MODAL -->
+    <div id="actionModal" class="action-modal">
+        <div class="action-modal-content">
+            <button onclick="closeActionModal()" class="action-modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 id="actionTitle"></h3>
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+            <form class="action-form" onsubmit="submitAction(event)">
+                <div class="form-group">
+                    <label>ชื่อ-สกุล</label>
+                    <input type="text" id="fullname" placeholder="กรอกชื่อ-สกุลของคุณ" required>
+                    <span class="form-hint">เช่น นายสมชาย ใจดี</span>
+                </div>
+
+                <div class="form-group">
+                    <label>เบอร์โทรศัพท์</label>
+                    <input type="tel" id="phone" placeholder="เช่น 0801234567" required>
+                    <span class="form-hint">กรอกเบอร์โทรศัพท์มือถือให้ถูกต้อง</span>
+                </div>
+
+                <div class="form-group">
+                    <label>วันที่พร้อมดำเนินการ</label>
+                    <input type="date" id="readyDate" required>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-check"></i> ยืนยัน
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const { createClient } = window.supabase;
+        const sb = createClient(
+            "https://uqcjajmqtlchftpqwsrp.supabase.co",
+            "sb_publishable_yWZiH8l1idY0QWGuj6p9sg_GqXPONGX"
+        );
+
+        let propertyData = [];
+        let currentSlide = 0;
+        let currentActionType = null;
+        let currentPropertyId = null;
+
+        function safe(value) {
+            return value !== null && value !== undefined && value !== '' ? value : '-';
+        }
+
+        function formatNumber(num) {
+            return num ? Number(num).toLocaleString('th-TH') : '-';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        window.openModalById = async function(id) {
+            currentSlide = 0;
+            const property = propertyData.find(p => p.id === id);
+            if (!property) return;
+
+            const modal = document.getElementById('detailModal');
+
+            // โหลดรูป
+            const { data: images } = await sb
+                .from('property_images')
+                .select('image_url')
+                .eq('property_id', id);
+
+            let imageArray = [];
+            if (images && images.length > 0) {
+                imageArray = images.map(img => img.image_url);
+            } else if (property.image_url) {
+                imageArray = [property.image_url];
+            } else {
+                imageArray = ['https://via.placeholder.com/800x500?text=ไม่มีรูป'];
+            }
+
+            const imageSlides = imageArray.map((url, index) => `
+                <img src="${url}" alt="รูปที่ ${index + 1}" class="modal-image ${index === 0 ? 'active' : ''}" data-index="${index}">
+            `).join('');
+
+            const content = document.getElementById('modalContent');
+            content.innerHTML = `
+                <div class="modal-images">
+                    ${imageSlides}
+                    ${imageArray.length > 1 ? `
+                        <button onclick="prevSlide()" class="modal-image-nav modal-image-prev">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button onclick="nextSlide()" class="modal-image-nav modal-image-next">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        <div class="modal-image-counter">
+                            <span id="slide-counter">${currentSlide + 1}</span> / ${imageArray.length}
+                        </div>
+                    ` : ''}
+                </div>
+
+                <div class="modal-body">
+                    <h2 class="modal-title">${safe(property.title)}</h2>
+                    <div class="modal-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        ${safe(property.subdistrict)} ${safe(property.district)} ${safe(property.province)}
+                    </div>
+
+                    <div class="modal-price">฿${formatNumber(property.price)}</div>
+
+                    <div class="modal-grid">
+                        ${property.bedrooms ? `
+                            <div class="modal-item">
+                                <div class="modal-item-label">ห้องนอน</div>
+                                <div class="modal-item-value"><i class="fas fa-bed"></i> ${property.bedrooms} ห้อง</div>
+                            </div>
+                        ` : ''}
+                        ${property.bathrooms ? `
+                            <div class="modal-item">
+                                <div class="modal-item-label">ห้องน้ำ</div>
+                                <div class="modal-item-value"><i class="fas fa-bath"></i> ${property.bathrooms} ห้อง</div>
+                            </div>
+                        ` : ''}
+                        ${property.usable_area ? `
+                            <div class="modal-item">
+                                <div class="modal-item-label">พื้นที่ใช้สอย</div>
+                                <div class="modal-item-value"><i class="fas fa-ruler-combined"></i> ${property.usable_area} ตร.ม.</div>
+                            </div>
+                        ` : ''}
+                        ${property.land_area_wa ? `
+                            <div class="modal-item">
+                                <div class="modal-item-label">ขนาดที่ดิน</div>
+                                <div class="modal-item-value"><i class="fas fa-square"></i> ${property.land_area_wa} ตร.ว.</div>
+                            </div>
+                        ` : ''}
+                        ${property.parking ? `
+                            <div class="modal-item">
+                                <div class="modal-item-label">ที่จอดรถ</div>
+                                <div class="modal-item-value"><i class="fas fa-car"></i> ${property.parking}</div>
+                            </div>
+                        ` : ''}
+                        ${property.property_age ? `
+                            <div class="modal-item">
+                                <div class="modal-item-label">อายุทรัพย์</div>
+                                <div class="modal-item-value"><i class="fas fa-calendar"></i> ${property.property_age} ปี</div>
+                            </div>
+                        ` : ''}
+                        ${property.monthly_payment ? `
+                            <div class="modal-item">
+                                <div class="modal-item-label">ผ่อนเดือนละ</div>
+                                <div class="modal-item-value">฿${formatNumber(property.monthly_payment)}</div>
+                            </div>
+                        ` : ''}
+                        ${property.common_fee ? `
+                            <div class="modal-item">
+                                <div class="modal-item-label">ค่าส่วนกลาง</div>
+                                <div class="modal-item-value">฿${formatNumber(property.common_fee)}</div>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    ${property.description ? `
+                        <div class="modal-description">
+                            <h4><i class="fas fa-info-circle"></i> รายละเอียด</h4>
+                            <p>${property.description}</p>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <div class="modal-actions">
+                    ${(property.status || '').includes('ขาย') ? `
+                        <button type="button" onclick="handleAction('ซื้อ', ${property.id})" class="btn-modal btn-buy">
+                            <i class="fas fa-shopping-cart"></i> ติดต่อซื้อ
+                        </button>
+                    ` : '<div></div>'}
+                    ${(property.status || '').includes('เช่า') ? `
+                        <button type="button" onclick="handleAction('เช่า', ${property.id})" class="btn-modal btn-rent">
+                            <i class="fas fa-key"></i> ติดต่อเช่า
+                        </button>
+                    ` : '<div></div>'}
+                </div>
+            `;
+
+            modal.classList.add('active');
+        };
+
+        window.nextSlide = function() {
+            const slides = document.querySelectorAll('.modal-image');
+            if (!slides || slides.length === 0) return;
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('slide-counter').textContent = currentSlide + 1;
+        };
+
+        window.prevSlide = function() {
+            const slides = document.querySelectorAll('.modal-image');
+            if (!slides || slides.length === 0) return;
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('slide-counter').textContent = currentSlide + 1;
+        };
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('active');
+        }
+
+        window.handleAction = function(type, id) {
+            currentActionType = type;
+            currentPropertyId = id;
+
+            document.getElementById('actionTitle').innerText = 
+                type === 'ซื้อ' ? '📝 สนใจซื้อทรัพย์นี้' : '🔑 สนใจเช่าทรัพย์นี้';
+
+            document.getElementById('fullname').value = '';
+            document.getElementById('phone').value = '';
+            document.getElementById('readyDate').value = '';
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+
+            document.getElementById('actionModal').classList.add('active');
+        };
+
+        function closeActionModal() {
+            document.getElementById('actionModal').classList.remove('active');
+        }
+
+        window.submitAction = async function(e) {
+            e.preventDefault();
+
+            const fullname = document.getElementById('fullname').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const readyDate = document.getElementById('readyDate').value;
+
+            // Validation
+            if (!fullname || fullname.split(' ').length < 2) {
+                showError('⚠️ กรุณากรอกชื่อ-สกุลให้ครบถ้วน');
+                return;
+            }
+
+            if (!/^0[0-9]{8,9}$/.test(phone)) {
+                showError('⚠️ กรุณากรอกเบอร์โทรให้ถูกต้อง (ขึ้นต้นด้วย 0)');
+                return;
+            }
+
+            if (!readyDate) {
+                showError('⚠️ กรุณาเลือกวันที่พร้อมดำเนินการ');
+                return;
+            }
+
+            const { error } = await sb
+                .from('interests')
+                .insert([{
+                    property_id: currentPropertyId,
+                    name: fullname,
+                    phone: phone,
+                    type: currentActionType,
+                    ready_date: readyDate
+                }]);
+
+            if (error) {
+                showError('❌ เกิดข้อผิดพลาด: ' + error.message);
+                console.error(error);
+            } else {
+                showSuccess('✅ บันทึกเรียบร้อยแล้ว! เราจะติดต่อคุณในอีกสักครู่');
+                setTimeout(() => {
+                    closeActionModal();
+                    closeModal();
+                }, 2000);
+            }
+        };
+
+        async function applyFilter() {
+            const container = document.getElementById('property-list');
+            container.innerHTML = `
+                <div class="loading-container">
+                    <div class="loading-spinner"></div>
+                </div>
+            `;
+
+            const status = document.getElementById('filterStatus').value;
+            const type = document.getElementById('filterType').value;
+            const minPrice = document.getElementById('minPrice').value;
+            const maxPrice = document.getElementById('maxPrice').value;
+            const province = document.getElementById('filterProvince').value;
+            const district = document.getElementById('filterDistrict').value;
+            const subdistrict = document.getElementById('filterSubdistrict').value;
+
+            let query = sb.from('properties').select('*').order('created_at', { ascending: false });
+
+            if (status) query = query.ilike('status', `%${status}%`);
+            if (type) query = query.ilike('title', `%${type}%`);
+            if (minPrice) query = query.gte('price', minPrice);
+            if (maxPrice) query = query.lte('price', maxPrice);
+            if (province) query = query.ilike('province', `%${province}%`);
+            if (district) query = query.ilike('district', `%${district}%`);
+            if (subdistrict) query = query.ilike('subdistrict', `%${subdistrict}%`);
+
+            const { data, error } = await query;
+
+            if (error) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>เกิดข้อผิดพลาด</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+                console.error(error);
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-search"></i>
+                        <h3>ไม่พบรายการ</h3>
+                        <p>ลองเปลี่ยนเงื่อนไขการค้นหาดู</p>
+                    </div>
+                `;
+                document.getElementById('count-text').textContent = 'ไม่พบรายการ';
+                return;
+            }
+
+            propertyData = data;
+            container.innerHTML = '';
+            document.getElementById('count-text').textContent = `พบ ${data.length} รายการ`;
+
+            for (const p of propertyData) {
+                const { data: images } = await sb
+                    .from('property_images')
+                    .select('image_url')
+                    .eq('property_id', p.id);
+
+                let imageUrl = 'https://via.placeholder.com/600x400?text=ไม่มีรูป';
+                let imageCount = 0;
+
+                if (images && images.length > 0) {
+                    imageUrl = images[0].image_url;
+                    imageCount = images.length;
+                } else if (p.image_url) {
+                    imageUrl = p.image_url;
+                    imageCount = 1;
+                }
+
+                const statusBadges = [];
+                if ((p.status || '').includes('ขาย')) {
+                    statusBadges.push('<span class="badge badge-sell">ขาย</span>');
+                }
+                if ((p.status || '').includes('เช่า')) {
+                    statusBadges.push('<span class="badge badge-rent">เช่า</span>');
+                }
+
+                container.innerHTML += `
+                    <div class="property-card" onclick="openModalById(${p.id})">
+                        <div class="property-image-container">
+                            <img src="${imageUrl}" alt="${p.title}" class="property-image">
+                            <div class="property-badges">
+                                ${statusBadges.join('')}
+                                ${imageCount > 1 ? `<span class="badge badge-count"><i class="fas fa-images"></i> ${imageCount}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="property-body">
+                            <h3 class="property-title">${safe(p.title)}</h3>
+                            <div class="property-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                ${safe(p.subdistrict)} ${safe(p.district)}
+                            </div>
+                            <div class="property-details">
+                                ${p.bedrooms ? `
+                                    <div class="detail-item">
+                                        <i class="fas fa-bed"></i>
+                                        <span>${p.bedrooms} ห้องนอน</span>
+                                    </div>
+                                ` : ''}
+                                ${p.bathrooms ? `
+                                    <div class="detail-item">
+                                        <i class="fas fa-bath"></i>
+                                        <span>${p.bathrooms} ห้องน้ำ</span>
+                                    </div>
+                                ` : ''}
+                                ${p.usable_area ? `
+                                    <div class="detail-item">
+                                        <i class="fas fa-ruler-combined"></i>
+                                        <span>${p.usable_area} ตร.ม.</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div class="property-price">฿${formatNumber(p.price)}</div>
+                            <div class="property-actions">
+                                <button type="button" onclick="event.stopPropagation(); openModalById(${p.id})" class="btn-view">
+                                    <i class="fas fa-eye"></i> ดูรายละเอียด
+                                </button>
+                                <button type="button" onclick="event.stopPropagation(); handleAction('สนใจ', ${p.id})" class="btn-action">
+                                    <i class="fas fa-star"></i> สนใจ
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        window.clearFilter = function() {
+            document.getElementById('filterStatus').value = '';
+            document.getElementById('filterType').value = '';
+            document.getElementById('minPrice').value = '';
+            document.getElementById('maxPrice').value = '';
+            document.getElementById('filterProvince').value = '';
+            document.getElementById('filterDistrict').value = '';
+            document.getElementById('filterSubdistrict').value = '';
+            applyFilter();
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            applyFilter();
+
+            // Mobile menu
+            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+            const nav = document.querySelector('nav');
+            if (mobileMenuBtn) {
+                mobileMenuBtn.addEventListener('click', () => {
+                    nav.style.display = nav.style.display === 'flex' ? 'none' : 'flex';
+                });
+            }
+
+            // Close modal when clicking outside
+            document.getElementById('detailModal').addEventListener('click', (e) => {
+                if (e.target.id === 'detailModal') closeModal();
+            });
+
+            document.getElementById('actionModal').addEventListener('click', (e) => {
+                if (e.target.id === 'actionModal') closeActionModal();
+            });
+        });
+    </script>
+</body>
+</html>

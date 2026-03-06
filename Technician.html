@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FixHome | ค้นหาและจองช่างผู้เชี่ยวชาญ</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0066cc;
+            --primary-dark: #0047a3;
+            --secondary: #ff9800;
+            --accent: #ffc107;
+            --success: #4CAF50;
+            --text-dark: #1a1a1a;
+            --text-light: #666;
+            --bg-light: #f4f6fb;
+            --white: #ffffff;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background: var(--bg-light);
+            overflow-x: hidden;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--white);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+        }
+
+        header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        header a {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        nav {
+            display: flex;
+            gap: 30px;
+        }
+
+        nav a {
+            font-size: 14px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.3s ease;
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* ===== HERO SECTION ===== */
+        .hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+                        url('https://images.unsplash.com/photo-1504384308090-c894fdcc538d') center/cover;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--white);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0, 102, 204, 0.7) 0%, rgba(0, 71, 163, 0.7) 100%);
+            z-index: 0;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            animation: slideInUp 0.8s ease 0.2s both;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            line-height: 1.2;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero p {
+            font-size: 18px;
+            opacity: 0.95;
+            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* ===== FILTER SECTION ===== */
+        .filter-section {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 40px;
+        }
+
+        .filter-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .filter-input,
+        .filter-input select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .filter-input:focus,
+        .filter-input select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+
+        /* ===== TECHNICIAN LIST ===== */
+        .technician-header {
+            margin-bottom: 30px;
+        }
+
+        .technician-header h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .technician-header h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+
+        .technician-count {
+            color: var(--text-light);
+            font-size: 14px;
+            margin-top: 15px;
+        }
+
+        #technicianList {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            min-height: 400px;
+        }
+
+        .loading-container {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-state i {
+            font-size: 60px;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            color: var(--text-light);
+            margin-bottom: 10px;
+        }
+
+        /* ===== TECHNICIAN CARD ===== */
+        .technician-card {
+            background: var(--white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .technician-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .tech-image-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            overflow: hidden;
+        }
+
+        .tech-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .technician-card:hover .tech-image {
+            transform: scale(1.1);
+        }
+
+        .tech-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(76, 175, 80, 0.95);
+            color: var(--white);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            backdrop-filter: blur(10px);
+        }
+
+        .tech-body {
+            padding: 25px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tech-name {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+
+        .tech-category {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .tech-info {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: var(--text-light);
+            flex-grow: 1;
+        }
+
+        .tech-info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tech-info-item i {
+            color: var(--primary);
+            width: 18px;
+            text-align: center;
+        }
+
+        .tech-rating {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 0;
+            border-top: 1px solid #f0f0f0;
+            border-bottom: 1px solid #f0f0f0;
+            margin-bottom: 15px;
+        }
+
+        .tech-rating i {
+            color: var(--accent);
+            font-size: 18px;
+        }
+
+        .tech-rating span {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .tech-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn-view,
+        .btn-book {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn-view {
+            background: #f0f0f0;
+            color: var(--text-dark);
+        }
+
+        .btn-view:hover {
+            background: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        .btn-book {
+            background: linear-gradient(135deg, var(--secondary), #f57c00);
+            color: var(--white);
+        }
+
+        .btn-book:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 152, 0, 0.3);
+        }
+
+        /* ===== MODAL ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: var(--white);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #f0f0f0;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .modal-close:hover {
+            background: #e0e0e0;
+            transform: rotate(90deg);
+        }
+
+        .modal-header {
+            padding: 30px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
+            border-radius: 12px 12px 0 0;
+        }
+
+        .modal-tech-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .modal-tech-info {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            font-size: 14px;
+            opacity: 0.95;
+        }
+
+        .modal-tech-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .modal-tech-gallery img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .modal-tech-gallery img:hover {
+            transform: scale(1.05);
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+        }
+
+        .form-section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-section-title i {
+            color: var(--primary);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 480px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-hint {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: -5px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            padding: 30px;
+            background: #f9f9f9;
+            border-top: 1px solid #e0e0e0;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .btn-modal {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 15px;
+        }
+
+        .btn-confirm {
+            background: linear-gradient(135deg, var(--success), #45a049);
+            color: var(--white);
+        }
+
+        .btn-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-cancel {
+            background: #f0f0f0;
+            color: var(--text-dark);
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-cancel:hover {
+            background: #e0e0e0;
+        }
+
+        .error-message {
+            background: #ffebee;
+            border: 1px solid #f48fb1;
+            color: #c2185b;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            display: none;
+            margin-bottom: 15px;
+        }
+
+        .success-message {
+            background: #e8f5e9;
+            border: 1px solid #81c784;
+            color: #2e7d32;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            display: none;
+            margin-bottom: 15px;
+            animation: slideInUp 0.3s ease;
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            header {
+                padding: 12px 20px;
+            }
+
+            header h1 {
+                font-size: 20px;
+            }
+
+            nav {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .hero p {
+                font-size: 16px;
+            }
+
+            main {
+                padding: 20px 15px;
+            }
+
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+
+            #technicianList {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                max-width: 100%;
+                max-height: 100vh;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-tech-gallery {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 18px;
+            }
+
+            .hero h1 {
+                font-size: 24px;
+            }
+
+            .hero p {
+                font-size: 14px;
+            }
+
+            .technician-header h2 {
+                font-size: 24px;
+            }
+
+            .modal-actions {
+                flex-direction: column;
+            }
+
+            .btn-modal {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- HEADER -->
+    <header>
+        <h1><a href="index.html" style="color: inherit; text-decoration: none;">🔧 FixHome</a></h1>
+        <nav>
+            <a href="index.html">หน้าแรก</a>
+            <a href="#technicians">ช่างเมื่อไร</a>
+            <a href="Buy-Rent.html">ค้นหาอสังหา</a>
+            <a href="index.html#contact">ติดต่อเรา</a>
+        </nav>
+        <button class="mobile-menu-btn"><i class="fas fa-bars"></i></button>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1><i class="fas fa-tools"></i> จองช่างผู้เชี่ยวชาญ</h1>
+            <p>ซ่อมอะไรต้องการก็มีช่างเตรียมพร้อมให้บริการ 24/7</p>
+        </div>
+    </section>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        <!-- FILTER SECTION -->
+        <div class="filter-section">
+            <div class="filter-title">
+                <i class="fas fa-filter"></i> ค้นหาตามหมวดหมู่บริการ
+            </div>
+            
+            <div class="filter-grid">
+                <select id="categoryFilter" class="filter-input">
+                    <option value="">ทุกประเภท</option>
+                    <option value="ไฟฟ้า">⚡ ไฟฟ้า</option>
+                    <option value="ประปา">💧 ประปา</option>
+                    <option value="แอร์">❄️ แอร์</option>
+                    <option value="พื้นและผนัง">🏠 พื้นและผนัง</option>
+                    <option value="ตกแต่ง">🎨 ตกแต่ง</option>
+                    <option value="ประตูหน้าต่าง">🚪 ประตูหน้าต่าง</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- TECHNICIAN SECTION -->
+        <div class="technician-header" id="technicians">
+            <h2><i class="fas fa-user-tie"></i> ช่างผู้เชี่ยวชาญ</h2>
+            <div class="technician-count">
+                <span id="count-text">กำลังโหลด...</span>
+            </div>
+        </div>
+
+        <div id="technicianList"></div>
+    </main>
+
+    <!-- BOOKING MODAL -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <button onclick="closeBooking()" class="modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header" id="modalHeader"></div>
+            <div class="modal-body">
+                <div id="errorMessage" class="error-message"></div>
+                <div id="successMessage" class="success-message"></div>
+
+                <form class="booking-form" onsubmit="confirmBooking(event)">
+                    <!-- ข้อมูลลูกค้า -->
+                    <div class="form-section">
+                        <div class="form-section-title">
+                            <i class="fas fa-user"></i> ข้อมูลของคุณ
+                        </div>
+                        <div class="form-group">
+                            <label>ชื่อ-สกุล *</label>
+                            <input type="text" id="customerName" placeholder="เช่น นายสมชาย ใจดี" required>
+                            <span class="form-hint">ต้องใส่ชื่อและนามสกุล</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label>เบอร์โทรศัพท์ *</label>
+                            <input type="tel" id="customerPhone" placeholder="เช่น 0801234567" required>
+                            <span class="form-hint">ต้องเป็นเลข 9-10 หลัก ขึ้นต้นด้วย 0</span>
+                        </div>
+                    </div>
+
+                    <!-- รายละเอียดปัญหา -->
+                    <div class="form-section">
+                        <div class="form-section-title">
+                            <i class="fas fa-list"></i> รายละเอียดปัญหา
+                        </div>
+                        <div class="form-group">
+                            <label>ปัญหาที่ต้อง  ารซ่อม *</label>
+                            <textarea id="problemDetail" placeholder="อธิบายปัญหาของคุณให้ชัดเจน เช่น ไฟฟ้าขาดช่วงเย็นทุกวัน" required></textarea>
+                        </div>
+                    </div>
+
+                    <!-- สถานที่ -->
+                    <div class="form-section">
+                        <div class="form-section-title">
+                            <i class="fas fa-map-marker-alt"></i> สถานที่บริการ
+                        </div>
+                        <div class="form-group">
+                            <label>จังหวัด *</label>
+                            <select id="province" required>
+                                <option value="">เลือกจังหวัด</option>
+                                <option value="นครพนม">นครพนม</option>
+                                <option value="มุกดาหาร">มุกดาหาร</option>
+                                <option value="กาฬสินธุ์">กาฬสินธุ์</option>
+                                <option value="อุดรธานี">อุดรธานี</option>
+                                <option value="หนองคาย">หนองคาย</option>
+                                <option value="บึงกาฬ">บึงกาฬ</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>อำเภอ *</label>
+                                <select id="district" required>
+                                    <option value="">เลือกอำเภอ</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>ตำบล *</label>
+                                <select id="subdistrict" required>
+                                    <option value="">เลือกตำบล</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- เวลาบริการ -->
+                    <div class="form-section">
+                        <div class="form-section-title">
+                            <i class="fas fa-calendar-alt"></i> วันและเวลาบริการ
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>วันที่ต้องการ *</label>
+                                <input type="date" id="serviceDate" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>ช่วงเวลา *</label>
+                                <select id="serviceTime" required>
+                                    <option value="">เลือกช่วงเวลา</option>
+                                    <option value="08:00-10:00">🌅 08:00 - 10:00</option>
+                                    <option value="10:00-12:00">☀️ 10:00 - 12:00</option>
+                                    <option value="13:00-15:00">🌤️ 13:00 - 15:00</option>
+                                    <option value="15:00-17:00">☀️ 15:00 - 17:00</option>
+                                    <option value="17:00-19:00">🌆 17:00 - 19:00</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" onclick="confirmBooking()" class="btn-modal btn-confirm">
+                    <i class="fas fa-check"></i> ยืนยันการจอง
+                </button>
+                <button type="button" onclick="closeBooking()" class="btn-modal btn-cancel">
+                    <i class="fas fa-times"></i> ยกเลิก
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://uqcjajmqtlchftpqwsrp.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_yWZiH8l1idY0QWGuj6p9sg_GqXPONGX";
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let technicians = [];
+        let isSubmitting = false;
+        let currentTech = null;
+
+        // ================= LOAD TECHNICIANS =================
+        async function loadTechnicians() {
+            const container = document.getElementById("technicianList");
+            container.innerHTML = `
+                <div class="loading-container">
+                    <div class="loading-spinner"></div>
+                </div>
+            `;
+
+            const { data, error } = await sb
+                .from("technicians")
+                .select(`
+                    *,
+                    technician_images (
+                        image_url
+                    )
+                `)
+                .order("created_at", { ascending: false });
+
+            if (error) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>เกิดข้อผิดพลาด</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+                console.error(error);
+                return;
+            }
+
+            technicians = data || [];
+
+            if (technicians.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <h3>ยังไม่มีช่างในระบบ</h3>
+                        <p>กรุณาลองใหม่ในภายหลัง</p>
+                    </div>
+                `;
+                document.getElementById('count-text').textContent = 'ไม่มีช่างในระบบ';
+                return;
+            }
+
+            document.getElementById('count-text').textContent = `พบ ${technicians.length} คน`;
+            renderTechnicians(technicians);
+        }
+
+        // ================= RENDER TECHNICIANS =================
+        function renderTechnicians(list) {
+            const container = document.getElementById("technicianList");
+            container.innerHTML = "";
+
+            list.forEach(function (tech) {
+                const firstImage = (tech.technician_images && tech.technician_images.length > 0)
+                    ? tech.technician_images[0].image_url
+                    : "https://via.placeholder.com/400x300?text=ไม่มีรูป";
+
+                const categoryIcons = {
+                    'ไฟฟ้า': '⚡',
+                    'ประปา': '💧',
+                    'แอร์': '❄️',
+                    'พื้นและผนัง': '🏠',
+                    'ตกแต่ง': '🎨',
+                    'ประตูหน้าต่าง': '🚪'
+                };
+
+                const icon = categoryIcons[tech.category] || '🔧';
+
+                const card = document.createElement("div");
+                card.className = "technician-card";
+                card.innerHTML = `
+                    <div class="tech-image-container">
+                        <img src="${firstImage}" alt="${tech.name}" class="tech-image" onerror="this.src='https://via.placeholder.com/400x300?text=ไม่มีรูป'">
+                        <div class="tech-badge">
+                            <i class="fas fa-check-circle"></i>
+                            ยืนยันแล้ว
+                        </div>
+                    </div>
+                    <div class="tech-body">
+                        <div class="tech-name">${tech.name}</div>
+                        <span class="tech-category">${icon} ${tech.category}</span>
+                        
+                        <div class="tech-info">
+                            <div class="tech-info-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>${tech.area}</span>
+                            </div>
+                            <div class="tech-info-item">
+                                <i class="fas fa-briefcase"></i>
+                                <span>${tech.experience || 'ประสบการณ์สูง'}</span>
+                            </div>
+                        </div>
+
+                        <div class="tech-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                            <span>${tech.rating || '4.8'}</span>
+                            <span style="color: var(--text-light); margin-left: auto;">(${tech.reviews || '120'} รีวิว)</span>
+                        </div>
+
+                        <div class="tech-actions">
+                            <button type="button" onclick="showTechDetails(${tech.id})" class="btn-view">
+                                <i class="fas fa-eye"></i> ดูรายละเอียด
+                            </button>
+                            <button type="button" onclick="openBooking(${tech.id})" class="btn-book">
+                                <i class="fas fa-calendar-check"></i> จองเลย
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // ================= FILTER TECHNICIANS =================
+        function filterTechnicians() {
+            const category = document.getElementById("categoryFilter").value;
+            if (category === "") {
+                renderTechnicians(technicians);
+            } else {
+                renderTechnicians(technicians.filter(t => t.category === category));
+            }
+        }
+
+        // ================= SHOW TECH DETAILS =================
+        window.showTechDetails = function(techId) {
+            const tech = technicians.find(t => t.id === techId);
+            if (!tech) return;
+            openBooking(techId);
+        };
+
+        // ================= OPEN BOOKING MODAL =================
+        window.openBooking = function(techId) {
+            currentTech = technicians.find(t => t.id === techId);
+            if (!currentTech) return;
+
+            let imagesHtml = "";
+            if (currentTech.technician_images && currentTech.technician_images.length > 0) {
+                imagesHtml = currentTech.technician_images
+                    .map(img => `<img src="${img.image_url}" alt="รูป" onerror="this.style.display='none'">`)
+                    .join("");
+            }
+
+            const categoryIcons = {
+                'ไฟฟ้า': '⚡',
+                'ประปา': '💧',
+                'แอร์': '❄️',
+                'พื้นและผนัง': '🏠',
+                'ตกแต่ง': '🎨',
+                'ประตูหน้าต่าง': '🚪'
+            };
+
+            const icon = categoryIcons[currentTech.category] || '🔧';
+
+            document.getElementById("modalHeader").innerHTML = `
+                <div class="modal-tech-name">
+                    ${currentTech.name}
+                </div>
+                <div class="modal-tech-info">
+                    <div><i class="fas fa-badge-check"></i> ${icon} ${currentTech.category}</div>
+                    <div><i class="fas fa-map-marker-alt"></i> ${currentTech.area}</div>
+                    <div><i class="fas fa-star"></i> ${currentTech.rating || '4.8'}/5</div>
+                </div>
+                ${imagesHtml ? `<div class="modal-tech-gallery">${imagesHtml}</div>` : ''}
+            `;
+
+            // Reset form
+            document.getElementById("customerName").value = "";
+            document.getElementById("customerPhone").value = "";
+            document.getElementById("problemDetail").value = "";
+            document.getElementById("province").value = "";
+            document.getElementById("district").innerHTML = '<option value="">เลือกอำเภอ</option>';
+            document.getElementById("subdistrict").innerHTML = '<option value="">เลือกตำบล</option>';
+            document.getElementById("serviceDate").value = "";
+            document.getElementById("serviceTime").value = "";
+            document.getElementById("errorMessage").style.display = "none";
+            document.getElementById("successMessage").style.display = "none";
+
+            document.getElementById("bookingModal").classList.add("active");
+        };
+
+        // ================= CLOSE BOOKING MODAL =================
+        window.closeBooking = function() {
+            document.getElementById("bookingModal").classList.remove("active");
+        };
+
+        // ================= SHOW ERROR =================
+        function showError(message) {
+            const errorDiv = document.getElementById("errorMessage");
+            errorDiv.textContent = "❌ " + message;
+            errorDiv.style.display = "block";
+            setTimeout(() => {
+                errorDiv.style.display = "none";
+            }, 5000);
+        }
+
+        // ================= SHOW SUCCESS =================
+        function showSuccess(message) {
+            const successDiv = document.getElementById("successMessage");
+            successDiv.textContent = "✅ " + message;
+            successDiv.style.display = "block";
+            setTimeout(() => {
+                successDiv.style.display = "none";
+            }, 3000);
+        }
+
+        // ================= CONFIRM BOOKING =================
+        window.confirmBooking = async function(event) {
+            if (event) event.preventDefault();
+            if (isSubmitting) return;
+
+            const name = document.getElementById("customerName").value.trim();
+            const phone = document.getElementById("customerPhone").value.trim();
+            const problem = document.getElementById("problemDetail").value.trim();
+            const province = document.getElementById("province").value;
+            const district = document.getElementById("district").value;
+            const subdistrict = document.getElementById("subdistrict").value;
+            const serviceDate = document.getElementById("serviceDate").value;
+            const serviceTime = document.getElementById("serviceTime").value;
+
+            if (!currentTech) {
+                showError("ไม่พบข้อมูลช่าง");
+                return;
+            }
+
+            // Validation
+            if (!name || name.split(" ").length < 2) {
+                showError("กรุณากรอกชื่อ-สกุลให้ครบถ้วน");
+                return;
+            }
+
+            if (!/^0[0-9]{8,9}$/.test(phone)) {
+                showError("เบอร์โทรไม่ถูกต้อง (ต้องเป็น 0 ตามด้วยตัวเลข 8-9 หลัก)");
+                return;
+            }
+
+            if (!problem) {
+                showError("กรุณากรอกรายละเอียดปัญหา");
+                return;
+            }
+
+            if (!province || !district || !subdistrict) {
+                showError("กรุณากรอกข้อมูลสถานที่ให้ครบถ้วน");
+                return;
+            }
+
+            if (!serviceDate || !serviceTime) {
+                showError("กรุณาเลือกวันและเวลาบริการ");
+                return;
+            }
+
+            isSubmitting = true;
+            const confirmBtn = document.querySelector(".btn-confirm");
+            confirmBtn.innerText = "⏳ กำลังบันทึก...";
+            confirmBtn.disabled = true;
+
+            const { data, error } = await sb.from("bookings").insert([
+                {
+                    technician_id: currentTech.id,
+                    tech_name: currentTech.name,
+                    category: currentTech.category,
+                    customer_name: name,
+                    customer_phone: phone,
+                    problem_detail: problem,
+                    province,
+                    district,
+                    subdistrict,
+                    service_date: serviceDate,
+                    service_time: serviceTime,
+                    status: "รอดำเนินการ"
+                }
+            ]);
+
+            if (error) {
+                showError(error.message);
+                isSubmitting = false;
+                confirmBtn.innerText = "✅ ยืนยันการจอง";
+                confirmBtn.disabled = false;
+                return;
+            }
+
+            showSuccess("บันทึกข้อมูลสำเร็จ! เราจะติดต่อคุณในอีกสักครู่");
+            setTimeout(() => {
+                closeBooking();
+                isSubmitting = false;
+                confirmBtn.innerText = "✅ ยืนยันการจอง";
+                confirmBtn.disabled = false;
+            }, 2000);
+        };
+
+        // ================= LOCATION DATA =================
+        const locationData = {
+            "นครพนม": {
+                "เมืองนครพนม": ["ในเมือง", "หนองญาติ", "อาจสามารถ"],
+                "ศรีสงคราม": ["ศรีสงคราม", "บ้านเอื้อง", "ท่าบ่อสงคราม"]
+            },
+            "มุกดาหาร": {
+                "เมืองมุกดาหาร": ["มุกดาหาร", "บางทรายใหญ่", "ศรีบุญเรือง"],
+                "กำแพงเพชร": ["ก  แพงเพชร", "โคกตุ่ม", "เขาวง"]
+            },
+            "กาฬสินธุ์": {
+                "เมืองกาฬสินธุ์": ["ในเมือง", "หนองแวง", "บ้านเป้า"],
+                "คำชะลอม": ["คำชะลอม", "บ้านไฮ", "บ้านยาง"]
+            },
+            "อุดรธานี": {
+                "เมืองอุดรธานี": ["หมากแข้ง", "บ้านเลื่อม", "หนองบัว"],
+                "หนองหาน": ["หนองหาน", "เมืองหลวง", "ศิลาทอง"]
+            },
+            "หนองคาย": {
+                "เมืองหนองคาย": ["เมืองหลวง", "โพนหนักเสือ", "บ้านผือ"],
+                "ท่าลี": ["ท่าลี", "สองภูมิ", "หนองไทร"]
+            },
+            "บึงกาฬ": {
+                "เมืองบึงกาฬ": ["บึงกาฬ", "ท่าแต้ม", "นายหลวง"]
+            }
+        };
+
+        const provinceSelect = document.getElementById("province");
+        const districtSelect = document.getElementById("district");
+        const subdistrictSelect = document.getElementById("subdistrict");
+
+        provinceSelect.addEventListener("change", function () {
+            const province = this.value;
+            districtSelect.innerHTML = '<option value="">เลือกอำเภอ</option>';
+            subdistrictSelect.innerHTML = '<option value="">เลือกตำบล</option>';
+
+            if (!locationData[province]) return;
+
+            Object.keys(locationData[province]).forEach(function (district) {
+                const option = document.createElement("option");
+                option.value = district;
+                option.textContent = district;
+                districtSelect.appendChild(option);
+            });
+        });
+
+        districtSelect.addEventListener("change", function () {
+            const province = provinceSelect.value;
+            const district = this.value;
+            subdistrictSelect.innerHTML = '<option value="">เลือกตำบล</option>';
+
+            if (!locationData[province] || !locationData[province][district]) return;
+
+            locationData[province][district].forEach(function (sub) {
+                const option = document.createElement("option");
+                option.value = sub;
+                option.textContent = sub;
+                subdistrictSelect.appendChild(option);
+            });
+        });
+
+        // ================= EVENTS =================
+        document.getElementById("categoryFilter").addEventListener("change", filterTechnicians);
+
+        // Mobile menu
+        const mobileMenuBtn = document.querySelector(".mobile-menu-btn");
+        const nav = document.querySelector("nav");
+        if (mobileMenuBtn) {
+            mobileMenuBtn.addEventListener("click", () => {
+                nav.style.display = nav.style.display === "flex" ? "none" : "flex";
+            });
+        }
+
+        // Close modal when clicking outside
+        document.getElementById("bookingModal").addEventListener("click", (e) => {
+            if (e.target.id === "bookingModal") closeBooking();
+        });
+
+        // Load on page load
+        document.addEventListener("DOMContentLoaded", loadTechnicians);
+    </script>
+</body>
+</html>
