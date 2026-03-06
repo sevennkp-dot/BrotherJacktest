@@ -1,1636 +1,278 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BuildMart Hub - Platform Integrated Professional</title>
-    <meta name="description" content="แพลตฟอร์มรวมบริการมืออาชีพ: ร้านวัสดุก่อสร้าง อสังหาริมทรัพย์ บริการช่าง และแบบบ้านพร้อมราคา">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body { 
-            font-family: 'Kanit', 'Sarabun', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #f0f2f5 100%);
-            color: #333;
-            min-height: 100vh;
-        }
-
-        @keyframes slideInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
-
-        header {
-            animation: slideInDown 0.6s ease-out;
-            background: linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FFA500 100%);
-            box-shadow: 0 10px 40px rgba(255, 107, 53, 0.2);
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
-
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 1.5rem 1rem;
-        }
-
-        .logo-section {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .logo-section h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            color: white;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .tabs-container {
-            display: flex;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-        }
-
-        .tab-btn {
-            padding: 0.65rem 1.2rem;
-            border: 2px solid transparent;
-            border-radius: 50px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
-        }
-
-        .tab-btn.active {
-            background: white;
-            color: #FF6B35;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .tab-btn:hover {
-            background: rgba(255, 255, 255, 0.25);
-        }
-
-        main {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem 1rem;
-            animation: slideInUp 0.6s ease-out;
-        }
-
-        .tab-content { display: none; animation: fadeIn 0.5s ease-out; }
-        .tab-content.active { display: block; }
-
-        .filter-box {
-            background: white;
-            padding: 2rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-            margin-bottom: 3rem;
-            border: 1px solid #f0f0f0;
-        }
-
-        .filter-box h3 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: #333;
-        }
-
-        .filter-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-        }
-
-        .filter-box input,
-        .filter-box select {
-            padding: 0.75rem 1rem;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            font-family: inherit;
-            transition: all 0.3s ease;
-            background: #f8f9fa;
-        }
-
-        .filter-box input:focus,
-        .filter-box select:focus {
-            outline: none;
-            border-color: #FF6B35;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
-        }
-
-        .search-btn {
-            padding: 0.75rem 1.5rem;
-            background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
-            font-size: 0.9rem;
-        }
-
-        .search-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
-        }
-
-        .search-btn:active {
-            transform: translateY(0);
-        }
-
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1.5rem;
-            animation: fadeIn 0.6s ease-out;
-        }
-
-        .card {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-            transition: all 0.3s ease;
-            border: 1px solid #f0f0f0;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
-        }
-
-        .card-image {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
-            position: relative;
-        }
-
-        .card-body {
-            padding: 1.2rem;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .card-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 0.5rem;
-            line-height: 1.3;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .card-description {
-            font-size: 0.85rem;
-            color: #666;
-            margin-bottom: 0.8rem;
-            line-height: 1.4;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .card-price {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #FF6B35;
-            margin: 0.8rem 0;
-        }
-
-        .card-meta {
-            display: flex;
-            gap: 0.8rem;
-            flex-wrap: wrap;
-            margin-bottom: 1rem;
-            font-size: 0.8rem;
-            color: #666;
-        }
-
-        .meta-item {
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
-
-        .card-button {
-            padding: 0.7rem;
-            background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 3px 10px rgba(255, 107, 53, 0.2);
-            font-size: 0.9rem;
-            margin-top: auto;
-        }
-
-        .card-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 0.35rem 0.7rem;
-            border-radius: 50px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            position: absolute;
-            top: 0.8rem;
-            right: 0.8rem;
-            z-index: 10;
-        }
-
-        .status-open {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-closed {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            padding: 1rem;
-            overflow-y: auto;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 20px;
-            padding: 2rem;
-            max-width: 700px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            animation: slideInUp 0.3s ease;
-            position: relative;
-        }
-
-        .close-btn {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: #f0f0f0;
-            border: none;
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1.3rem;
-            color: #333;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .close-btn:hover {
-            background: #FF6B35;
-            color: white;
-        }
-
-        .section-title {
-            text-align: center;
-            margin-bottom: 2.5rem;
-        }
-
-        .section-title h2 {
-            font-size: 2rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 0.5rem;
-        }
-
-        .section-title p {
-            font-size: 1rem;
-            color: #666;
-        }
-
-        .loading {
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-
-        .no-results {
-            text-align: center;
-            padding: 3rem 1rem;
-            color: #999;
-            font-size: 1rem;
-        }
-
-        .hero-section {
-            position: relative;
-            height: 300px;
-            border-radius: 20px;
-            overflow: hidden;
-            margin-bottom: 2.5rem;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-        }
-
-        .hero-overlay {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255, 107, 53, 0.7) 0%, rgba(247, 147, 30, 0.7) 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            text-align: center;
-            z-index: 2;
-        }
-
-        .hero-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .hero-subtitle {
-            font-size: 1rem;
-            opacity: 0.9;
-            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        .alert {
-            padding: 1rem;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-            animation: slideInUp 0.3s ease;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .alert-info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 0.4rem 0.8rem;
-            background: #f0f0f0;
-            border-radius: 50px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: #FF6B35;
-            position: absolute;
-            top: 0.8rem;
-            right: 0.8rem;
-            z-index: 5;
-        }
-
-        .spin {
-            animation: spin 1s linear infinite;
-        }
-
-        .thumbnail-container {
-            display: flex;
-            gap: 0.4rem;
-            overflow-x: auto;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.5rem;
-            scroll-behavior: smooth;
-        }
-
-        .thumbnail {
-            width: 70px;
-            height: 50px;
-            object-fit: cover;
-            border-radius: 6px;
-            cursor: pointer;
-            opacity: 0.6;
-            border: none;
-            transition: all 0.3s ease;
-            flex-shrink: 0;
-        }
-
-        .thumbnail.active {
-            opacity: 1;
-            border: 2px solid #FF6B35;
-            box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
-        }
-
-        .thumbnail:hover {
-            opacity: 0.8;
-        }
-
-        footer {
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            color: #bbb;
-            padding: 2rem 1rem;
-            text-align: center;
-            border-top: 1px solid rgba(255, 107, 53, 0.2);
-            margin-top: 3rem;
-        }
-
-        footer p {
-            margin: 0.5rem 0;
-        }
-
-        @media (max-width: 768px) {
-            .header-content { padding: 1rem; }
-            .logo-section h1 { font-size: 1.5rem; }
-            .tabs-container { gap: 0.5rem; }
-            .tab-btn { padding: 0.5rem 0.8rem; font-size: 0.8rem; }
-            main { padding: 1rem 0.5rem; }
-            .filter-box { padding: 1.2rem; }
-            .filter-grid { grid-template-columns: 1fr; }
-            .cards-grid { grid-template-columns: 1fr; gap: 1rem; }
-            .section-title h2 { font-size: 1.5rem; }
-            .modal-content { padding: 1.2rem; }
-            .hero-section { height: 200px; }
-            .hero-title { font-size: 1.3rem; }
-            .hero-subtitle { font-size: 0.85rem; }
-        }
-
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #f0f0f0;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #FF6B35;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #F7931E;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FixHome | บริการช่างครบวงจร</title>
+
+<style>
+
+*{box-sizing:border-box}
+
+body{
+font-family: "Segoe UI", Tahoma, sans-serif;
+margin:0;
+background:#f4f6fb;
+color:#333
+}
+
+header{
+background:linear-gradient(135deg,#0066cc,#0047a3);
+color:#fff;
+padding:16px 40px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+position:sticky;
+top:0;
+z-index:1000
+}
+
+header h1{
+margin:0;
+font-size:22px;
+letter-spacing:.5px
+}
+
+nav a{
+color:#fff;
+margin-left:22px;
+text-decoration:none;
+font-weight:600;
+transition:.2s
+}
+
+nav a:hover{
+opacity:.8
+}
+
+.hero{
+background:url('https://images.unsplash.com/photo-1581578731548-c64695cc6952') center/cover;
+height:420px;
+display:flex;
+align-items:center;
+justify-content:center;
+text-align:center;
+color:white;
+position:relative
+}
+
+.hero::after{
+content:"";
+position:absolute;
+left:0;
+right:0;
+top:0;
+bottom:0;
+background:rgba(0,0,0,0.45)
+}
+
+.hero div{
+position:relative;
+z-index:2
+}
+
+.hero h2{
+font-size:42px;
+margin-bottom:20px
+}
+
+button{
+background:#ff9800;
+border:none;
+padding:13px 26px;
+border-radius:8px;
+color:white;
+font-size:16px;
+font-weight:600;
+cursor:pointer;
+transition:.25s
+}
+
+button:hover{
+transform:translateY(-2px);
+box-shadow:0 8px 18px rgba(0,0,0,.2)
+}
+
+.services{
+padding:70px 30px;
+max-width:1200px;
+margin:auto;
+text-align:center
+}
+
+.services h2{
+font-size:32px;
+margin-bottom:10px
+}
+
+.service-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+gap:25px;
+margin-top:40px
+}
+
+.card{
+background:white;
+padding:18px;
+border-radius:14px;
+box-shadow:0 8px 22px rgba(0,0,0,0.08);
+transition:.25s;
+cursor:pointer
+}
+
+.card:hover{
+transform:translateY(-6px);
+box-shadow:0 14px 30px rgba(0,0,0,0.15)
+}
+
+.card img{
+width:100%;
+height:150px;
+object-fit:cover;
+border-radius:10px;
+margin-bottom:10px
+}
+
+.card h3{
+margin:10px 0 6px 0;
+font-size:20px
+}
+
+.card p{
+font-size:14px;
+color:#666
+}
+
+.features{
+background:linear-gradient(135deg,#0066cc,#0047a3);
+color:white;
+padding:60px 30px;
+text-align:center
+}
+
+.features h2{
+font-size:30px
+}
+
+.feature-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:30px;
+margin-top:35px;
+max-width:1000px;
+margin-left:auto;
+margin-right:auto
+}
+
+.feature-grid div{
+background:rgba(255,255,255,0.08);
+padding:25px;
+border-radius:12px
+}
+
+footer{
+background:#1f1f1f;
+color:#aaa;
+text-align:center;
+padding:22px;
+margin-top:50px
+}
+
+@media (max-width:700px){
+
+.hero h2{
+font-size:30px
+}
+
+nav{
+display:none
+}
+
+}
+
+</style>
 </head>
+
 <body>
 
-    <!-- HEADER -->
-    <header>
-        <div class="header-content">
-            <div class="logo-section">
-                <i class="fas fa-building" style="font-size: 2rem; color: white;"></i>
-                <h1>BuildMart Hub</h1>
-            </div>
-            <div class="tabs-container">
-                <button onclick="switchTab('materials')" class="tab-btn active" data-tab="materials">
-                    <i class="fas fa-store"></i> วัสดุก่อสร้าง
-                </button>
-                <button onclick="switchTab('property')" class="tab-btn" data-tab="property">
-                    <i class="fas fa-home"></i> อสังหาริมทรัพย์
-                </button>
-                <button onclick="switchTab('repair')" class="tab-btn" data-tab="repair">
-                    <i class="fas fa-wrench"></i> บริการช่าง
-                </button>
-                <button onclick="switchTab('houses')" class="tab-btn" data-tab="houses">
-                    <i class="fas fa-blueprint"></i> แบบบ้าน
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <main>
-
-        <!-- TAB 1: MATERIALS -->
-        <div id="materials-tab" class="tab-content active">
-            <div class="section-title">
-                <h2><i class="fas fa-store"></i> ร้านวัสดุแนะนำใกล้คุณ</h2>
-                <p>ค้นหาร้านวัสดุก่อสร้างที่ดีที่สุดในพื้นที่ของคุณ</p>
-            </div>
-
-            <div class="filter-box">
-                <h3><i class="fas fa-search"></i> ค้นหาร้านวัสดุ</h3>
-                <div class="filter-grid">
-                    <input id="searchInput" type="text" placeholder="ค้นหาชื่อร้าน..." />
-                    <input id="subdistrictInput" type="text" placeholder="ตำบล" />
-                    <input id="districtInput" type="text" placeholder="อำเภอ" />
-                    <input id="provinceInput" type="text" placeholder="จังหวัด" />
-                    <button onclick="searchShops()" class="search-btn">
-                        <i class="fas fa-search"></i> ค้นหา
-                    </button>
-                </div>
-            </div>
-
-            <div id="shopContainer" class="cards-grid"></div>
-        </div>
-
-        <!-- TAB 2: PROPERTY -->
-        <div id="property-tab" class="tab-content">
-            <div class="hero-section" style="background-image: url('https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=1600'); background-size: cover; background-position: center;">
-                <div class="hero-overlay">
-                    <h2 class="hero-title">ค้นหาอสังหาริมทรัพย์ของคุณ</h2>
-                    <p class="hero-subtitle">ซื้อ • ขาย • เช่า บ้าน คอนโด ที่ดิน</p>
-                </div>
-            </div>
-
-            <div class="filter-box">
-                <h3><i class="fas fa-filter"></i> ตัวกรองการค้นหา</h3>
-                <div class="filter-grid">
-                    <select id="filterStatus">
-                        <option value="">ทั้งหมด (ซื้อ/เช่า)</option>
-                        <option value="ขาย">ขาย</option>
-                        <option value="เช่า">เช่า</option>
-                    </select>
-                    <select id="filterType">
-                        <option value="">ทุกประเภท</option>
-                        <option value="   ้าน">บ้าน</option>
-                        <option value="คอนโด">คอนโด</option>
-                        <option value="ที่ดิน">ที่ดิน</option>
-                    </select>
-                    <input type="number" id="minPrice" placeholder="ราคาต่ำสุด" min="0" />
-                    <input type="number" id="maxPrice" placeholder="ราคาสูงสุด" min="0" />
-                    <input type="text" id="filterProvince" placeholder="จังหวัด" />
-                    <input type="text" id="filterDistrict" placeholder="อำเภอ" />
-                    <input type="text" id="filterSubdistrict" placeholder="ตำบล" />
-                    <button onclick="applyFilter()" class="search-btn">
-                        <i class="fas fa-search"></i> ค้นหา
-                    </button>
-                </div>
-            </div>
-
-            <div id="property-list" class="cards-grid"></div>
-        </div>
-
-        <!-- TAB 3: REPAIR -->
-        <div id="repair-tab" class="tab-content">
-            <div class="section-title">
-                <h2><i class="fas fa-wrench"></i> บริการแจ้งซ่อมด่วน</h2>
-                <p>ติดต่อช่างมืออาชีพสำหรับงานซ่อมแซมทั้งหมด</p>
-            </div>
-
-            <div class="filter-box">
-                <h3><i class="fas fa-filter"></i> กรองตามหมวดหมู่</h3>
-                <select id="categoryFilter" style="width: 100%;">
-                    <option value="all">ทั้งหมด</option>
-                    <option value="ไฟฟ้า">⚡ ไฟฟ้า</option>
-                    <option value="ประปา">💧 ประปา</option>
-                    <option value="แอร์">❄️ แอร์</option>
-                </select>
-            </div>
-
-            <div id="technicianList" class="cards-grid"></div>
-        </div>
-
-        <!-- TAB 4: HOUSE DESIGNS -->
-        <div id="houses-tab" class="tab-content">
-            <div class="section-title">
-                <h2><i class="fas fa-blueprint"></i> แบบบ้านพร้อมราคา</h2>
-                <p>เลือกแบบบ้านที่เหมาะสมกับงบประมาณและที่ดินของคุณ</p>
-            </div>
-
-            <div class="filter-box">
-                <h3><i class="fas fa-sliders-h"></i> ค้นหาแบบบ้าน</h3>
-                <div class="filter-grid">
-                    <div>
-                        <label style="display: block; margin-bottom: 0.4rem; font-weight: 600; color: #333; font-size: 0.9rem;">ขนาดที่ดิน (เมตร)</label>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <input type="number" id="landWidth" placeholder="กว้าง" min="0" style="flex: 1;" />
-                            <input type="number" id="landLength" placeholder="ยาว" min="0" style="flex: 1;" />
-                        </div>
-                    </div>
-                    <div>
-                        <label style="display: block; margin-bottom: 0.4rem; font-weight: 600; color: #333; font-size: 0.9rem;">งบประมาณ (บาท)</label>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <input type="number" id="minPrice2" placeholder="ต่ำสุด" min="0" style="flex: 1;" />
-                            <input type="number" id="maxPrice2" placeholder="สูงสุด" min="0" style="flex: 1;" />
-                        </div>
-                    </div>
-                    <select id="bedrooms">
-                        <option value="0">ห้องนอน (ไม่ระบุ)</option>
-                        <option value="2">2 ห้อง</option>
-                        <option value="3">3 ห้อง</option>
-                        <option value="4">4 ห้อง</option>
-                        <option value="5">5 ห้องขึ้นไป</option>
-                    </select>
-                    <select id="bathrooms">
-                        <option value="0">ห้องน้ำ (ไม่ระบุ)</option>
-                        <option value="1">1 ห้อง</option>
-                        <option value="2">2 ห้อง</option>
-                        <option value="3">3 ห้อง</option>
-                        <option value="4">4 ห้องขึ้นไป</option>
-                    </select>
-                    <select id="parking">
-                        <option value="0">ที่จอดรถ (ไม่ระบุ)</option>
-                        <option value="1">1 คัน</option>
-                        <option value="2">2 คัน</option>
-                        <option value="3">3 คันขึ้นไป</option>
-                    </select>
-                    <button onclick="filterHouses()" class="search-btn">
-                        <i class="fas fa-search"></i> ค้นหา
-                    </button>
-                </div>
-            </div>
-
-            <div id="houseContainer" class="cards-grid"></div>
-            <div id="noResult" class="no-results" style="display:none;">
-                <i class="fas fa-search" style="font-size: 2.5rem; margin-bottom: 1rem; display: block;"></i>
-                ไม่พบแบบบ้านที่ตรงตามเงื่อนไขค้นหา
-            </div>
-        </div>
-
-    </main>
-
-    <!-- MODALS -->
-    <div id="detailModal" class="modal">
-        <div class="modal-content">
-            <button class="close-btn" onclick="closeModal()"><i class="fas fa-times"></i></button>
-            <div id="modalContent"></div>
-        </div>
-    </div>
-
-    <div id="actionModal" class="modal">
-        <div class="modal-content" style="max-width: 500px;">
-            <button class="close-btn" onclick="closeActionModal()"><i class="fas fa-times"></i></button>
-            <h3 id="actionTitle" style="font-size: 1.3rem; font-weight: 700; margin-bottom: 1.2rem; color: #FF6B35;"></h3>
-            <div id="actionAlerts"></div>
-            <input id="fullname" type="text" placeholder="ชื่อ-สกุล" maxlength="100" style="width: 100%; padding: 0.75rem; margin-bottom: 0.8rem; border: 2px solid #e0e0e0; border-radius: 10px;" required />
-            <input id="phone" type="tel" placeholder="เบอร์โทร" maxlength="10" style="width: 100%; padding: 0.75rem; margin-bottom: 0.8rem; border: 2px solid #e0e0e0; border-radius: 10px;" required />
-            <input id="readyDate" type="date" style="width: 100%; padding: 0.75rem; margin-bottom: 1.2rem; border: 2px solid #e0e0e0; border-radius: 10px;" required />
-            <button onclick="submitAction()" class="search-btn" style="width: 100%; padding: 0.8rem;">
-                <i class="fas fa-check"></i> ยืนยัน
-            </button>
-        </div>
-    </div>
-
-    <div id="bookingModal" class="modal">
-        <div class="modal-content" style="max-width: 500px;">
-            <button class="close-btn" onclick="closeBooking()"><i class="fas fa-times"></i></button>
-            <h2 class="section-title" id="selectedTech" style="text-align: left; margin-bottom: 1.2rem;"></h2>
-            <div id="bookingAlerts"></div>
-            <input id="customerName" type="text" placeholder="ชื่อ-สกุล" maxlength="100" style="width: 100%; padding: 0.75rem; margin-bottom: 0.8rem; border: 2px solid #e0e0e0; border-radius: 10px;" required />
-            <input id="customerPhone" type="tel" placeholder="เบอร์โทร" maxlength="10" style="width: 100%; padding: 0.75rem; margin-bottom: 0.8rem; border: 2px solid #e0e0e0; border-radius: 10px;" required />
-            <textarea id="problemDetail" placeholder="รายละเอียดปัญหา" rows="3" maxlength="500" style="width: 100%; padding: 0.75rem; margin-bottom: 0.8rem; border: 2px solid #e0e0e0; border-radius: 10px;"></textarea>
-            <select id="province" style="width: 100%; padding: 0.75rem; margin-bottom: 0.8rem; border: 2px solid #e0e0e0; border-radius: 10px;">
-                <option value="">เลือกจังหวัด</option>
-                <option value="นครพนม">นครพนม</option>
-                <option value="มุกดาหาร">มุกดาหาร</option>
-                <option value="กาฬสินธุ์">กาฬสินธุ์</option>
-                <option value="อุดรธานี">อุดรธานี</option>
-            </select>
-            <select id="district" style="width: 100%; padding: 0.75rem; margin-bottom: 0.8rem; border: 2px solid #e0e0e0; border-radius: 10px;">
-                <option value="">เลือกอำเภอ</option>
-            </select>
-            <select id="subdistrict" style="width: 100%; padding: 0.75rem; margin-bottom: 0.8rem; border: 2px solid #e0e0e0; border-radius: 10px;">
-                <option value="">เลือกตำบล</option>
-            </select>
-            <input id="serviceDate" type="date" style="width: 100%; padding: 0.75rem; margin-bottom: 0.8rem; border: 2px solid #e0e0e0; border-radius: 10px;" required />
-            <select id="serviceTime" style="width: 100%; padding: 0.75rem; margin-bottom: 1.2rem; border: 2px solid #e0e0e0; border-radius: 10px;" required>
-                <option value="">เลือกช่วงเวลา</option>
-                <option value="08:00-10:00">08:00 - 10:00</option>
-                <option value="10:00-12:00">10:00 - 12:00</option>
-                <option value="13:00-15:00">13:00 - 15:00</option>
-                <option value="15:00-17:00">15:00 - 17:00</option>
-                <option value="17:00-19:00">17:00 - 19:00</option>
-            </select>
-            <div style="display: flex; gap: 0.8rem;">
-                <button id="confirmBtn" class="search-btn" style="flex: 1;" onclick="confirmBooking()">
-                    <i class="fas fa-check"></i> ยืนยัน
-                </button>
-                <button style="flex: 1; padding: 0.75rem; background: #e0e0e0; color: #333; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;" onclick="closeBooking()">
-                    <i class="fas fa-times"></i> ยกเลิก
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="houseModal" class="modal">
-        <div class="modal-content">
-            <button class="close-btn" onclick="closeHouseModal()"><i class="fas fa-times"></i></button>
-            <div id="modalBody"></div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer>
-        <p style="font-weight: 600; color: white;">
-            <i class="fas fa-copyright"></i> 2026 BuildMart Hub. All rights reserved.
-        </p>
-        <p style="font-size: 0.9rem;">
-            แพลตฟอร์มรวมบริการด้านก่อสร้างที่ครบค  ัน
-        </p>
-    </footer>
-
-    <script>
-        const supabaseUrl = "https://uqcjajmqtlchftpqwsrp.supabase.co";
-        const supabaseKey = "sb_publishable_yWZiH8l1idY0QWGuj6p9sg_GqXPONGX";
-        const { createClient } = supabase;
-        const db = createClient(supabaseUrl, supabaseKey);
-
-        // ==================== UTILITIES ====================
-        function showAlert(containerId, message, type = 'info') {
-            const container = document.getElementById(containerId);
-            if (!container) return;
-            
-            const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-error' : 'alert-info';
-            const icon = type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle';
-            
-            container.innerHTML = `<div class="alert ${alertClass}"><i class="fas fa-${icon}"></i> ${message}</div>`;
-            
-            setTimeout(() => {
-                container.innerHTML = '';
-            }, 5000);
-        }
-
-        function validatePhone(phone) {
-            const cleanPhone = phone.replace(/[^0-9]/g, '');
-            return /^0[0-9]{8,9}$/.test(cleanPhone);
-        }
-
-        function validateName(name) {
-            return name.trim().split(' ').length >= 2;
-        }
-
-        // ==================== TAB MANAGEMENT ====================
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            
-            document.getElementById(tabName + '-tab').classList.add('active');
-            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-            
-            if(tabName === 'property') applyFilter();
-            if(tabName === 'repair') loadTechnicians();
-            if(tabName === 'houses') loadHouses();
-        }
-
-        // ==================== MODALS ====================
-        function closeModal() {
-            document.getElementById('detailModal').classList.remove('active');
-            document.getElementById("modalContent").innerHTML = '';
-        }
-
-        function closeActionModal() {
-            document.getElementById('actionModal').classList.remove('active');
-            document.getElementById('actionAlerts').innerHTML = '';
-        }
-
-        function closeBooking() {
-            document.getElementById('bookingModal').classList.remove('active');
-            document.getElementById('bookingAlerts').innerHTML = '';
-        }
-
-        function closeHouseModal() {
-            document.getElementById('houseModal').classList.remove('active');
-            document.getElementById("modalBody").innerHTML = '';
-        }
-
-        // ==================== TAB 1: MATERIALS ====================
-        async function loadShops(filters = {}) {
-            let query = db.from("shops").select("*");
-            if (filters.name) query = query.ilike("name", `%${filters.name}%`);
-            if (filters.subdistrict) query = query.ilike("subdistrict", `%${filters.subdistrict}%`);
-            if (filters.district) query = query.ilike("district", `%${filters.district}%`);
-            if (filters.province) query = query.ilike("province", `%${filters.province}%`);
-
-            const { data, error } = await query;
-            if (error) {
-                console.error(error);
-                document.getElementById("shopContainer").innerHTML = '<div class="no-results"><i class="fas fa-exclamation-triangle"></i> เกิดข้อผิดพลาด</div>';
-                return;
-            }
-
-            const container = document.getElementById("shopContainer");
-            container.innerHTML = "";
-            
-            if (!data || data.length === 0) {
-                container.innerHTML = '<div class="no-results"><i class="fas fa-search"></i><br>ไม่พบร้านค้า</div>';
-                return;
-            }
-
-            data.forEach(shop => {
-                const statusClass = shop.is_open ? 'status-open' : 'status-closed';
-                const statusText = shop.is_open ? '✓ เปิดอยู่' : '✕ ปิดแล้ว';
-                const websiteBtn = shop.website_url 
-                    ? `<a href="${shop.website_url}" target="_blank" rel="noopener noreferrer" class="card-button"><i class="fas fa-globe"></i> เว็บไซต์</a>`
-                    : `<button class="card-button" style="opacity: 0.5; cursor: not-allowed;"><i class="fas fa-ban"></i> ไม่มีเว็บไซต์</button>`;
-
-                container.innerHTML += `
-                    <div class="card">
-                        <span class="status-badge ${statusClass}">${statusText}</span>
-                        <img src="${shop.image_url || 'https://via.placeholder.com/300x200?text=No+Image'}" alt="${shop.name}" class="card-image" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
-                        <div class="card-body">
-                            <h3 class="card-title">${shop.name}</h3>
-                            <p class="card-description">${shop.description || '-'}</p>
-                            <div class="card-meta">
-                                <div class="meta-item"><span>📍</span> ${shop.subdistrict || ''} ${shop.district || ''}</div>
-                                <div class="meta-item"><span>🚚</span> ${shop.service_area || 'ไม่ระบุ'}</div>
-                                <div class="meta-item"><span>📞</span> ${shop.phone || '-'}</div>
-                            </div>
-                            ${websiteBtn}
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function searchShops() {
-            const filters = {
-                name: document.getElementById("searchInput").value,
-                subdistrict: document.getElementById("subdistrictInput").value,
-                district: document.getElementById("districtInput").value,
-                province: document.getElementById("provinceInput").value
-            };
-            loadShops(filters);
-        }
-
-        // ==================== TAB 2: PROPERTY ====================
-        let propertyData = [];
-        let currentSlide = 0;
-
-        function safe(value) {
-            if (value === null || value === undefined || value === '' || value === 0) {
-                return '-';
-            }
-            return String(value).trim() === '' ? '-' : value;
-        }
-
-        function formatNumber(num) {
-            return num ? Number(num).toLocaleString() : '-';
-        }
-
-        window.openModalById = async function(id) {
-            currentSlide = 0;
-            const property = propertyData.find(p => p.id === id);
-            if (!property) return;
-
-            const { data: images } = await db.from('property_images').select('image_url').eq('property_id', id);
-
-            let imageArray = [];
-            if (images && images.length > 0) {
-                imageArray = images.map(img => img.image_url);
-            } else if (property.image_url) {
-                imageArray = [property.image_url];
-            }
-
-            const imageSlides = imageArray.map((url, index) => `
-                <img src="${url}" class="slide-image" alt="รูปที่ ${index + 1}" style="width: 100%; height: 300px; object-fit: cover; border-radius: 12px; margin-bottom: 1rem; ${index === 0 ? '' : 'display: none;'}" onerror="this.src='https://via.placeholder.com/800x500?text=Image+Error'">
-            `).join('');
-
-            document.getElementById("modalContent").innerHTML = `
-                <div style="position: relative; margin-bottom: 1rem;">
-                    ${imageSlides}
-                    ${imageArray.length > 1 ? `
-                        <button onclick="prevImage()" style="position: absolute; left: 10px; top: 140px; background: rgba(0,0,0,0.6); color: white; padding: 0.5rem 0.8rem; border: none; border-radius: 50%; cursor: pointer; font-size: 1rem;">‹</button>
-                        <button onclick="nextImage()" style="position: absolute; right: 10px; top: 140px; background: rgba(0,0,0,0.6); color: white; padding: 0.5rem 0.8rem; border: none; border-radius: 50%; cursor: pointer; font-size: 1rem;">›</button>
-                    ` : ''}
-                </div>
-                <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; color: #333;">${safe(property.title)}</h2>
-                <p style="color: #666; margin-bottom: 1.2rem; font-size: 0.95rem;">📍 ${safe(property.subdistrict)} ${safe(property.district)} ${safe(property.province)}</p>
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.8rem; margin-bottom: 1.5rem;">
-                    <div style="padding: 0.8rem; background: #f0f0f0; border-radius: 8px; text-align: center;">
-                        <div style="color: #666; font-size: 0.8rem; margin-bottom: 0.3rem;">สถานะ</div>
-                        <div style="font-size: 1rem; font-weight: 700; color: #FF6B35;">${safe(property.status)}</div>
-                    </div>
-                    <div style="padding: 0.8rem; background: #f0f0f0; border-radius: 8px; text-align: center;">
-                        <div style="color: #666; font-size: 0.8rem; margin-bottom: 0.3rem;">ราคา</div>
-                        <div style="font-size: 1rem; font-weight: 700; color: #FF6B35;">฿${formatNumber(property.price)}</div>
-                    </div>
-                    <div style="padding: 0.8rem; background: #f0f0f0; border-radius: 8px; text-align: center;">
-                        <div style="color: #666; font-size: 0.8rem; margin-bottom: 0.3rem;">ห้องนอน</div>
-                        <div style="font-size: 1rem; font-weight: 700; color: #FF6B35;">${safe(property.bedrooms)}</div>
-                    </div>
-                    <div style="padding: 0.8rem; background: #f0f0f0; border-radius: 8px; text-align: center;">
-                        <div style="color: #666; font-size: 0.8rem; margin-bottom: 0.3rem;">ห้องน้ำ</div>
-                        <div style="font-size: 1rem; font-weight: 700; color: #FF6B35;">${safe(property.bathrooms)}</div>
-                    </div>
-                </div>
-
-                <div style="padding: 1rem; background: #f8f9fa; border-radius: 10px; border-left: 4px solid #FF6B35; margin-bottom: 1.5rem;">
-                    <h3 style="font-weight: 700; margin-bottom: 0.8rem; color: #333; font-size: 1rem;">รายละเอียด</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.8rem; font-size: 0.9rem; color: #666;">
-                        <div><strong>พื้นที่ใช้สอย:</strong> ${safe(property.usable_area)} ตร.ม.</div>
-                        <div><strong>ที่จอดรถ:</strong> ${safe(property.parking)}</div>
-                        <div><strong>อายุทรัพย์:</strong> ${safe(property.property_age)} ปี</div>
-                        <div><strong>ประเภทโฉนด:</strong> ${safe(property.deed_type)}</div>
-                    </div>
-                </div>
-
-                ${(() => {
-                    let buttons = [];
-                    const status = property.status || '';
-                    if (status.includes('ขาย')) {
-                        buttons.push(`<button onclick="handleAction('ซื้อ', ${property.id})" style="background: linear-gradient(135deg, #27ae60 0%, #229954 100%); color: white; padding: 0.8rem 1.2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; flex: 1; margin-right: 0.5rem; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"><i class="fas fa-check"></i> ซื้อ</button>`);
-                    }
-                    if (status.includes('เช่า')) {
-                        buttons.push(`<button onclick="handleAction('เช่า', ${property.id})" style="background: linear-gradient(135deg, #e67e22 0%, #d35400 100%); color: white; padding: 0.8rem 1.2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; flex: 1; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"><i class="fas fa-key"></i> เช่า</button>`);
-                    }
-                    return buttons.length ? `<div style="display: flex; gap: 0.5rem; margin-top: 1.5rem;">${buttons.join('')}</div>` : '';
-                })()}
-            `;
-
-            document.getElementById('detailModal').classList.add('active');
-        }
-
-        window.nextImage = function() {
-            const slides = document.querySelectorAll('.slide-image');
-            if (!slides || slides.length === 0) return;
-            slides[currentSlide].style.display = 'none';
-            currentSlide = (currentSlide + 1) % slides.length;
-            slides[currentSlide].style.display = 'block';
-        }
-
-        window.prevImage = function() {
-            const slides = document.querySelectorAll('.slide-image');
-            if (!slides || slides.length === 0) return;
-            slides[currentSlide].style.display = 'none';
-            currentSlide = (currentSlide - 1 + slides.length) % slides.length;
-            slides[currentSlide].style.display = 'block';
-        }
-
-        let currentActionType = null;
-        let currentPropertyId = null;
-
-        window.handleAction = function(type, id) {
-            currentActionType = type;
-            currentPropertyId = id;
-            document.getElementById('actionTitle').innerText = 
-                type === 'ซื้อ' ? '📋 กรอกข้อมูลเพื่อทำสัญญาซื้อ' : '📋 กรอกข้อมูลเพื่อเช่า';
-            document.getElementById('actionAlerts').innerHTML = '';
-            document.getElementById('fullname').value = '';
-            document.getElementById('phone').value = '';
-            document.getElementById('readyDate').value = '';
-            document.getElementById('actionModal').classList.add('active');
-        }
-
-        window.submitAction = async function() {
-            const fullname = document.getElementById('fullname').value.trim();
-            const phone = document.getElementById('phone').value.trim();
-            const readyDate = document.getElementById('readyDate').value;
-
-            if (!validateName(fullname)) {
-                showAlert('actionAlerts', 'กรุณากรอกชื่อ-สกุลให้ครบถ้วน', 'error');
-                return;
-            }
-            if (!validatePhone(phone)) {
-                showAlert('actionAlerts', 'เบอร์โทรต้องเป็นหมายเลข 10 หลักเริ่มต้นด้วย 0', 'error');
-                return;
-            }
-            if (!readyDate) {
-                showAlert('actionAlerts', 'กรุณาเลือกวันที่', 'error');
-                return;
-            }
-
-            const { error } = await db.from('interests').insert([{
-                property_id: currentPropertyId,
-                name: fullname,
-                phone: phone,
-                type: currentActionType,
-                ready_date: readyDate,
-                created_at: new Date().toISOString()
-            }]);
-
-            if (error) {
-                console.error(error);
-                showAlert('actionAlerts', 'เกิดข้อผิดพลาด: ' + error.message, 'error');
-            } else {
-                showAlert('actionAlerts', 'ขอบคุณ! ทีมงานจะติดต่อกลับในเร็วๆ นี้', 'success');
-                setTimeout(() => {
-                    closeActionModal();
-                    closeModal();
-                }, 2000);
-            }
-        }
-
-        async function applyFilter() {
-            const container = document.getElementById('property-list');
-            container.innerHTML = '<div class="no-results loading"><i class="fas fa-spinner spin"></i><br>กำลังค้นหา...</div>';
-
-            const status = document.getElementById('filterStatus').value;
-            const type = document.getElementById('filterType').value;
-            const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
-            const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
-            const province = document.getElementById('filterProvince').value;
-            const district = document.getElementById('filterDistrict').value;
-            const subdistrict = document.getElementById('filterSubdistrict').value;
-
-            let query = db.from('properties').select('*').order('created_at', { ascending: false });
-
-            if (status) query = query.ilike('status', `%${status}%`);
-            if (type) query = query.ilike('title', `%${type}%`);
-            if (minPrice > 0) query = query.gte('price', minPrice);
-            if (maxPrice !== Infinity) query = query.lte('price', maxPrice);
-            if (province) query = query.ilike('province', `%${province}%`);
-            if (district) query = query.ilike('district', `%${district}%`);
-            if (subdistrict) query = query.ilike('subdistrict', `%${subdistrict}%`);
-
-            const { data, error } = await query;
-
-            if (error) {
-                console.error(error);
-                container.innerHTML = `<div class="no-results"><i class="fas fa-exclamation-triangle"></i> เกิดข้อผิดพลาด</div>`;
-                return;
-            }
-
-            if (!data || data.length === 0) {
-                container.innerHTML = '<div class="no-results"><i class="fas fa-search"></i><br>ไม่พบข้อมูลตามเงื่อนไขค้นหา</div>';
-                return;
-            }
-
-            propertyData = data;
-            container.innerHTML = '';
-
-            for (const p of propertyData) {
-                const { data: images } = await db.from('property_images').select('image_url').eq('property_id', p.id).limit(1);
-
-                let imageUrl = 'https://via.placeholder.com/600x400?text=No+Image';
-                let imageCount = 0;
-
-                if (images && images.length > 0) {
-                    imageUrl = images[0].image_url;
-                    const { count } = await db.from('property_images').select('*', { count: 'exact', head: true }).eq('property_id', p.id);
-                    imageCount = count || 1;
-                } else if (p.image_url) {
-                    imageUrl = p.image_url;
-                    imageCount = 1;
-                }
-
-                container.innerHTML += `
-                    <div class="card">
-                        ${imageCount > 1 ? `<span class="badge"><i class="fas fa-images"></i> ${imageCount}</span>` : ''}
-                        <img src="${imageUrl}" alt="${p.title}" class="card-image" onerror="this.src='https://via.placeholder.com/600x400?text=Error'">
-                        <div class="card-body">
-                            <h3 class="card-title">${safe(p.title)}</h3>
-                            <p class="card-meta"><span>📍</span> ${safe(p.subdistrict)} ${safe(p.district)}</p>
-                            <div class="card-price">฿${formatNumber(p.price)}</div>
-                            <button class="card-button" onclick="openModalById(${p.id})">
-                                <i class="fas fa-info-circle"></i> ดูรายละเอียด
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }
-        }
-
-        // ==================== TAB 3: REPAIR ====================
-        let technicians = [];
-        let isSubmitting = false;
-        let currentTech = null;
-
-        async function loadTechnicians() {
-            const container = document.getElementById("technicianList");
-            container.innerHTML = "<div class='no-results loading'><i class='fas fa-spinner spin'></i><br>กำลังโหลด...</div>";
-
-            const { data, error } = await db.from("technicians").select(`*,technician_images (image_url)`).order("created_at", { ascending: false });
-
-            if (error) {
-                console.error(error);
-                container.innerHTML = "<div class='no-results'><i class='fas fa-exclamation-triangle'></i> เกิดข้อผิดพลาด</div>";
-                return;
-            }
-
-            technicians = data || [];
-            if (technicians.length === 0) {
-                container.innerHTML = "<div class='no-results'><i class='fas fa-tools'></i><br>ยังไม่มีช่างในระบบ</div>";
-                return;
-            }
-
-            renderTechnicians(technicians);
-        }
-
-        function renderTechnicians(list) {
-            const container = document.getElementById("technicianList");
-            container.innerHTML = "";
-
-            list.forEach(function(tech) {
-                const firstImage = (tech.technician_images && tech.technician_images.length > 0 && tech.technician_images[0].image_url)
-                    ? tech.technician_images[0].image_url
-                    : "https://via.placeholder.com/400x300?text=No+Image";
-
-                const card = document.createElement("div");
-                card.className = "card";
-                card.innerHTML = `
-                    <img src="${firstImage}" alt="${tech.name}" class="card-image" onerror="this.src='https://via.placeholder.com/400x300?text=Error'">
-                    <div class="card-body">
-                        <h3 class="card-title">${tech.name}</h3>
-                        <div class="card-meta">
-                            <div class="meta-item"><span>🔧</span> ${tech.category}</div>
-                            <div class="meta-item"><span>📍</span> ${tech.area}</div>
-                            <div class="meta-item"><span>⭐</span> ${tech.rating}</div>
-                        </div>
-                        <button class="card-button" onclick="openBooking(${tech.id})">
-                            <i class="fas fa-calendar"></i> จองเลย
-                        </button>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function filterTechnicians() {
-            const category = document.getElementById("categoryFilter").value;
-            if (category === "all") {
-                renderTechnicians(technicians);
-            } else {
-                renderTechnicians(technicians.filter(t => t.category === category));
-            }
-        }
-
-        function openBooking(techId) {
-            const tech = technicians.find(t => t.id === techId);
-            if (!tech) {
-                console.error('ไม่พบข้อมูลช่าง');
-                return;
-            }
-
-            currentTech = tech;
-            let imagesHtml = "";
-            
-            if (tech.technician_images && tech.technician_images.length > 0) {
-                imagesHtml = tech.technician_images
-                    .map(img => `<img src="${img.image_url}" style="width: 100%; margin-bottom: 0.8rem; border-radius: 8px; max-height: 150px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/400x300?text=Error'">`)
-                    .join("");
-            }
-
-            document.getElementById("selectedTech").innerHTML = `
-                <div style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.4rem; color: #FF6B35;">${tech.name}</div>
-                <div style="font-size: 0.9rem; color: #666; margin-bottom: 0.8rem;">📍 ${tech.area}</div>
-                <div style="max-height: 150px; overflow-y: auto;">${imagesHtml || '<p style="color: #999;">ไม่มีรูปภาพ</p>'}</div>
-            `;
-
-            document.getElementById("bookingAlerts").innerHTML = '';
-            document.getElementById("customerName").value = '';
-            document.getElementById("customerPhone").value = '';
-            document.getElementById("problemDetail").value = '';
-            document.getElementById("province").value = '';
-            document.getElementById("district").innerHTML = '<option value="">เลือกอำเภอ</option>';
-            document.getElementById("subdistrict").innerHTML = '<option value="">เลือกตำบล</option>';
-            document.getElementById("serviceDate").value = '';
-            document.getElementById("serviceTime").value = '';
-
-            document.getElementById("bookingModal").classList.add("active");
-        }
-
-        async function confirmBooking() {
-            if (isSubmitting) return;
-
-            const name = document.getElementById("customerName").value.trim();
-            const phone = document.getElementById("customerPhone").value.trim();
-            const problem = document.getElementById("problemDetail").value.trim();
-            const province = document.getElementById("province").value;
-            const district = document.getElementById("district").value;
-            const subdistrict = document.getElementById("subdistrict").value;
-            const serviceDate = document.getElementById("serviceDate").value;
-            const serviceTime = document.getElementById("serviceTime").value;
-
-            if (!validateName(name)) {
-                showAlert('bookingAlerts', 'กรุณากรอกชื่อ-สกุลให้ครบถ้วน', 'error');
-                return;
-            }
-            if (!validatePhone(phone)) {
-                showAlert('bookingAlerts', 'เบอร์โทรต้องเป็นหมายเลข 10 หลักเริ่มต้นด้วย 0', 'error');
-                return;
-            }
-            if (!problem || problem.length < 10) {
-                showAlert('bookingAlerts', 'กรุณากรอกรายละเอียดปัญหาอย่างน้อย 10 ตัวอักษร', 'error');
-                return;
-            }
-            if (!province || !district || !subdistrict) {
-                showAlert('bookingAlerts', 'กรุณาเลือกจังหวัด อำเภอ และตำบลให้ครบ', 'error');
-                return;
-            }
-            if (!serviceDate || !serviceTime) {
-                showAlert('bookingAlerts', 'กรุณาเลือกวันที่และเวลาบริการ', 'error');
-                return;
-            }
-
-            isSubmitting = true;
-            document.getElementById("confirmBtn").innerText = "⏳ กำลังบันทึก...";
-
-            const { error } = await db.from("bookings").insert([{
-                technician_id: currentTech.id,
-                tech_name: currentTech.name,
-                customer_name: name,
-                customer_phone: phone,
-                problem_detail: problem,
-                province,
-                district,
-                subdistrict,
-                service_date: serviceDate,
-                service_time: serviceTime,
-                status: "รอดำเนินการ",
-                created_at: new Date().toISOString()
-            }]);
-
-            if (error) {
-                console.error(error);
-                showAlert('bookingAlerts', 'เกิดข้อผิดพลาด: ' + error.message, 'error');
-                isSubmitting = false;
-                document.getElementById("confirmBtn").innerText = "ยืนยัน";
-                return;
-            }
-
-            showAlert('bookingAlerts', 'ขอบคุณ! ช่างจะติดต่อกลับในเร็วๆ นี้', 'success');
-            isSubmitting = false;
-            document.getElementById("confirmBtn").innerText = "ยืนยัน";
-
-            setTimeout(() => {
-                closeBooking();
-            }, 2000);
-        }
-
-        // ==================== LOCATION DATA ====================
-        const locationData = {
-            "นครพนม": {
-                "เมืองนครพนม": ["ในเมือง", "หนองญาติ", "อาจสามารถ"],
-                "ศรีสงคราม": ["ศรีสงคราม", "บ้านเอื้อง", "ท่าบ่อสงคราม"],
-                "บาเพ็ง": ["บาเพ็ง", "บ้านดง", "นาตาล"],
-                "ท่าแพ": ["ท่าแพ", "บ้านเต่า", "วัดไทร"]
-            },
-            "มุกดาหาร": {
-                "เมืองมุกดาหาร": ["มุกดาหาร", "บางทรายใหญ่", "ศรีบุญเรือง"],
-                "คำชะอี": ["คำชะอี", "บ้านแสง", "หนองข่าว"]
-            },
-            "กาฬสินธุ์": {
-                "เมืองกาฬสินธุ์": ["เมืองกาฬ", "บ้านดำ", "ศรีเชียง"],
-                "โคกโพธิ์": ["โคกโพธิ์", "บ้านใหม่", "ท่าสูง"]
-            },
-            "อุดรธานี": {
-                "เมืองอุดรธานี": ["หมากแข้ง", "บ้านเลื่อม", "หนองบัว"],
-                "บ้านผือ": ["บ้านผือ", "ศรีสำโรง", "หนองหาด"]
-            }
-        };
-
-        const provinceSelect = document.getElementById("province");
-        const districtSelect = document.getElementById("district");
-        const subdistrictSelect = document.getElementById("subdistrict");
-
-        provinceSelect.addEventListener("change", function() {
-            const province = this.value;
-            districtSelect.innerHTML = '<option value="">เลือกอำเภอ</option>';
-            subdistrictSelect.innerHTML = '<option value="">เลือกตำบล</option>';
-
-            if (!locationData[province]) return;
-
-            Object.keys(locationData[province]).forEach(function(district) {
-                const option = document.createElement("option");
-                option.value = district;
-                option.textContent = district;
-                districtSelect.appendChild(option);
-            });
-        });
-
-        districtSelect.addEventListener("change", function() {
-            const province = provinceSelect.value;
-            const district = this.value;
-            subdistrictSelect.innerHTML = '<option value="">เลือกตำบล</option>';
-
-            if (!locationData[province] || !locationData[province][district]) return;
-
-            locationData[province][district].forEach(function(sub) {
-                const option = document.createElement("option");
-                option.value = sub;
-                option.textContent = sub;
-                subdistrictSelect.appendChild(option);
-            });
-        });
-
-        // ==================== TAB 4: HOUSES ====================
-        let allHouses = [];
-        let currentImages = [];
-        let currentImageIndex = 0;
-
-        async function loadHouses() {
-            console.log("📋 Loading houses...");
-            const { data: houses, error: housesError } = await db.from("houses").select("*");
-            
-            if (housesError) { 
-                console.error("❌ Error loading houses:", housesError); 
-                return; 
-            }
-
-            console.log("✅ Houses fetched:", houses?.length || 0, "houses");
-
-            if (!houses || houses.length === 0) {
-                console.warn("⚠️ No houses found");
-                allHouses = [];
-                displayHouses(allHouses);
-                return;
-            }
-
-            // ดึงรูปภาพของแต่ละบ้าน
-            const housesWithImages = await Promise.all(houses.map(async (house) => {
-                try {
-                    // ลองดึงจาก house_images table ก่อน
-                    const { data: images, error: imagesError } = await db
-                        .from("house_images")
-                        .select("image_url")
-                        .eq("house_id", house.id)
-                        .order("display_order", { ascending: true });
-
-                    // ถ้าไม่มี images หรือเกิดข้อผิดพลาด ให้ใช้ image_url จากตาราง houses
-                    let imageArray = [];
-                    if (!imagesError && images && images.length > 0) {
-                        imageArray = images.map(img => img.image_url);
-                        console.log(`🖼️ House ${house.id} has ${imageArray.length} images from house_images table`);
-                    } else if (house.image_url) {
-                        imageArray = [house.image_url];
-                        console.log(`📸 House ${house.id} using image_url from houses table`);
-                    } else {
-                        imageArray = ['https://via.placeholder.com/800x400?text=No+Image'];
-                        console.log(`⚠️ House ${house.id} - no images found`);
-                    }
-
-                    return {
-                        ...house,
-                        images: imageArray,
-                        imageCount: imageArray.length
-                    };
-                } catch (err) {
-                    console.error(`❌ Error loading images for house ${house.id}:`, err);
-                    return {
-                        ...house,
-                        images: [house.image_url || 'https://via.placeholder.com/800x400?text=Error'],
-                        imageCount: 1
-                    };
-                }
-            }));
-
-            allHouses = housesWithImages;
-            console.log("✅ All houses loaded with images:", allHouses);
-            displayHouses(allHouses);
-        }
-
-        function displayHouses(houses) {
-            const container = document.getElementById("houseContainer");
-            container.innerHTML = "";
-
-            if (!houses || houses.length === 0) {
-                container.innerHTML = '<div class="no-results"><i class="fas fa-home"></i><br>ไม่มีแบบบ้าน</div>';
-                return;
-            }
-
-            houses.forEach((house, index) => {
-                const imageCount = house.imageCount || house.images?.length || 1;
-                const imageBadge = imageCount > 1 ? `<span class="badge"><i class="fas fa-images"></i> ${imageCount} รูป</span>` : '';
-                const mainImage = house.images?.[0] || house.image_url || 'https://via.placeholder.com/300x200?text=Error';
-
-                container.innerHTML += `
-                    <div class="card">
-                        ${imageBadge}
-                        <img src="${mainImage}" alt="${house.name}" class="card-image" onerror="this.src='https://via.placeholder.com/300x200?text=Error'">
-                        <div class="card-body">
-                            <h3 class="card-title">${house.name}</h3>
-                            <div class="card-price">฿${Number(house.price).toLocaleString()}</div>
-                            <div class="card-meta">
-                                <div class="meta-item"><span>🛏️</span> ${house.bedrooms || 0}</div>
-                                <div class="meta-item"><span>🚿</span> ${house.bathrooms || 0}</div>
-                                <div class="meta-item"><span>🚗</span> ${house.parking || 0}</div>
-                            </div>
-                            <button class="card-button" onclick="showDetail(${index})">
-                                <i class="fas fa-search"></i> ดูรายละเอียด
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function showDetail(index) {
-            const house = allHouses[index];
-
-            if (!house) {
-                console.error("❌ House not found at index:", index);
-                return;
-            }
-
-            // ได้รูปภาพจาก house.images array
-            currentImages = house.images && house.images.length > 0 
-                ? house.images 
-                : [house.image_url || 'https://via.placeholder.com/800x400?text=No+Image'];
-
-            currentImageIndex = 0;
-
-            const thumbnails = currentImages.map((img, i) =>
-                `<img src="${img}" class="thumbnail ${i===0?'active':''}" style="cursor: pointer;" onclick="changeImage(${i})" onerror="this.src='https://via.placeholder.com/70x50?text=Error'">`
-            ).join("");
-
-            console.log(`📖 Showing detail for: ${house.name} with ${currentImages.length} images`);
-
-            document.getElementById("modalBody").innerHTML = `
-                <h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 1rem; color: #333;">${house.name}</h2>
-                <img id="mainImage" src="${currentImages[0]}" alt="${house.name}" style="width: 100%; height: 300px; object-fit: cover; border-radius: 12px; margin-bottom: 1rem;" onerror="this.src='https://via.placeholder.com/800x400?text=Error'">
-                
-                ${currentImages.length > 1 ? `
-                    <div class="thumbnail-container">
-                        ${thumbnails}
-                    </div>
-                ` : ''}
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.8rem; margin-bottom: 1.5rem;">
-                    <div style="padding: 1rem; background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%); border-radius: 10px; color: white; text-align: center;">
-                        <div style="font-size: 0.8rem; opacity: 0.9; margin-bottom: 0.3rem;">ราคา</div>
-                        <div style="font-size: 1.3rem; font-weight: 700;">฿${Number(house.price).toLocaleString()}</div>
-                    </div>
-                    <div style="padding: 1rem; background: #f0f0f0; border-radius: 10px; text-align: center;">
-                        <div style="font-size: 0.8rem; color: #666; margin-bottom: 0.3rem;">ขนาดที่ดิน</div>
-                        <div style="font-size: 1.1rem; font-weight: 700; color: #333;">${house.width || '-'}x${house.length || '-'}ม.</div>
-                    </div>
-                    <div style="padding: 1rem; background: #f0f0f0; border-radius: 10px; text-align: center;">
-                        <div style="font-size: 0.8rem; color: #666; margin-bottom: 0.3rem;">ห้องนอน</div>
-                        <div style="font-size: 1.1rem; font-weight: 700; color: #333;">${house.bedrooms || '-'}</div>
-                    </div>
-                    <div style="padding: 1rem; background: #f0f0f0; border-radius: 10px; text-align: center;">
-                        <div style="font-size: 0.8rem; color: #666; margin-bottom: 0.3rem;">ห้องน้ำ</div>
-                        <div style="font-size: 1.1rem; font-weight: 700; color: #333;">${house.bathrooms || '-'}</div>
-                    </div>
-                    <div style="padding: 1rem; background: #f0f0f0; border-radius: 10px; text-align: center;">
-                        <div style="font-size: 0.8rem; color: #666; margin-bottom: 0.3rem;">ที่จอดรถ</div>
-                        <div style="font-size: 1.1rem; font-weight: 700; color: #333;">${house.parking || '-'}</div>
-                    </div>
-                </div>
-
-                <div style="padding: 1rem; background: #f8f9fa; border-radius: 10px; border-left: 4px solid #FF6B35; margin-bottom: 1.5rem;">
-                    <h3 style="font-weight: 700; margin-bottom: 0.5rem; color: #333; font-size: 0.95rem;">รายละเอียด</h3>
-                    <p style="color: #666; line-height: 1.6; font-size: 0.9rem; margin: 0;">${house.description || 'ไม่มีข้อมูล'}</p>
-                </div>
-
-                <button class="search-btn" style="width: 100%; padding: 0.9rem; margin-bottom: 1rem; font-size: 1rem;" onclick="toggleOrderForm(${index})">
-                    <i class="fas fa-check-circle"></i> สั่งสร้างบ้านรุ่นนี้
-                </button>
-
-                <div id="orderForm${index}" style="display: none; border-top: 2px solid #e0e0e0; padding-top: 1rem;">
-                    <h3 style="font-weight: 700; margin-bottom: 1rem; color: #333; font-size: 1rem;">กรอกข้อมูลการสั่งสร้าง</h3>
-                    <input type="text" id="customerName${index}" placeholder="ชื่อ – นามสกุล *" maxlength="100" style="width: 100%; padding: 0.75rem; margin-bottom: 0.8rem; border: 2px solid #e0e0e0; border-radius: 8px;" required />
-                    <input type="tel" id="customerPhone${index}" placeholder="เบอร์โทร *" maxlength="10" style="width: 100%; padding: 0.75rem; margin-bottom: 0.8rem; border: 2px solid #e0e0e0; border-radius: 8px;" required />
-                    <input type="text" id="customerAddress${index}" placeholder="ที่อยู่สำหรับก่อสร้าง *" maxlength="200" style="width: 100%; padding: 0.75rem; margin-bottom: 0.8rem; border: 2px solid #e0e0e0; border-radius: 8px;" required />
-                    <input type="text" id="customerLandSize${index}" placeholder="ขนาดที่ดิน (กว้าง x ยาว) *" maxlength="50" style="width: 100%; padding: 0.75rem; margin-bottom: 0.8rem; border: 2px solid #e0e0e0; border-radius: 8px;" required />
-                    <input type="date" id="customerStartDate${index}" style="width: 100%; padding: 0.75rem; margin-bottom: 0.8rem; border: 2px solid #e0e0e0; border-radius: 8px;" />
-                    <textarea id="customerNote${index}" placeholder="รายละเอียดเพิ่มเติม" maxlength="500" rows="3" style="width: 100%; padding: 0.75rem; margin-bottom: 1rem; border: 2px solid #e0e0e0; border-radius: 8px;"></textarea>
-                    <button class="search-btn" style="width: 100%; padding: 0.8rem;" onclick="submitOrder(${index})">
-                        <i class="fas fa-paper-plane"></i> ส่งคำขอสั่งสร้าง
-                    </button>
-                </div>
-            `;
-
-            document.getElementById("houseModal").classList.add("active");
-        }
-
-        function changeImage(index) {
-            currentImageIndex = index;
-            document.getElementById("mainImage").src = currentImages[index];
-            
-            // อัพเดทตัวเลือกรูป
-            const thumbnails = document.querySelectorAll('.thumbnail');
-            thumbnails.forEach((thumb, i) => {
-                if (i === index) {
-                    thumb.classList.add('active');
-                } else {
-                    thumb.classList.remove('active');
-                }
-            });
-        }
-
-        function toggleOrderForm(index) {
-            const form = document.getElementById(`orderForm${index}`);
-            form.style.display = form.style.display === 'none' ? 'block' : 'none';
-        }
-
-        async function submitOrder(index) {
-            const house = allHouses[index];
-
-            const name = document.getElementById(`customerName${index}`).value;
-            const phone = document.getElementById(`customerPhone${index}`).value;
-            const address = document.getElementById(`customerAddress${index}`).value;
-            const landSize = document.getElementById(`customerLandSize${index}`).value;
-            const startDate = document.getElementById(`customerStartDate${index}`).value;
-            const note = document.getElementById(`customerNote${index}`).value;
-
-            if (!validateName(name)) {
-                alert('กรุณากรอกชื่อ-สกุลให้ครบถ้วน');
-                return;
-            }
-            if (!validatePhone(phone)) {
-                alert('เบอร์โทรต้องเป็นหมายเลข 10 หลักเริ่มต้นด้วย 0');
-                return;
-            }
-            if (!address || !landSize) {
-                alert('กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครบถ้วน');
-                return;
-            }
-
-            const { error } = await db.from('orders').insert([{
-                house_id: house.id,
-                house_name: house.name,
-                price: house.price,
-                customer_name: name,
-                customer_phone: phone,
-                address: address,
-                land_size: landSize,
-                start_date: startDate || null,
-                note: note,
-                status: "รอดำเนินการ",
-                created_at: new Date().toISOString()
-            }]);
-
-            if(error) {
-                console.error(error);
-                alert('เกิดข้อผิดพลาด กรุณาลองใหม่');
-                return;
-            }
-
-            alert('✅ ส่งคำขอสร้างบ้านเรียบร้อย ทีมงานจะติดต่อกลับในเร็วๆ นี้');
-            document.getElementById(`orderForm${index}`).style.display = 'none';
-            closeHouseModal();
-        }
-
-        function filterHouses() {
-            const width = parseFloat(document.getElementById('landWidth').value) || 0;
-            const length = parseFloat(document.getElementById('landLength').value) || 0;
-            const minPrice = parseFloat(document.getElementById('minPrice2').value) || 0;
-            const maxPrice = parseFloat(document.getElementById('maxPrice2').value) || Infinity;
-            const bedrooms = parseFloat(document.getElementById('bedrooms').value) || 0;
-            const bathrooms = parseFloat(document.getElementById('bathrooms').value) || 0;
-            const parking = parseFloat(document.getElementById('parking').value) || 0;
-
-            const filtered = allHouses.filter(house => {
-                const matchSize = (width === 0 && length === 0) || (width > 0 && length > 0 && width <= house.width && length <= house.length);
-                const matchPrice = house.price >= minPrice && house.price <= maxPrice;
-                const matchBedrooms = house.bedrooms >= bedrooms;
-                const matchBathrooms = house.bathrooms >= bathrooms;
-                const matchParking = house.parking >= parking;
-                return matchSize && matchPrice && matchBedrooms && matchBathrooms && matchParking;
-            });
-
-            displayHouses(filtered);
-            document.getElementById('noResult').style.display = filtered.length ? "none" : "block";
-        }
-
-        // Event Listeners Setup
-        document.addEventListener("DOMContentLoaded", function() {
-            const categoryFilter = document.getElementById("categoryFilter");
-            
-            if (categoryFilter) {
-                categoryFilter.addEventListener("change", filterTechnicians);
-            }
-
-            // Initial Load
-            loadShops();
-        });
-    </script>
+<header>
+<h1>🔧 FixHome</h1>
+<nav>
+<a href="#">หน้าแรก</a>
+<a href="#services">บริการ</a>
+<a href="#">สมัครช่าง</a>
+<a href="#">ติดต่อเรา</a>
+</nav>
+</header>
+
+<section class="hero">
+<div>
+<h2>เรียกช่างง่ายๆ ซ่อมบ้านได้ทันที</h2>
+<button onclick="window.location.href='Technician.html'">เรียกช่างเลย</button>
+</div>
+</section>
+
+<section class="services" id="services">
+<h2>บริการของเรา</h2>
+
+<div class="service-grid">
+
+<div class="card" onclick="window.location.href='Technician.html'">
+<img src="https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc">
+<h3>ซ่อม</h3>
+<p>บริการซ่อมไฟฟ้า ประปา แอร์ และเครื่องใช้ไฟฟ้าภายในบ้าน</p>
+</div>
+
+<div class="card" onclick="window.location.href='Build.html'">
+<img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c">
+<h3>สร้าง</h3>
+<p>บริการก่อสร้างบ้าน ต่อเติม รีโนเวท และงานโครงสร้าง</p>
+</div>
+
+<div class="card" onclick="window.location.href='Buy-Rent.html'">
+<img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa">
+<h3>ซื้อ / เช่า</h3>
+<p>ค้นหาบ้าน คอนโด และอสังหาริมทรัพย์สำหรับซื้อหรือเช่า</p>
+</div>
+
+<div class="card" onclick="window.location.href='Materials.html'">
+<img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e">
+<h3>ร้านวัสดุ</h3>
+<p>ค้นหาร้านวัสดุก่อสร้างใกล้คุณ พร้อมข้อมูลร้านและเว็บไซต์</p>
+</div>
+
+</div>
+</section>
+
+<section class="features">
+<h2>ทำไมต้องใช้บริการเรา</h2>
+
+<div class="feature-grid">
+
+<div>
+<h3>👷 ช่างมืออาชีพ</h3>
+<p>ผ่านการตรวจสอบตัวตนและประสบการณ์</p>
+</div>
+
+<div>
+<h3>🛡 รับประกันงาน</h3>
+<p>หมดปัญหาช่างทิ้งงานและงานไม่ได้มาตรฐาน</p>
+</div>
+
+<div>
+<h3>⚡ จองง่าย</h3>
+<p>จองบริการผ่านเว็บไซต์ได้ทันที</p>
+</div>
+
+</div>
+
+</section>
+
+<footer>
+<p>© 2026 FixHome - บริการช่างครบวงจร</p>
+</footer>
 
 </body>
 </html>
