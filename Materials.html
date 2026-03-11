@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ศูนย์รวมร้านวัสดุก่อสร้าง</title>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+body { font-family: 'Kanit', sans-serif; }
+
+/* ===== NAVBAR ===== */
+nav{
+background:#fff;
+box-shadow:0 1px 3px rgba(0,0,0,.1);
+min-height:80px;
+display:flex;
+align-items:center;
+padding:0 40px;
+flex-wrap:wrap;
+}
+
+nav a{
+font-size:14px;
+font-weight:500;
+display:flex;
+align-items:center;
+text-decoration:none;
+white-space:nowrap;
+}
+
+nav img{
+height:50px;
+object-fit:contain;
+}
+
+nav .flex.gap-8{
+display:flex;
+gap:32px;
+align-items:center;
+margin-left:auto;
+flex-wrap:wrap;
+}
+
+/* ===== SEARCH BAR ===== */
+#searchInput,#subdistrictInput,#districtInput,#provinceInput{
+min-width:120px;
+}
+
+/* ===== RESPONSIVE ===== */
+
+/* Tablet */
+@media (max-width:1024px){
+nav{padding:10px 24px}
+}
+
+/* Mobile */
+@media (max-width:768px){
+
+nav{
+flex-direction:column;
+align-items:flex-start;
+min-height:auto;
+padding:12px 20px;
+}
+
+nav .flex.gap-8{
+width:100%;
+margin-left:0;
+gap:18px;
+margin-top:8px;
+}
+
+#searchInput,
+#subdistrictInput,
+#districtInput,
+#provinceInput{
+width:100%;
+}
+
+}
+
+/* Small phones */
+@media (max-width:480px){
+nav img{height:42px}
+
+.line-float,.call-float{
+width:52px;
+height:52px;
+font-size:24px;
+}
+}
+</style>
+</head>
+<body class="bg-gray-50">
+
+<!-- TOP NAVBAR -->
+<nav>
+  <!-- Logo -->
+  <a href="index.html" class="flex items-center">
+    <img src="https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/ssss/FixHouse-logo.png" alt="FixHouse">
+  </a>
+
+  <!-- Menu -->
+  <div class="flex gap-8">
+    <a href="index.html" class="hover:text-orange-600">หน้าแรก</a>
+    <a href="Build.html" class="hover:text-orange-600">สร้าง</a>
+    <a href="Technician.html" class="hover:text-orange-600">ซ่อม</a>
+    <a href="Buy-Rent.html" class="hover:text-orange-600">เช่า</a>
+    <a href="Materials.html" class="hover:text-orange-600">ร้านวัสดุก่อสร้าง</a>
+  </div>
+</nav>
+
+    <div class="max-w-7xl mx-auto px-6 mt-6 flex justify-end">
+
+    <div class="flex flex-wrap lg:flex-nowrap items-center gap-3">
+        
+        <input id="searchInput" type="text" placeholder="ค้นหาชื่อร้าน..." 
+        class="px-4 py-2 rounded-lg border border-gray-300 text-gray-800 focus:outline-none w-48">
+
+        <input id="subdistrictInput" type="text" placeholder="ตำบล" 
+        class="px-4 py-2 rounded-lg border border-gray-300 text-gray-800 focus:outline-none w-36">
+
+        <input id="districtInput" type="text" placeholder="อำเภอ" 
+        class="px-4 py-2 rounded-lg border border-gray-300 text-gray-800 focus:outline-none w-36">
+
+        <input id="provinceInput" type="text" placeholder="จังหวัด" 
+        class="px-4 py-2 rounded-lg border border-gray-300 text-gray-800 focus:outline-none w-36">
+
+        <button onclick="searchShops()" 
+        class="bg-orange-500 text-white px-5 py-2 rounded-lg font-semibold hover:bg-orange-600 transition whitespace-nowrap">
+        ค้นหา
+        </button>
+
+    </div>
+
+</div>
+
+    <main class="container mx-auto py-10 px-4">
+        <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">ร้านวัสดุแนะนำใกล้คุณ</h2>
+        <div id="shopContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+    </main>
+
+    <footer class="bg-gray-800 text-gray-400 py-8 mt-20">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2026 BuildMart Hub. All rights reserved.</p>
+        </div>
+    </footer>
+
+<script>
+    const supabaseUrl = "https://uqcjajmqtlchftpqwsrp.supabase.co";
+    const supabaseKey = "sb_publishable_yWZiH8l1idY0QWGuj6p9sg_GqXPONGX";
+
+    const { createClient } = supabase;
+    const db = createClient(supabaseUrl, supabaseKey);
+
+    const shopContainer = document.getElementById("shopContainer");
+
+    async function loadShops(filters = {}) {
+        let query = db.from("shops").select("*");
+
+        if (filters.name) query = query.ilike("name", `%${filters.name}%`);
+        if (filters.subdistrict) query = query.ilike("subdistrict", `%${filters.subdistrict}%`);
+        if (filters.district) query = query.ilike("district", `%${filters.district}%`);
+        if (filters.province) query = query.ilike("province", `%${filters.province}%`);
+
+        const { data, error } = await query;
+
+        if (error) {
+            console.error("Error loading shops:", error);
+            return;
+        }
+
+        shopContainer.innerHTML = "";
+
+        if (!data || data.length === 0) {
+            shopContainer.innerHTML = `<p class="col-span-3 text-center text-gray-500">ไม่พบร้านค้า</p>`;
+            return;
+        }
+
+        data.forEach(shop => {
+            const statusBadge = shop.is_open
+                ? `<span class="bg-green-100 text-green-600 text-xs px-2 py-1 rounded">เปิดอยู่</span>`
+                : `<span class="bg-red-100 text-red-600 text-xs px-2 py-1 rounded">ปิดแล้ว</span>`;
+
+            const websiteButton = shop.website_url
+                ? `<a href="${shop.website_url}" target="_blank" class="block w-full mt-4 bg-orange-500 text-white text-center py-2 rounded-lg hover:bg-orange-600 transition">เข้าสู่เว็บไซต์ร้าน</a>`
+                : `<button class="w-full mt-4 bg-gray-400 text-white py-2 rounded-lg cursor-not-allowed">ไม่มีเว็บไซต์</button>`;
+
+            shopContainer.innerHTML += `
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition duration-300">
+                    <div class="h-48 bg-gray-300 flex items-center justify-center">
+                        ${shop.image_url
+                            ? `<img src="${shop.image_url}" class="w-full h-full object-cover">`
+                            : `<span class="text-gray-500">ไม่มีรูปภาพ</span>`}
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-gray-800">${shop.name}</h3>
+                            ${statusBadge}
+                        </div>
+                        <p class="text-gray-600 text-sm mb-4">${shop.description || "-"}</p>
+                        <div class="border-t pt-4 text-sm text-gray-500 space-y-1">
+                            <p>📍 ${shop.subdistrict || ""} ${shop.district || ""} ${shop.province || ""}</p>
+                            <p>🚚 พื้นที่ให้บริการ: ${shop.service_area || "ไม่ระบุ"}</p>
+                            <p>📞 ${shop.phone || "-"}</p>
+                        </div>
+                        ${websiteButton}
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function searchShops() {
+        const filters = {
+            name: document.getElementById("searchInput").value,
+            subdistrict: document.getElementById("subdistrictInput").value,
+            district: document.getElementById("districtInput").value,
+            province: document.getElementById("provinceInput").value
+        };
+
+        loadShops(filters);
+    }
+
+    loadShops();
+</script>
+
+
+<!-- Floating LINE Button -->
+<a href="https://line.me/ti/p/XXXXXXXX" target="_blank" class="line-float">💬</a>
+
+<!-- Floating Call Button -->
+<a href="tel:0812345678" class="call-float">📞</a>
+
+<style>
+.line-float{
+position:fixed;
+bottom:90px;
+right:20px;
+width:60px;
+height:60px;
+border-radius:50%;
+background:#06C755;
+color:#fff;
+font-size:28px;
+display:flex;
+align-items:center;
+justify-content:center;
+text-decoration:none;
+box-shadow:0 8px 20px rgba(0,0,0,.3);
+z-index:9999;
+animation:floatBtn 2s infinite;
+}
+
+.call-float{
+position:fixed;
+bottom:20px;
+right:20px;
+width:60px;
+height:60px;
+border-radius:50%;
+background:#e53935;
+color:#fff;
+font-size:28px;
+display:flex;
+align-items:center;
+justify-content:center;
+text-decoration:none;
+box-shadow:0 8px 20px rgba(0,0,0,.3);
+z-index:9999;
+animation:floatBtn 2s infinite .3s;
+}
+
+.line-float:hover,
+.call-float:hover{
+transform:scale(1.15);
+}
+
+@keyframes floatBtn{
+0%{transform:translateY(0)}
+25%{transform:translateY(-8px)}
+50%{transform:translateY(0)}
+75%{transform:translateY(-4px)}
+100%{transform:translateY(0)}
+}
+</style>
+
+</body>
+</html>
+
