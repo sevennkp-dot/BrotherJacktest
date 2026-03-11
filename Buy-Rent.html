@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Real Estate Platform</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap');
+body { font-family: 'Sarabun', sans-serif; }
+
+nav {
+  background: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  height: 80px;
+  display: flex;
+  align-items: center;
+  padding: 0 40px;
+}
+
+nav .flex.items-center {
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+nav img {
+  height: 50px;
+  object-fit: contain;
+}
+
+nav .flex.gap-8 {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  height: 100%;
+  margin-left: auto;
+}
+
+nav a {
+  font-size: 14px;
+  font-weight: 500;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  white-space: nowrap;
+}
+</style>
+</head>
+<body class="bg-gray-100">
+
+<!-- TOP NAVBAR -->
+<nav>
+  <!-- Logo -->
+  <a href="index.html" class="flex items-center">
+    <img src="https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/ssss/FixHouse-logo.png" alt="FixHouse">
+  </a>
+
+  <!-- Menu -->
+  <div class="flex gap-8">
+    <a href="index.html" class="hover:text-blue-600">หน้าแรก</a>
+    <a href="Build.html" class="hover:text-blue-600">สร้าง</a>
+    <a href="Technician.html" class="hover:text-blue-600">ซ่อม</a>
+    <a href="Buy-Rent.html" class="hover:text-blue-600">เช่า</a>
+    <a href="Materials.html" class="hover:text-blue-600">ร้านวัสดุก่อสร้าง</a>
+  </div>
+</nav>
+
+
+<section class="relative h-[380px] bg-cover bg-center" style="background-image:url('https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=1600');">
+<div class="absolute inset-0 bg-black/60"></div>
+<div class="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-4">
+<h1 class="text-4xl md:text-5xl font-bold mb-4">ค้นหาอสังหาริมทรัพย์</h1>
+<p class="text-lg">ซื้อ • ขาย • เช่า บ้าน คอนโด ที่ดิน</p>
+</div>
+</section>
+
+<main class="max-w-7xl mx-auto px-4 py-12">
+
+<!-- SEARCH FILTER -->
+<div class="bg-white p-6 rounded-2xl shadow mb-10 grid md:grid-cols-8 gap-4">
+  <select id="filterStatus" class="border rounded-lg px-3 py-2">
+    <option value="">ทั้งหมด (ซื้อ/เช่า)</option>
+    <option value="ขาย">ขาย</option>
+    <option value="เช่า">เช่า</option>
+  </select>
+
+  <select id="filterType" class="border rounded-lg px-3 py-2">
+    <option value="">ทุกประเภท</option>
+    <option value="บ้าน">บ้าน</option>
+    <option value="คอนโด">คอนโด</option>
+    <option value="ที่ดิน">ที่ดิน</option>
+  </select>
+
+  <input type="number" id="minPrice" placeholder="ราคาต่ำสุด" class="border rounded-lg px-3 py-2">
+  <input type="number" id="maxPrice" placeholder="ราคาสูงสุด" class="border rounded-lg px-3 py-2">
+
+  <input type="text" id="filterProvince" placeholder="จังหวัด" class="border rounded-lg px-3 py-2">
+  <input type="text" id="filterDistrict" placeholder="อำเภอ" class="border rounded-lg px-3 py-2">
+  <input type="text" id="filterSubdistrict" placeholder="ตำบล" class="border rounded-lg px-3 py-2">
+
+  <button onclick="applyFilter()" class="bg-blue-600 text-white rounded-lg px-4 py-2">ค้นหา</button>
+</div>
+<h2 class="text-3xl font-bold text-center mb-8">รายการอสังหาริมทรัพย์</h2>
+<div id="property-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+</main>
+
+<!-- DETAIL MODAL -->
+<div id="detailModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50">
+  <div class="bg-white rounded-2xl w-full max-w-4xl p-6 relative overflow-y-auto max-h-[90vh]">
+    <button onclick="closeModal()" class="absolute top-3 right-3 text-gray-500">✕</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<!-- ACTION POPUP -->
+<div id="actionModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50">
+  <div class="bg-white rounded-2xl w-full max-w-md p-6 relative">
+    <button onclick="closeActionModal()" class="absolute top-3 right-3 text-gray-500">✕</button>
+    <h3 id="actionTitle" class="text-xl font-bold mb-4"></h3>
+
+    <input id="fullname" type="text" placeholder="ชื่อ-สกุล" class="w-full border rounded-lg px-3 py-2 mb-3">
+    <input id="phone" type="text" placeholder="เบอร์โทร" class="w-full border rounded-lg px-3 py-2 mb-3">
+    <input id="readyDate" type="date" class="w-full border rounded-lg px-3 py-2 mb-4">
+
+    <button onclick="submitAction()" class="bg-green-600 text-white w-full py-2 rounded-lg">ยืนยัน</button>
+  </div>
+</div>
+
+<script>
+const { createClient } = window.supabase;
+const sb = createClient(
+  "https://uqcjajmqtlchftpqwsrp.supabase.co",
+  "sb_publishable_yWZiH8l1idY0QWGuj6p9sg_GqXPONGX"
+);
+
+let propertyData = [];
+
+function safe(value){
+  return value !== null && value !== undefined && value !== '' ? value : '-';
+}
+
+function formatNumber(num){
+  return num ? Number(num).toLocaleString() : '-';
+}
+
+window.openModalById = async function openModalById(id){
+  currentSlide = 0;
+  const property = propertyData.find(p => p.id === id);
+  if(!property) return;
+
+  const modal = document.getElementById('detailModal');
+  const content = document.getElementById('modalContent');
+
+  // โหลดรูปหลายรูปจาก property_images
+  const { data: images } = await sb
+    .from('property_images')
+    .select('image_url')
+    .eq('property_id', id);
+
+  let imageArray = [];
+
+  if(images && images.length > 0){
+    imageArray = images.map(img => img.image_url);
+  }else if(property.image_url){
+    imageArray = [property.image_url];
+  }else{
+    imageArray = ['https://via.placeholder.com/800x500?text=No+Image'];
+  }
+
+  const imageSlides = imageArray.map((url, index)=>`
+      <img src="${url}" class="w-full h-80 object-cover rounded-lg ${index===0?'':'hidden'} slide-image">
+  `).join('');
+
+  content.innerHTML = `
+    <div class="relative mb-6">
+      ${imageSlides}
+      ${imageArray.length > 1 ? `
+        <button onclick="prevImage()" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white px-3 py-1 rounded">‹</button>
+        <button onclick="nextImage()" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white px-3 py-1 rounded">›</button>
+      `:''}
+    </div>
+
+    <h2 class="text-3xl font-bold mb-2">${safe(property.title)}</h2>
+    <p class="text-gray-500 mb-4">${safe(property.subdistrict)} ${safe(property.district)} ${safe(property.province)}</p>
+
+    <div class="grid md:grid-cols-2 gap-4 text-gray-700 text-sm">
+      <div><strong>สถานะ:</strong> ${safe(property.status)}</div>
+      <div><strong>ราคา:</strong> ฿${formatNumber(property.price)}</div>
+      <div><strong>พื้นที่ใช้สอย:</strong> ${safe(property.usable_area)} ตร.ม.</div>
+      <div><strong>ขนาดที่ดิน:</strong> ${safe(property.land_area_wa)} ตร.ว.</div>
+      <div><strong>หน้ากว้างที่ดิน:</strong> ${safe(property.land_width)} ม.</div>
+      <div><strong>ความลึกที่ดิน:</strong> ${safe(property.land_length)} ม.</div>
+      <div><strong>ห้องนอน:</strong> ${safe(property.bedrooms)}</div>
+      <div><strong>ห้องน้ำ:</strong> ${safe(property.bathrooms)}</div>
+      <div><strong>ที่จอดรถ:</strong> ${safe(property.parking)}</div>
+      <div><strong>อายุทรัพย์:</strong> ${safe(property.property_age)} ปี</div>
+      <div><strong>ผ่อนต่อเดือน:</strong> ฿${formatNumber(property.monthly_payment)}</div>
+      <div><strong>กู้ได้:</strong> ${safe(property.loan_percent)}%</div>
+      <div><strong>ค่าโอน:</strong> ${safe(property.transfer_fee)}</div>
+      <div><strong>ค่าส่วนกลาง:</strong> ฿${formatNumber(property.common_fee)}</div>
+      <div><strong>ผ่อนตรงกับเจ้าของ:</strong> ${safe(property.direct_installment)}</div>
+      <div><strong>เคยน้ำท่วม:</strong> ${safe(property.flood_history)}</div>
+      <div><strong>โครงสร้าง:</strong> ${safe(property.structure_info)}</div>
+      <div><strong>ปรับปรุงล่าสุด:</strong> ${safe(property.renovated)}</div>
+      <div><strong>สถานที่ใกล้เคียง:</strong> ${safe(property.nearby_places)}</div>
+      <div><strong>การเดินทาง:</strong> ${safe(property.transportation)}</div>
+      <div><strong>สภาพแวดล้อม:</strong> ${safe(property.environment)}</div>
+      <div><strong>ประเภทโฉนด:</strong> ${safe(property.deed_type)}</div>
+      <div><strong>ภาระผูกพัน:</strong> ${safe(property.encumbrance)}</div>
+      <div><strong>สถานะจำนอง:</strong> ${safe(property.mortgage_status)}</div>
+      <div class="md:col-span-2"><strong>รายละเอียดเพิ่มเติม:</strong><br>${safe(property.description)}</div>
+    </div>
+
+    ${(() => {
+      let buttons = [];
+      const status = property.status || '';
+      if(status.includes('ขาย')){
+        buttons.push(`<button onclick="handleAction('ซื้อ', ${property.id})" class="bg-green-600 text-white px-6 py-3 rounded-lg flex-1">ซื้อ</button>`);
+      }
+      if(status.includes('เช่า')){
+        buttons.push(`<button onclick="handleAction('เช่า', ${property.id})" class="bg-orange-500 text-white px-6 py-3 rounded-lg flex-1">เช่า</button>`);
+      }
+      return `<div class="flex gap-4 mt-8">${buttons.join('')}</div>`;
+    })()}
+  `;
+
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+}
+
+// ระบบสไลด์รูป
+let currentSlide = 0;
+
+window.nextImage = function(){
+  const slides = document.querySelectorAll('.slide-image');
+  if(!slides || slides.length === 0) return;
+  slides[currentSlide].classList.add('hidden');
+  currentSlide = (currentSlide + 1) % slides.length;
+  slides[currentSlide].classList.remove('hidden');
+}
+
+window.prevImage = function(){
+  const slides = document.querySelectorAll('.slide-image');
+  if(!slides || slides.length === 0) return;
+  slides[currentSlide].classList.add('hidden');
+  currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+  slides[currentSlide].classList.remove('hidden');
+}
+
+
+function closeModal(){
+  const modal = document.getElementById('detailModal');
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+}
+
+let currentActionType = null;
+let currentPropertyId = null;
+
+window.handleAction = function(type, id){
+  currentActionType = type;
+  currentPropertyId = id;
+
+  document.getElementById('actionTitle').innerText = 
+    type === 'ซื้อ' ? 'กรอกข้อมูลเพื่อทำสัญญาซื้อ' : 'กรอกข้อมูลเพื่อเช่า';
+
+  document.getElementById('fullname').value = '';
+  document.getElementById('phone').value = '';
+  document.getElementById('readyDate').value = '';
+
+  const modal = document.getElementById('actionModal');
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+}
+
+function closeActionModal(){
+  const modal = document.getElementById('actionModal');
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+}
+
+window.submitAction = async function(){
+  const fullname = document.getElementById('fullname').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const readyDate = document.getElementById('readyDate').value;
+
+  if(!fullname || fullname.split(' ').length < 2){
+    alert('กรุณากรอกชื่อ-สกุลให้ครบถ้วน');
+    return;
+  }
+
+  if(!/^0[0-9]{8,9}$/.test(phone)){
+    alert('กรุณากรอกเบอร์โทรให้ถูกต้อง');
+    return;
+  }
+
+  if(!readyDate){
+    alert('กรุณาเลือกวันที่');
+    return;
+  }
+
+  const { error } = await sb
+    .from('interests')
+    .insert([{
+      property_id: currentPropertyId,
+      name: fullname,
+      phone: phone,
+      type: currentActionType,
+      ready_date: readyDate
+    }]);
+
+  if(error){
+    alert('เกิดข้อผิดพลาด: ' + error.message);
+    console.error(error);
+  } else {
+    alert('บันทึกเรียบร้อยแล้ว');
+    closeActionModal();
+    closeModal();
+  }
+}
+
+async function loadProperties(){
+  await applyFilter();
+}
+
+async function applyFilter(){
+  const container = document.getElementById('property-list');
+  container.innerHTML='กำลังโหลด...';
+
+  const status = document.getElementById('filterStatus').value;
+  const type = document.getElementById('filterType').value;
+  const minPrice = document.getElementById('minPrice').value;
+  const maxPrice = document.getElementById('maxPrice').value;
+  const province = document.getElementById('filterProvince').value;
+  const district = document.getElementById('filterDistrict').value;
+  const subdistrict = document.getElementById('filterSubdistrict').value;
+
+  let query = sb.from('properties').select('*').order('created_at',{ascending:false});
+
+  if(status){
+    query = query.ilike('status', `%${status}%`);
+  }
+
+  if(type){
+    query = query.ilike('title', `%${type}%`);
+  }
+
+  if(minPrice){
+    query = query.gte('price', minPrice);
+  }
+
+  if(maxPrice){
+    query = query.lte('price', maxPrice);
+  }
+
+  if(province){
+    query = query.ilike('province', `%${province}%`);
+  }
+
+  if(district){
+    query = query.ilike('district', `%${district}%`);
+  }
+
+  if(subdistrict){
+    query = query.ilike('subdistrict', `%${subdistrict}%`);
+  }
+
+  const { data, error } = await query;
+
+  if(error){
+    container.innerHTML = error.message;
+    console.error(error);
+    return;
+  }
+
+  if(!data || data.length === 0){
+    container.innerHTML = 'ไม่พบข้อมูลตามเงื่อนไขค้นหา';
+    return;
+  }
+
+  propertyData = data;
+  container.innerHTML = '';
+
+  for (const p of propertyData){
+    // โหลดรูปทั้งหมดของรายการ
+    const { data: images } = await sb
+      .from('property_images')
+      .select('image_url')
+      .eq('property_id', p.id);
+
+    console.log('Property ID:', p.id, 'Images:', images);
+
+    let imageUrl = 'https://via.placeholder.com/600x400?text=No+Image';
+    let imageCount = 0;
+
+    if(images && images.length > 0){
+      imageUrl = images[0].image_url;
+      imageCount = images.length;
+
+      if(images.length <= 1){
+        console.warn('รายการนี้มีรูปเดียวในตาราง property_images →', p.id);
+      }
+    } else if(p.image_url){
+      imageUrl = p.image_url;
+      imageCount = 1;
+      console.warn('ใช้ image_url จาก properties (ไม่มีข้อมูลใน property_images) →', p.id);
+    } else {
+      console.warn('ไม่พบรูปใด ๆ สำหรับ property →', p.id);
+    }
+
+    container.innerHTML += `
+    <div class="bg-white rounded-2xl shadow hover:shadow-xl transition overflow-hidden relative">
+      <img src="${imageUrl}" class="w-full h-52 object-cover">
+      ${imageCount > 1 ? `<div class="absolute top-3 right-3 bg-black/70 text-white text-xs px-2 py-1 rounded">${imageCount} รูป</div>` : ''}
+      <div class="p-5">
+        <h3 class="font-bold text-lg">${safe(p.title)}</h3>
+        <p class="text-sm text-gray-500">${safe(p.subdistrict)} ${safe(p.district)}</p>
+        <p class="text-blue-600 font-bold text-xl my-2">฿${formatNumber(p.price)}</p>
+        <button onclick="openModalById(${p.id})" class="bg-blue-600 text-white px-4 py-2 rounded-lg w-full">ดูรายละเอียด</button>
+      </div>
+    </div>`;
+  }
+}
+
+function runTests(){
+  console.assert(typeof openModalById === 'function', 'openModalById must exist');
+  console.assert(typeof safe === 'function', 'safe must exist');
+  console.assert(typeof formatNumber === 'function', 'formatNumber must exist');
+  console.assert(document.getElementById('detailModal'), 'Modal must exist');
+  console.assert(Array.isArray(propertyData), 'propertyData must be array');
+  console.assert(typeof handleAction === 'function', 'handleAction must exist');
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  runTests();
+  loadProperties();
+});
+</script>
+
+
+<!-- Floating Contact Buttons -->
+<a href="https://line.me/ti/p/XXXXXXXX" class="line-float" target="_blank">💬</a>
+<a href="tel:0812345678" class="call-float">📞</a>
+
+<style>
+.line-float{
+position:fixed;
+bottom:90px;
+right:20px;
+width:60px;
+height:60px;
+border-radius:50%;
+background:#06C755;
+color:white;
+font-size:28px;
+display:flex;
+align-items:center;
+justify-content:center;
+text-decoration:none;
+box-shadow:0 8px 20px rgba(0,0,0,.3);
+z-index:9999;
+animation:floatBtn 2s infinite;
+transition:.3s;
+}
+
+.call-float{
+position:fixed;
+bottom:20px;
+right:20px;
+width:60px;
+height:60px;
+border-radius:50%;
+background:#e53935;
+color:white;
+font-size:28px;
+display:flex;
+align-items:center;
+justify-content:center;
+text-decoration:none;
+box-shadow:0 8px 20px rgba(0,0,0,.3);
+z-index:9999;
+animation:floatBtn 2s infinite .3s;
+transition:.3s;
+}
+
+.line-float:hover,.call-float:hover{
+transform:scale(1.15);
+box-shadow:0 12px 30px rgba(0,0,0,.45);
+}
+
+@keyframes floatBtn{
+0%{transform:translateY(0)}
+25%{transform:translateY(-8px)}
+50%{transform:translateY(0)}
+75%{transform:translateY(-4px)}
+100%{transform:translateY(0)}
+}
+</style>
+
+</body>
+</html>
+
