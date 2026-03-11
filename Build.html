@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แบบบ้านพร้อมราคา | ค้นหาแบบบ้านตามงบและขนาดที่ดิน</title>
+    <meta name="description" content="ค้นหาแบบบ้านพร้อมราคา เลือกตามขนาดที่ดิน งบประมาณ ห้องนอน ห้องน้ำ และที่จอดรถ เหมาะสำหรับผู้ต้องการสร้างบ้านจริง พร้อมดูรายละเอียดและรูปภาพครบถ้วน">
+    <meta name="keywords" content="แบบบ้าน, บ้านพร้อมราคา, สร้างบ้าน, แบบบ้าน 2 ห้องนอน, แบบบ้าน 3 ห้องนอน, แบบบ้านมีที่จอดรถ">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="รวมแบบบ้านพร้อมราคา เลือกได้ตามงบประมาณ">
+    <meta property="og:description" content="ดูแบบบ้านหลายรูป พร้อมรายละเอียดครบ เลือกตามขนาดที่ดินและงบประมาณ">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Kanit', sans-serif; background-color: #f0f2f5; margin: 0; padding: 0; color: #333; }
+        
+        nav {
+          background: white;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+          height: 80px;
+          display: flex;
+          align-items: center;
+          padding: 0 40px;
+        }
+
+        nav img {
+          height: 50px;
+          object-fit: contain;
+        }
+
+        nav a {
+          font-size: 14px;
+          font-weight: 500;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          text-decoration: none;
+          white-space: nowrap;
+          color: #333;
+          transition: opacity 0.2s;
+        }
+
+        nav a:hover {
+          opacity: 0.8;
+        }
+
+        nav .flex-nav {
+          display: flex;
+          gap: 32px;
+          align-items: center;
+          height: 100%;
+          margin-left: auto;
+        }
+        
+        .filter-box { max-width: 1000px; margin: 40px auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .filter-box h3 { margin-top: 15px; margin-bottom: 10px; color: #2c3e50; }
+        .filter-box input, .filter-box select { padding: 8px; width: 150px; margin: 5px; border-radius: 6px; border: 1px solid #ccc; }
+        .filter-box button { padding: 10px 20px; border: none; border-radius: 6px; background: #27ae60; color: white; cursor: pointer; margin-top: 10px; }
+        .filter-box button:hover { background: #229954; }
+        .house-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; max-width: 1200px; margin: 0 auto 40px auto; padding: 0 20px; }
+        .house-card { 
+            background: #ffffff; 
+            border-radius: 15px; 
+            overflow: hidden; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); 
+            display: flex; 
+            flex-direction: column; 
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .house-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 25px rgba(0,0,0,0.1);
+        }
+        .house-card img { width: 100%; height: 200px; object-fit: cover; }
+        .house-info { padding: 20px; }
+        .price { font-size: 1.3rem; font-weight: bold; color: #e74c3c; margin: 10px 0; }
+        .detail-list { font-size: 0.95rem; margin-top: 10px; line-height: 1.6; }
+        .no-result { text-align: center; font-weight: bold; color: red; margin-top: 20px; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 25px; border-radius: 12px; max-width: 700px; width: 95%; position: relative; max-height: 90vh; overflow-y: auto; }
+        .close-btn { position: absolute; top: 10px; right: 15px; cursor: pointer; font-size: 22px; }
+
+        .slider-container{position:relative;width:100%;margin-bottom:15px}
+.main-image{width:100%;height:350px;object-fit:cover;border-radius:10px}
+.slider-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);color:white;border:none;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center}
+.slider-btn:hover{background:rgba(0,0,0,0.7)}
+.slider-prev{left:10px}
+.slider-next{right:10px}
+.thumbnail-container{display:flex;gap:10px;overflow-x:auto;margin-bottom:15px}
+.thumbnail-container img{width:100px;height:70px;object-fit:cover;border-radius:6px;cursor:pointer;opacity:.7}
+.thumbnail-container img.active{opacity:1;border:2px solid #2980b9}
+
+        .order-btn { background:#e67e22; color:white; padding:12px; border:none; border-radius:8px; width:100%; font-size:16px; cursor:pointer; margin-top:15px; }
+        .order-btn:hover { background:#d35400; }
+
+        .order-form { margin-top:15px; display:none; }
+        .order-form input, .order-form textarea { width:100%; padding:8px; margin-bottom:8px; border-radius:6px; border:1px solid #ccc; }
+        .submit-order { background:#27ae60; color:white; border:none; padding:10px; border-radius:6px; cursor:pointer; width:100%; }
+        .submit-order:hover { background:#229954; }
+    </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav>
+  <a href="index.html" class="flex items-center">
+    <img src="https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/ssss/FixHouse-logo.png" alt="FixHouse">
+  </a>
+
+  <div class="flex-nav">
+    <a href="index.html">หน้าแรก</a>
+    <a href="Build.html">สร้าง</a>
+    <a href="Technician.html">ซ่อม</a>
+    <a href="Buy-Rent.html">เช่า</a>
+    <a href="Materials.html">ร้านวัสดุก่อสร้าง</a>
+  </div>
+</nav>
+
+<div class="filter-box">
+    <h3>📐 ขนาดที่ดิน</h3>
+    กว้าง: <input type="number" id="landWidth" placeholder="เมตร">
+    ยาว: <input type="number" id="landLength" placeholder="เมตร">
+
+    <h3>💰 งบประมาณ</h3>
+    ต่ำสุด: <input type="number" id="minPrice" placeholder="บาท">
+    สูงสุด: <input type="number" id="maxPrice" placeholder="บาท">
+
+    <h3>🏠 ฟังก์ชันบ้าน</h3>
+    ห้องนอนอย่างน้อย:
+    <select id="bedrooms">
+        <option value="0">ไม่ระบุ</option>
+        <option value="2">2 ห้อง</option>
+        <option value="3">3 ห้อง</option>
+        <option value="4">4 ห้อง</option>
+        <option value="5">5 ห้องขึ้นไป</option>
+    </select>
+
+    ห้องน้ำอย่างน้อย:
+    <select id="bathrooms">
+        <option value="0">ไม่ระบุ</option>
+        <option value="1">1 ห้อง</option>
+        <option value="2">2 ห้อง</option>
+        <option value="3">3 ห้อง</option>
+        <option value="4">4 ห้องขึ้นไป</option>
+    </select>
+
+    ที่จอดรถ:
+    <select id="parking">
+        <option value="0">ไม่ระบุ</option>
+        <option value="1">อย่างน้อย 1 คัน</option>
+        <option value="2">อย่างน้อย 2 คัน</option>
+        <option value="3">3 คันขึ้นไป</option>
+    </select>
+
+    <br>
+    <button onclick="filterHouses()">🔍 ค้นหาแบบบ้าน</button>
+</div>
+
+<main class="house-container" id="houseContainer"></main>
+
+<div id="noResult" class="no-result" style="display:none;">❌ ไม่พบแบบบ้านที่ตรงตามเงื่อนไข</div>
+
+<!-- Modal -->
+<div id="houseModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <div id="modalBody"></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const { createClient } = window.supabase;
+const supabaseClient = createClient(
+    "https://uqcjajmqtlchftpqwsrp.supabase.co",
+    "sb_publishable_yWZiH8l1idY0QWGuj6p9sg_GqXPONGX"
+);
+
+let allHouses = [];
+let currentImages = [];
+let currentImageIndex = 0;
+
+async function loadHouses() {
+    const { data, error } = await supabaseClient.from("houses").select("*");
+    if (error) { console.error(error); return; }
+    allHouses = data || [];
+    displayHouses(allHouses);
+}
+
+function displayHouses(houses) {
+    const container = document.getElementById("houseContainer");
+    container.innerHTML = "";
+
+    houses.forEach((house, index) => {
+        container.innerHTML += `
+            <div class="house-card" onclick="showDetail(${index})">
+                <img src="${house.image_url}" alt="แบบบ้าน ${house.name} ราคา ${Number(house.price).toLocaleString()} บาท" loading="lazy" />
+                <div class="house-info">
+                    <h3>${house.name}</h3>
+                    <div class="price">${Number(house.price).toLocaleString()} บาท</div>
+                    <div class="detail-list">
+                        ${house.bedrooms} ห้องนอน | 
+                        ${house.bathrooms} ห้องน้ำ | 
+                        ${house.parking} ที่จอดรถ |
+                        ขนาด ${house.width} x ${house.length} ม.
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+}
+
+async function showDetail(index) {
+    const house = allHouses[index];
+
+    // โหลดรูปจากตาราง house_images
+    const { data: images } = await supabaseClient
+        .from("house_images")
+        .select("image_url, display_order")
+        .eq("house_id", house.id)
+        .order("display_order", { ascending: true });
+
+    if (images && images.length > 0) {
+        currentImages = images.map(img => img.image_url);
+    } else if (house.image_urls) {
+        currentImages = house.image_urls.split(",").map(url => url.trim());
+    } else {
+        currentImages = [house.image_url];
+    }
+
+    const thumbnails = currentImages.map((img, i) =>
+        `<img src="${img}" class="${i===0?'active':''}" onclick="changeImage(${i}); event.stopPropagation();">`
+    ).join("");
+
+    document.getElementById("modalBody").innerHTML = `
+        <h2>${house.name}</h2>
+        <div class="slider-container">
+<img id="mainImage" class="main-image" src="${currentImages[0]}" alt="${house.name}" loading="lazy">
+<button class="slider-btn slider-prev" onclick="prevImage();event.stopPropagation()">❮</button>
+<button class="slider-btn slider-next" onclick="nextImage();event.stopPropagation()">❯</button>
+</div>
+        <div class="thumbnail-container">${thumbnails}</div>
+        <p><strong>ราคา:</strong> ${Number(house.price).toLocaleString()} บาท</p>
+        <p><strong>ขนาดที่ดินขั้นต่ำ:</strong> ${house.width} x ${house.length} เมตร</p>
+        <p><strong>ห้องนอน:</strong> ${house.bedrooms}</p>
+        <p><strong>ห้องน้ำ:</strong> ${house.bathrooms}</p>
+        <p><strong>ที่จอดรถ:</strong> ${house.parking}</p>
+
+        <hr>
+        <h3>💰 เลือกเกรดวัสดุ (ราคาเปลี่ยนอัตโนมัติ)</h3>
+        <select id="gradeSelect${index}" onchange="updatePrice(${index})">
+            <option value="0">Standard</option>
+            <option value="0.15">Premium (+15%)</option>
+            <option value="0.35">Luxury (+35%)</option>
+        </select>
+
+        <p style="margin-top:10px;font-size:18px;">ราคาประเมินใหม่: <b id="priceBox${index}">${Number(house.price).toLocaleString()} บาท</b></p>
+
+       
+        <hr>
+        <h3>🧱 เลือกวัสดุทีละรายการ (Interactive BOQ)</h3>
+
+        หลังคา:
+        <select onchange="updatePrice(${index})" class="boq" id="roof${index}">
+            <option value="0">กระเบื้องคอนกรีต</option>
+            <option value="120000">กระเบื้องเซรามิก (+120,000)</option>
+            <option value="80000">Metal Sheet PU (+80,000)</option>
+        </select>
+        <br><br>
+
+        พื้น:
+        <select onchange="updatePrice(${index})" class="boq" id="floor${index}">
+            <option value="0">กระเบื้องแกรนิตโต้</option>
+            <option value="200000">หินอ่อน (+200,000)</option>
+            <option value="90000">ลามิเนต (+90,000)</option>
+        </select>
+        <br><br>
+
+        ผนัง:
+        <select onchange="updatePrice(${index})" id="wall${index}">
+            <option value="0">อิฐมวลเบา</option>
+            <option value="120000">อิฐแดง + ฉนวน (+120,000)</option>
+        </select>
+        <br><br>
+
+        หน้าต่าง:
+        <select onchange="updatePrice(${index})" id="window${index}">
+            <option value="0">อลูมิเนียมธรรมดา</option>
+            <option value="120000">กระจก Low-E (+120,000)</option>
+        </select>
+        <br><br>
+
+        ห้องน้ำ:
+        <select onchange="updatePrice(${index})" id="bath${index}">
+            <option value="0">COTTO</option>
+            <option value="150000">TOTO / Kohler (+150,000)</option>
+        </select>
+
+        <button class="order-btn" onclick="toggleOrderForm(${index}); event.stopPropagation();">📌 สั่งสร้างบ้านรุ่นนี้</button>
+
+        <div class="order-form" id="orderForm${index}">
+            <input type="text" id="customerName${index}" placeholder="ชื่อ – นามสกุล *" required>
+            <input type="tel" id="customerPhone${index}" placeholder="เบอร์โทร *" required>
+            <input type="text" id="customerAddress${index}" placeholder="ที่อยู่สำหรับก่อสร้าง *" required>
+            <input type="text" id="customerLandSize${index}" placeholder="ขนาดที่ดิน (กว้าง x ยาว) *" required>
+            <input type="date" id="customerStartDate${index}" placeholder="ต้องการเริ่มก่อสร้างเมื่อไหร่">
+            <textarea id="customerNote${index}" placeholder="รายละเอียดเพิ่มเติม"></textarea>
+            <button class="submit-order" onclick="submitOrder(${index}); event.stopPropagation();">ยืนยันการสั่งสร้าง</button>
+        </div>
+        
+        <hr>
+        <h3>⏱️ ระยะเวลาก่อสร้าง</h3>
+        <p>โดยประมาณ 6 – 10 เดือน (ขึ้นอยู่กับพื้นที่และฤดูกาลก่อสร้าง)</p>
+
+        <hr>
+        <h3>🏢 บริษัท / ผู้รับเหมา</h3>
+        <p>โปรดตรวจสอบบริษัทเจ้าของแบบหรือผู้รับเหมาที่รับก่อสร้างจริงก่อนตัดสินใจ</p>
+        <p style="font-size:14px;color:#666">ควรตรวจสอบผลงานที่ผ่านมา รีวิวลูกค้า และสัญญาก่อสร้างก่อนทำการจ้างงาน</p>
+    `;
+
+    document.getElementById("houseModal").style.display = "flex";
+}
+
+function changeImage(index){
+currentImageIndex=index;
+document.getElementById("mainImage").src=currentImages[index];
+document.querySelectorAll(".thumbnail-container img").forEach((img,i)=>{
+img.classList.toggle("active",i===index);
+});
+}
+
+function nextImage(){
+currentImageIndex=(currentImageIndex+1)%currentImages.length;
+changeImage(currentImageIndex);
+}
+
+function prevImage(){
+currentImageIndex=(currentImageIndex-1+currentImages.length)%currentImages.length;
+changeImage(currentImageIndex);
+}
+
+function toggleOrderForm(index){
+    const form = document.getElementById(`orderForm${index}`);
+    form.style.display = form.style.display === 'block' ? 'none' : 'block';
+}
+
+async function submitOrder(index){
+    const house = allHouses[index];
+
+    const name = document.getElementById(`customerName${index}`).value;
+    const phone = document.getElementById(`customerPhone${index}`).value;
+    const address = document.getElementById(`customerAddress${index}`).value;
+    const landSize = document.getElementById(`customerLandSize${index}`).value;
+    const startDate = document.getElementById(`customerStartDate${index}`).value;
+    const note = document.getElementById(`customerNote${index}`).value;
+
+    if(!name || !phone || !address || !landSize){
+        alert('กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครบถ้วน');
+        return;
+    }
+
+    const { error } = await supabaseClient.from('orders').insert([
+        {
+            house_id: house.id,
+            house_name: house.name,
+            price: house.price,
+            customer_name: name,
+            customer_phone: phone,
+            address: address,
+            land_size: landSize,
+            start_date: startDate,
+            note: note
+        }
+    ]);
+
+    if(error){
+        alert('เกิดข้อผิดพลาด กรุณาลองใหม่');
+        console.error(error);
+        return;
+    }
+
+    alert('✅ ส่งคำขอสร้างบ้านเรียบร้อย ทีมงานจะติดต่อกลับเร็วที่สุด');
+    document.getElementById(`orderForm${index}`).style.display = 'none';
+}
+
+function closeModal() {
+    document.getElementById("houseModal").style.display = "none";
+}
+
+function filterHouses() {
+    const width = parseFloat(document.getElementById('landWidth').value) || 0;
+    const length = parseFloat(document.getElementById('landLength').value) || 0;
+    const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
+    const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
+    const bedrooms = parseFloat(document.getElementById('bedrooms').value) || 0;
+    const bathrooms = parseFloat(document.getElementById('bathrooms').value) || 0;
+    const parking = parseFloat(document.getElementById('parking').value) || 0;
+
+    const filtered = allHouses.filter(house => {
+        const matchSize = (width === 0 || length === 0) || (width >= house.width && length >= house.length);
+        const matchPrice = house.price >= minPrice && house.price <= maxPrice;
+        const matchBedrooms = house.bedrooms >= bedrooms;
+        const matchBathrooms = house.bathrooms >= bathrooms;
+        const matchParking = house.parking >= parking;
+        return matchSize && matchPrice && matchBedrooms && matchBathrooms && matchParking;
+    });
+
+    displayHouses(filtered);
+    document.getElementById('noResult').style.display = filtered.length ? "none" : "block";
+}
+
+function updatePrice(index){
+    const house = allHouses[index];
+
+    const grade = parseFloat(document.getElementById(`gradeSelect${index}`)?.value || 0);
+
+    const roof = parseInt(document.getElementById(`roof${index}`)?.value || 0);
+    const floor = parseInt(document.getElementById(`floor${index}`)?.value || 0);
+    const wall = parseInt(document.getElementById(`wall${index}`)?.value || 0);
+    const windowM = parseInt(document.getElementById(`window${index}`)?.value || 0);
+    const bath = parseInt(document.getElementById(`bath${index}`)?.value || 0);
+
+    const boqTotal = roof + floor + wall + windowM + bath;
+
+    let price = house.price + boqTotal;
+
+    price = price + (price * grade);
+
+    document.getElementById(`priceBox${index}`).innerText = price.toLocaleString() + " บาท";
+}
+
+loadHouses();
+</script>
+
+<!-- Floating Contact Buttons -->
+<a href="https://line.me/ti/p/XXXXXXXX" class="floating-line" target="_blank" title="แชท LINE">💬</a>
+<a href="tel:0812345678" class="floating-call" title="โทรหาเรา">📞</a>
+
+<style>
+.floating-line{
+position:fixed;
+bottom:90px;
+right:20px;
+background:#06C755;
+color:white;
+width:60px;
+height:60px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:28px;
+text-decoration:none;
+box-shadow:0 6px 15px rgba(0,0,0,0.3);
+z-index:9999;
+transition:0.3s;
+animation:floatBounce 2s infinite;
+}
+
+.floating-call{
+position:fixed;
+bottom:20px;
+right:20px;
+background:#e74c3c;
+color:white;
+width:60px;
+height:60px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:28px;
+text-decoration:none;
+box-shadow:0 6px 15px rgba(0,0,0,0.3);
+z-index:9999;
+transition:0.3s;
+animation:floatBounce 2s infinite 0.3s;
+}
+
+.floating-line:hover,
+.floating-call:hover{
+transform:scale(1.15);
+box-shadow:0 12px 30px rgba(0,0,0,0.4);
+}
+
+@keyframes floatBounce{
+0%{transform:translateY(0)}
+25%{transform:translateY(-6px)}
+50%{transform:translateY(0)}
+75%{transform:translateY(-3px)}
+100%{transform:translateY(0)}
+}
+</style>
+
+</body>
+</html>
+
+
