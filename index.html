@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FixHome | บริการช่างครบวงจร</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{box-sizing:border-box}
+
+body{
+font-family: "Sarabun", "Segoe UI", Tahoma, sans-serif;
+margin:0;
+background:#f5f7fa;
+color:#2c3e50
+}
+
+/* ===== NAVBAR ===== */
+header{
+background:#ffffff;
+color:#2c3e50;
+padding:12px 40px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+position:sticky;
+top:0;
+z-index:1000;
+height:80px;
+min-height:80px;
+box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.logo img{
+height:50px;
+object-fit:contain
+}
+
+nav a{
+color:#2c3e50;
+margin-left:28px;
+text-decoration:none;
+font-weight:600;
+transition:.25s;
+font-size:15px;
+display:flex;
+align-items:center;
+height:100%;
+white-space:nowrap
+}
+
+nav{
+display:flex;
+align-items:center;
+height:100%;
+margin-left:auto
+}
+
+nav a:hover{
+color:#0066cc;
+}
+
+/* ===== HERO ===== */
+.hero{
+background:url('https://images.unsplash.com/photo-1581578731548-c64695cc6952') center/cover;
+height:420px;
+display:flex;
+align-items:center;
+justify-content:center;
+text-align:center;
+color:white;
+position:relative
+}
+
+.hero::after{
+content:"";
+position:absolute;
+left:0;
+right:0;
+top:0;
+bottom:0;
+background:rgba(0,0,0,0.5)
+}
+
+.hero div{
+position:relative;
+z-index:2
+}
+
+.hero h2{
+font-size:42px;
+margin:0 0 20px 0;
+font-weight:700;
+letter-spacing:-0.5px
+}
+
+.hero p{
+font-size:18px;
+margin:0;
+font-weight:400;
+opacity:0.95
+}
+
+button{
+background:#0066cc;
+border:none;
+padding:13px 32px;
+border-radius:8px;
+color:white;
+font-size:16px;
+font-weight:600;
+cursor:pointer;
+transition:.25s;
+margin-top:20px
+}
+
+button:hover{
+background:#0052a3;
+transform:translateY(-2px);
+box-shadow:0 8px 20px rgba(0,102,204,0.3)
+}
+
+/* ===== SERVICES ===== */
+.services{
+padding:80px 30px;
+max-width:1200px;
+margin:auto;
+text-align:center
+}
+
+.services h2{
+font-size:36px;
+margin:0 0 15px 0;
+font-weight:700;
+color:#2c3e50
+}
+
+.services > p{
+font-size:16px;
+color:#666;
+margin-bottom:50px
+}
+
+.service-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:28px;
+margin-top:40px
+}
+
+.card{
+background:white;
+padding:24px;
+border-radius:12px;
+box-shadow:0 4px 12px rgba(0,0,0,0.08);
+transition:.3s;
+cursor:pointer;
+border:1px solid #e8ecf1
+}
+
+.card:hover{
+transform:translateY(-8px);
+box-shadow:0 12px 32px rgba(0,0,0,0.12);
+border-color:#0066cc
+}
+
+.card img{
+width:100%;
+height:160px;
+object-fit:cover;
+border-radius:8px;
+margin-bottom:16px
+}
+
+.card h3{
+margin:14px 0 8px 0;
+font-size:22px;
+color:#2c3e50;
+font-weight:700
+}
+
+.card p{
+font-size:15px;
+color:#666;
+line-height:1.6
+}
+
+/* ===== PORTFOLIO SECTION ===== */
+.portfolio{
+padding:80px 30px;
+max-width:1200px;
+margin:auto;
+text-align:center
+}
+
+.portfolio h2{
+font-size:36px;
+margin:0 0 15px 0;
+font-weight:700;
+color:#2c3e50
+}
+
+.portfolio > p{
+font-size:16px;
+color:#666;
+margin-bottom:50px
+}
+
+.portfolio-grid{
+display:flex;
+overflow-x:auto;
+gap:28px;
+margin-top:40px;
+padding-bottom: 24px;
+scroll-snap-type: x mandatory;
+-webkit-overflow-scrolling: touch;
+scrollbar-width: thin;
+scrollbar-color: #0066cc #f1f1f1;
+}
+
+.portfolio-grid::-webkit-scrollbar {
+height: 8px;
+}
+.portfolio-grid::-webkit-scrollbar-track {
+background: #f1f1f1;
+border-radius: 8px;
+}
+.portfolio-grid::-webkit-scrollbar-thumb {
+background: #0066cc;
+border-radius: 8px;
+}
+.portfolio-grid::-webkit-scrollbar-thumb:hover {
+background: #0052a3;
+}
+
+.portfolio-card{
+flex: 0 0 300px;
+scroll-snap-align: start;
+background:white;
+border-radius:12px;
+overflow:hidden;
+box-shadow:0 4px 12px rgba(0,0,0,0.08);
+transition:.3s;
+border:1px solid #e8ecf1;
+cursor:pointer
+}
+
+.portfolio-card:hover{
+transform:translateY(-8px);
+box-shadow:0 12px 32px rgba(0,0,0,0.12);
+border-color:#0066cc
+}
+
+.portfolio-card img{
+width:100%;
+height:200px;
+object-fit:cover;
+display:block;
+background:#e8ecf1
+}
+
+.portfolio-info{
+padding:20px
+}
+
+.portfolio-info h3{
+margin:0 0 8px 0;
+font-size:18px;
+color:#2c3e50;
+font-weight:700
+}
+
+.portfolio-info p{
+font-size:14px;
+color:#666;
+margin:0
+}
+
+/* ===== FEATURES ===== */
+.features{
+background:linear-gradient(135deg,#0066cc,#0052a3);
+color:white;
+padding:80px 30px;
+text-align:center
+}
+
+.features h2{
+font-size:36px;
+margin:0 0 15px 0;
+font-weight:700
+}
+
+.features > p{
+font-size:16px;
+opacity:0.95;
+margin-bottom:50px
+}
+
+.feature-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:32px;
+margin-top:40px;
+max-width:1000px;
+margin-left:auto;
+margin-right:auto
+}
+
+.feature-grid div{
+background:rgba(255,255,255,0.1);
+padding:28px;
+border-radius:12px;
+border:1px solid rgba(255,255,255,0.2);
+backdrop-filter:blur(10px)
+}
+
+.feature-grid div h3{
+font-size:20px;
+margin:12px 0 12px 0;
+font-weight:700
+}
+
+.feature-grid div p{
+font-size:14px;
+opacity:0.9;
+line-height:1.6
+}
+
+/* ===== FOOTER ===== */
+footer{
+background:#1f2937;
+color:#9ca3af;
+text-align:center;
+padding:28px;
+margin-top:60px;
+font-size:14px
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width:1024px){
+header{padding:12px 24px;}
+nav a{margin-left:20px;}
+.services{padding:60px 20px}
+.portfolio{padding:60px 20px}
+.features{padding:60px 20px}
+}
+
+@media (max-width:768px){
+
+header{
+flex-wrap:wrap;
+height:auto;
+padding:12px 20px;
+}
+
+nav{
+width:100%;
+margin-top:8px;
+justify-content:flex-start;
+flex-wrap:wrap;
+}
+
+nav a{
+margin:6px 12px 6px 0;
+font-size:14px;
+}
+
+.hero{
+height:340px;
+padding:0 20px;
+}
+
+.hero h2{
+font-size:32px
+}
+
+.hero p{
+font-size:16px
+}
+
+.services{
+padding:50px 20px
+}
+
+.portfolio{
+padding:50px 20px
+}
+
+.service-grid{gap:20px}
+
+.portfolio-grid{gap:20px}
+
+.card{padding:18px}
+
+.card img{height:140px}
+
+.features{padding:50px 20px}
+
+.feature-grid{gap:24px}
+
+.feature-grid div{padding:20px}
+
+}
+
+@media (max-width:480px){
+
+header{
+padding:10px 16px;
+height:auto;
+}
+
+.logo img{height:42px}
+
+nav a{
+margin:4px 8px 4px 0;
+font-size:13px;
+}
+
+.hero{
+height:280px;
+}
+
+.hero h2{
+font-size:26px;
+margin-bottom:12px
+}
+
+.hero p{
+font-size:14px
+}
+
+button{
+padding:11px 24px;
+font-size:14px;
+margin-top:16px
+}
+
+.services h2,
+.portfolio h2,
+.features h2{
+font-size:28px
+}
+
+.service-grid{gap:16px}
+
+.portfolio-grid{gap:16px}
+
+.card{padding:16px}
+
+.card img{height:120px}
+
+.card h3{font-size:18px}
+
+.card p{font-size:13px}
+
+.portfolio-card{flex: 0 0 260px}
+
+.portfolio-card img{height:160px}
+
+.portfolio-info h3{font-size:16px}
+
+.portfolio-info p{font-size:13px}
+
+.feature-grid{gap:16px}
+
+.feature-grid div{
+padding:16px;
+}
+
+.feature-grid div h3{
+font-size:18px;
+}
+
+.feature-grid div p{
+font-size:13px;
+}
+
+.line-float,.call-float{
+width:52px;
+height:52px;
+font-size:24px;
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+<div class="logo">
+ <a href="index.html">
+    <img src="https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/ssss/FixHouse-logo.png" alt="FixHouse">
+  </a>
+</div>
+<nav>
+<a href="index.html">หน้าแรก</a>
+<a href="Build.html">สร้าง</a>
+<a href="Technician.html">ซ่อม</a>
+<a href="Buy-Rent.html">เช่า</a>
+<a href="Materials.html">ร้านวัสดุ</a>
+<a href="Apply.html" class="active">สมัครงาน</a>
+  
+</nav>
+</header>
+
+<section class="hero">
+<div>
+<h2>เรียกช่างง่ายๆ ซ่อมบ้านได้ทันที</h2>
+<p style="font-size:18px">บริการช่างครบวงจร ที่เชื่อถือได้</p>
+<button onclick="window.location.href='Technician.html'">เรียกช่างเลย</button>
+</div>
+</section>
+
+<section class="services" id="services">
+<h2>บริการของเรา</h2>
+<p>ตอบสนองความต้องการทั้งหมดของคุณในการบ้าน</p>
+
+<div class="service-grid">
+
+<div class="card" onclick="window.location.href='Technician.html'">
+<img src="https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc" alt="ซ่อม">
+<h3>ซ่อม</h3>
+<p>บริการซ่อมไฟฟ้า ประปา แอร์ และเครื่องใช้ไฟฟ้าภายในบ้านอย่างมืออาชีพ</p>
+</div>
+
+<div class="card" onclick="window.location.href='Build.html'">
+<img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c" alt="สร้าง">
+<h3>สร้าง</h3>
+<p>บริการก่อสร้างบ้าน ต่อเติม รีโนเวท และงานโครงสร้างสูง</p>
+</div>
+
+<div class="card" onclick="window.location.href='Buy-Rent.html'">
+<img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa" alt="ซื้อ / เช่า">
+<h3>ซื้อ / เช่า</h3>
+<p>ค้นหาบ้าน คอนโด และอสังหาริมทรัพย์สำหรับซื้อหรือเช่าได้ง่าย</p>
+</div>
+
+<div class="card" onclick="window.location.href='Materials.html'">
+<img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e" alt="ร้านวัสดุ">
+<h3>ร้านวัสดุ</h3>
+<p>ค้นหาร้านวัสดุก่อสร้างใกล้คุณ พร้อมข้อมูลสมบูรณ์</p>
+</div>
+
+</div>
+</section>
+
+<!-- PORTFOLIO SECTION -->
+<section class="portfolio" id="portfolio">
+<h2>ผลงานของเรา</h2>
+<p>บริการจริง จากลูกค้าจริง</p>
+
+<div class="portfolio-grid" id="portfolioGrid">
+</div>
+</section>
+
+<section class="features">
+<h2>ทำไมต้องใช้บริการเรา</h2>
+<p>ความเชื่อมั่นจากลูกค้าหลายพันรายแล้ว</p>
+
+<div class="feature-grid">
+
+<div>
+<h3>👷 ช่างมืออาชีพ</h3>
+<p>ผ่านการตรวจสอบตัวตนและมีประสบการณ์หลายปี</p>
+</div>
+
+<div>
+<h3>🛡 รับประกันงาน</h3>
+<p>หมดปัญหาช่างทิ้งงาน งานได้มาตรฐาน</p>
+</div>
+
+<div>
+<h3>⚡ จองง่าย</h3>
+<p>จองบริการผ่านเว็บไซต์ได้ทันทีไม่ต้องรอนาน</p>
+</div>
+
+</div>
+
+</section>
+
+<footer>
+<p>© 2026 FixHome - บริการช่างครบวงจร | สิทธิ์ทั้งหมดสงวนไว้</p>
+</footer>
+
+<!-- Floating Contact Buttons -->
+<a href="https://line.me/ti/p/XXXXXXXX" class="line-float" target="_blank" title="แชท LINE">💬</a>
+<a href="tel:0812345678" class="call-float" title="โทรหาเรา">📞</a>
+
+<style>
+.line-float{
+position:fixed;
+bottom:90px;
+right:20px;
+width:60px;
+height:60px;
+border-radius:50%;
+background:#06C755;
+color:white;
+font-size:28px;
+display:flex;
+align-items:center;
+justify-content:center;
+text-decoration:none;
+box-shadow:0 8px 20px rgba(0,0,0,.3);
+z-index:9999;
+animation:floatBtn 2s infinite;
+transition:.3s;
+}
+
+.call-float{
+position:fixed;
+bottom:20px;
+right:20px;
+width:60px;
+height:60px;
+border-radius:50%;
+background:#e53935;
+color:white;
+font-size:28px;
+display:flex;
+align-items:center;
+justify-content:center;
+text-decoration:none;
+box-shadow:0 8px 20px rgba(0,0,0,.3);
+z-index:9999;
+animation:floatBtn 2s infinite .3s;
+transition:.3s;
+}
+
+.line-float:hover,.call-float:hover{
+transform:scale(1.15);
+box-shadow:0 12px 30px rgba(0,0,0,.45);
+}
+
+@keyframes floatBtn{
+0%{transform:translateY(0)}
+25%{transform:translateY(-8px)}
+50%{transform:translateY(0)}
+75%{transform:translateY(-4px)}
+100%{transform:translateY(0)}
+}
+</style>
+
+<script>
+// Portfolio images array
+const portfolioImages = [
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/271210(1).jpg',
+    title: 'ผลงาน 1'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/271210.jpg',
+    title: 'ผลงาน 2'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/271211_0.jpg',
+    title: 'ผลงาน 3'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/271212_0.jpg',
+    title: 'ผลงาน 4'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/271213_0.jpg',
+    title: 'ผลงาน 5'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/271214_0.jpg',
+    title: 'ผลงาน 6'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/271217_0.jpg',
+    title: 'ผลงาน 7'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/271218_0.jpg',
+    title: 'ผลงาน 8'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/IMG_20250821_135424.jpg',
+    title: 'ผลงาน 9'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/IMG_20250822_120800.jpg',
+    title: 'ผลงาน 10'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/IMG_20250831_105414.jpg',
+    title: 'ผลงาน 11'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/IMG_20250831_110027.jpg',
+    title: 'ผลงาน 12'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/IMG_20250902_115110.jpg',
+    title: 'ผลงาน 13'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/IMG_20250904_102133.jpg',
+    title: 'ผลงาน 14'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/IMG_20250905_113735.jpg',
+    title: 'ผลงาน 15'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/IMG_20250923_123036.jpg',
+    title: 'ผลงาน 16'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/IMG_20250928_112358.jpg',
+    title: 'ผลงาน 17'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/IMG_20250928_114001.jpg',
+    title: 'ผลงาน 18'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/IMG_20251011_121457.jpg',
+    title: 'ผลงาน 19'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/IMG_20251011_121626.jpg',
+    title: 'ผลงาน 20'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/Messenger_creation_370B1CDB-350B-48D9-A237-AC2ED612939C.jpg',
+    title: 'ผลงาน 21'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/Messenger_creation_3B48EC46-34BB-4B45-897A-FD4FC6FF3DE6.jpg',
+    title: 'ผลงาน 22'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/Messenger_creation_5466BD62-BBAF-45F4-B724-E2A4D5BC6BED.jpg',
+    title: 'ผลงาน 23'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/Messenger_creation_5DC6F4C2-7FE8-47DB-9DAB-C832DFF50012.jpg',
+    title: 'ผลงาน 24'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/Messenger_creation_AF3970E1-8C5A-446D-A9A2-131149C5005F.jpg',
+    title: 'ผลงาน 25'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/Messenger_creation_F8BC8B68-5BBD-4D28-892B-E4BA56C222CA.jpg',
+    title: 'ผลงาน 26'
+  },
+  {
+    url: 'https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/Portpoilo/Screenshot_2025-09-13-09-06-06-443_com.facebook.katana.jpg',
+    title: 'ผลงาน 27'
+  }
+];
+
+// Load portfolio images
+function loadPortfolioImages() {
+  const portfolioGrid = document.getElementById('portfolioGrid');
+  
+  portfolioImages.forEach(image => {
+    const card = document.createElement('div');
+    card.className = 'portfolio-card';
+    
+    card.innerHTML = `
+      <img src="${image.url}" alt="${image.title}" loading="lazy">
+      <div class="portfolio-info">
+        <h3>${image.title}</h3>
+        <p>ผลงานจากลูกค้า</p>
+      </div>
+    `;
+
+    // Open image in modal on click
+    card.addEventListener('click', () => {
+      openImageModal(image.url, image.title);
+    });
+
+    portfolioGrid.appendChild(card);
+  });
+}
+
+// Open image in modal
+function openImageModal(imageUrl, title) {
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
+  `;
+
+  modal.innerHTML = `
+    <div style="position: relative; max-width: 90vw; max-height: 90vh;">
+      <img src="${imageUrl}" alt="${title}" style="width: 100%; height: auto; border-radius: 8px; max-height: 80vh;">
+      <button onclick="this.parentElement.parentElement.remove()" style="
+        position: absolute;
+        top: -50px;
+        right: 0;
+        background: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        font-size: 24px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.25s;
+      " onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='white'">✕</button>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.remove();
+  });
+}
+
+// Load portfolio on page load
+document.addEventListener('DOMContentLoaded', loadPortfolioImages);
+</script>
+
+</body>
+</html>

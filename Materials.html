@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ร้านวัสดุก่อสร้าง - FixHome</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body { 
+          font-family: 'Sarabun', sans-serif; 
+          background-color: #f5f7fa; 
+          margin: 0; 
+          padding: 0; 
+          color: #2c3e50;
+        }
+
+        /* ===== NAVBAR ===== */
+        nav {
+          background: white;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+          min-height: 80px;
+          display: flex;
+          align-items: center;
+          padding: 0 40px;
+          flex-wrap: wrap;
+          position: sticky;
+          top: 0;
+          z-index: 1000;
+        }
+
+        nav a {
+          font-size: 15px;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          text-decoration: none;
+          white-space: nowrap;
+          color: #2c3e50;
+          transition: color 0.25s;
+        }
+
+        nav a:hover {
+          color: #0066cc;
+        }
+
+        nav img {
+          height: 50px;
+          object-fit: contain;
+        }
+
+        nav .flex-nav {
+          display: flex;
+          gap: 28px;
+          align-items: center;
+          margin-left: auto;
+          flex-wrap: wrap;
+        }
+
+        /* ===== PAGE HEADER ===== */
+        .page-header {
+          background: linear-gradient(135deg, #0066cc, #0052a3);
+          color: white;
+          padding: 60px 20px;
+          text-align: center;
+        }
+
+        .page-header h1 {
+          font-size: 40px;
+          margin: 0 0 12px 0;
+          font-weight: 700;
+        }
+
+        .page-header p {
+          font-size: 18px;
+          margin: 0;
+          opacity: 0.95;
+        }
+
+        /* ===== SEARCH BAR ===== */
+        .search-section {
+          max-width: 1200px;
+          margin: -50px auto 50px;
+          padding: 0 20px;
+          position: relative;
+          z-index: 10;
+        }
+
+        .search-box {
+          background: white;
+          padding: 24px;
+          border-radius: 12px;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+          border: 1px solid #e8ecf1;
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          gap: 12px;
+        }
+
+        .search-box input,
+        .search-box button {
+          padding: 11px 14px;
+          border-radius: 8px;
+          font-family: 'Sarabun', sans-serif;
+          font-size: 14px;
+          border: 1px solid #d1d5db;
+          transition: all 0.25s;
+        }
+
+        .search-box input {
+          width: 100%;
+        }
+
+        .search-box input:focus {
+          outline: none;
+          border-color: #0066cc;
+          box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
+        }
+
+        .search-box button {
+          background: #0066cc;
+          color: white;
+          border: none;
+          font-weight: 600;
+          cursor: pointer;
+          width: 100%;
+        }
+
+        .search-box button:hover {
+          background: #0052a3;
+          transform: translateY(-2px);
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        main {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 0 20px 60px;
+        }
+
+        main h2 {
+          font-size: 32px;
+          font-weight: 700;
+          text-align: center;
+          margin: 50px 0 40px;
+          color: #2c3e50;
+        }
+
+        /* ===== SHOP CONTAINER ===== */
+        #shopContainer {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          gap: 28px;
+        }
+
+        .shop-card {
+          background: white;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+          border: 1px solid #e8ecf1;
+          transition: all 0.3s;
+        }
+
+        .shop-card:hover {
+          transform: translateY(-8px);
+          box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+        }
+
+        .shop-card img {
+          width: 100%;
+          height: 200px;
+          object-fit: cover;
+          display: block;
+        }
+
+        .shop-card .no-image {
+          width: 100%;
+          height: 200px;
+          background: #e8ecf1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #999;
+          font-size: 14px;
+        }
+
+        .shop-info {
+          padding: 20px;
+        }
+
+        .shop-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 12px;
+        }
+
+        .shop-info h3 {
+          margin: 0;
+          font-size: 18px;
+          font-weight: 700;
+          color: #2c3e50;
+          flex: 1;
+        }
+
+        .status-badge {
+          padding: 4px 8px;
+          border-radius: 6px;
+          font-size: 12px;
+          font-weight: 600;
+          white-space: nowrap;
+          margin-left: 8px;
+        }
+
+        .status-open {
+          background: #d1f5e6;
+          color: #10b981;
+        }
+
+        .status-closed {
+          background: #fee2e2;
+          color: #ef4444;
+        }
+
+        .shop-info p {
+          margin: 8px 0;
+          font-size: 14px;
+          color: #666;
+          line-height: 1.6;
+        }
+
+        .shop-details {
+          border-top: 1px solid #e8ecf1;
+          padding-top: 12px;
+          margin-top: 12px;
+          font-size: 13px;
+          color: #666;
+        }
+
+        .shop-details p {
+          margin: 6px 0;
+        }
+
+        .shop-card a {
+          display: block;
+          width: 100%;
+          margin-top: 14px;
+          padding: 10px;
+          text-align: center;
+          border-radius: 8px;
+          text-decoration: none;
+          font-weight: 600;
+          transition: all 0.25s;
+          border: none;
+          cursor: pointer;
+          font-family: 'Sarabun', sans-serif;
+          font-size: 14px;
+        }
+
+        .shop-card .website-btn {
+          background: #0066cc;
+          color: white;
+        }
+
+        .shop-card .website-btn:hover {
+          background: #0052a3;
+        }
+
+        .shop-card .no-website {
+          background: #d1d5db;
+          color: #666;
+          cursor: not-allowed;
+        }
+
+        .no-result {
+          text-align: center;
+          color: #e74c3c;
+          font-weight: 600;
+          font-size: 16px;
+          margin: 60px 0;
+          grid-column: 1 / -1;
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+          background: #1f2937;
+          color: #9ca3af;
+          text-align: center;
+          padding: 28px;
+          margin-top: 60px;
+          font-size: 14px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+          nav { padding: 0 24px; }
+          nav .flex-nav { gap: 20px; }
+          .search-box { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+          nav {
+            flex-direction: column;
+            align-items: flex-start;
+            height: auto;
+            padding: 12px 16px;
+          }
+
+          nav .flex-nav {
+            width: 100%;
+            margin-left: 0;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+          }
+
+          nav a { font-size: 14px; }
+
+          .page-header {
+            padding: 40px 20px;
+          }
+
+          .page-header h1 {
+            font-size: 28px;
+          }
+
+          .search-section {
+            margin: -30px auto 40px;
+          }
+
+          .search-box {
+            padding: 16px;
+            grid-template-columns: 1fr;
+          }
+
+          #shopContainer {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+          }
+
+          main h2 {
+            font-size: 28px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          nav {
+            padding: 10px 12px;
+          }
+
+          nav img { height: 42px; }
+
+          nav a { font-size: 12px; }
+
+          nav .flex-nav { gap: 8px; }
+
+          .page-header {
+            padding: 30px 16px;
+          }
+
+          .page-header h1 {
+            font-size: 24px;
+          }
+
+          .page-header p {
+            font-size: 14px;
+          }
+
+          .search-section {
+            margin: -20px auto 30px;
+          }
+
+          #shopContainer {
+            grid-template-columns: 1fr;
+            gap: 16px;
+          }
+
+          .shop-card img,
+          .shop-card .no-image {
+            height: 160px;
+          }
+
+          .shop-info {
+            padding: 16px;
+          }
+
+          .shop-info h3 {
+            font-size: 16px;
+          }
+
+          .shop-card a {
+            padding: 9px;
+            font-size: 13px;
+            margin-top: 12px;
+          }
+
+          main h2 {
+            font-size: 22px;
+            margin: 40px 0 30px;
+          }
+
+          main {
+            padding: 0 16px 40px;
+          }
+
+          .line-float, .call-float {
+            width: 52px;
+            height: 52px;
+            font-size: 24px;
+          }
+        }
+
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <a href="index.html">
+    <img src="https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/ssss/FixHouse-logo.png" alt="FixHouse">
+  </a>
+  <div class="flex-nav">
+    <a href="index.html">หน้าแรก</a>
+    <a href="Build.html">สร้าง</a>
+    <a href="Technician.html">ซ่อม</a>
+    <a href="Buy-Rent.html">เช่า</a>
+    <a href="Materials.html">ร้านวัสดุ</a>
+        <a href="Apply.html" class="active">สมัครงาน</a>
+  
+  </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<section class="page-header">
+  <h1>🏪 ร้านวัสดุก่อสร้าง</h1>
+  <p>ค้นหาร้านวัสดุที่ใกล้คุณ พร้อมข้อมูลสมบูรณ์และเว็บไซต์</p>
+</section>
+
+<!-- SEARCH SECTION -->
+<div class="search-section">
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="ค้นหาชื่อร้าน...">
+    <input type="text" id="provinceInput" placeholder="จังหวัด">
+    <input type="text" id="districtInput" placeholder="อำเภอ">
+    <input type="text" id="subdistrictInput" placeholder="ตำบล">
+    <button onclick="searchShops()">🔍 ค้นหา</button>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<main>
+  <h2>ร้านวัสดุแนะนำใกล้คุณ</h2>
+  <div id="shopContainer"></div>
+</main>
+
+<div id="noResult" class="no-result" style="display:none;">❌ ไม่พบร้านค้า</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>&copy; 2026 FixHome - ศูนย์รวมร้านวัสดุก่อสร้าง | สิทธิ์ทั้งหมดสงวนไว้</p>
+</footer>
+
+<script>
+const supabaseUrl = "https://uqcjajmqtlchftpqwsrp.supabase.co";
+const supabaseKey = "sb_publishable_yWZiH8l1idY0QWGuj6p9sg_GqXPONGX";
+
+const { createClient } = window.supabase;
+const db = createClient(supabaseUrl, supabaseKey);
+
+const shopContainer = document.getElementById("shopContainer");
+
+async function loadShops(filters = {}) {
+  let query = db.from("shops").select("*");
+
+  if (filters.name) query = query.ilike("name", `%${filters.name}%`);
+  if (filters.subdistrict) query = query.ilike("subdistrict", `%${filters.subdistrict}%`);
+  if (filters.district) query = query.ilike("district", `%${filters.district}%`);
+  if (filters.province) query = query.ilike("province", `%${filters.province}%`);
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error("Error loading shops:", error);
+    shopContainer.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #e74c3c;">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>';
+    return;
+  }
+
+  shopContainer.innerHTML = "";
+
+  if (!data || data.length === 0) {
+    document.getElementById('noResult').style.display = "block";
+    return;
+  }
+
+  document.getElementById('noResult').style.display = "none";
+
+  data.forEach(shop => {
+    const statusBadge = shop.is_open
+      ? `<span class="status-badge status-open">✓ เปิดอยู่</span>`
+      : `<span class="status-badge status-closed">✕ ปิดแล้ว</span>`;
+
+    const websiteButton = shop.website_url
+      ? `<a href="${shop.website_url}" target="_blank" class="website-btn">🌐 เข้าสู่เว็บไซต์</a>`
+      : `<a class="no-website">❌ ไม่มีเว็บไซต์</a>`;
+
+    const shopCard = document.createElement('div');
+    shopCard.className = 'shop-card';
+    shopCard.innerHTML = `
+      <div>
+        ${shop.image_url
+          ? `<img src="${shop.image_url}" alt="${shop.name}" loading="lazy">`
+          : `<div class="no-image">ไม่มีรูปภาพ</div>`}
+      </div>
+      <div class="shop-info">
+        <div class="shop-header">
+          <h3>${shop.name}</h3>
+          ${statusBadge}
+        </div>
+        <p>${shop.description || "ร้านวัสดุก่อสร้าง"}</p>
+        <div class="shop-details">
+          <p>📍 ${shop.subdistrict || ""} ${shop.district || ""} ${shop.province || ""}</p>
+          <p>🚚 พื้นที่ให้บริการ: ${shop.service_area || "ไม่ระบุ"}</p>
+          <p>📞 ${shop.phone || "-"}</p>
+        </div>
+        ${websiteButton}
+      </div>
+    `;
+    shopContainer.appendChild(shopCard);
+  });
+}
+
+function searchShops() {
+  const filters = {
+    name: document.getElementById("searchInput").value,
+    subdistrict: document.getElementById("subdistrictInput").value,
+    district: document.getElementById("districtInput").value,
+    province: document.getElementById("provinceInput").value
+  };
+
+  loadShops(filters);
+}
+
+loadShops();
+</script>
+
+<!-- Floating Contact Buttons -->
+<a href="https://line.me/ti/p/XXXXXXXX" class="line-float" target="_blank" title="แชท LINE">💬</a>
+<a href="tel:0812345678" class="call-float" title="โทรหาเรา">📞</a>
+
+<style>
+.line-float {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  background: #06C755;
+  color: white;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  text-decoration: none;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  z-index: 9999;
+  animation: floatBtn 2s infinite;
+  transition: all 0.3s;
+}
+
+.call-float {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #e53935;
+  color: white;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  text-decoration: none;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  z-index: 9999;
+  animation: floatBtn 2s infinite 0.3s;
+  transition: all 0.3s;
+}
+
+.line-float:hover,
+.call-float:hover {
+  transform: scale(1.15);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+}
+
+@keyframes floatBtn {
+  0% { transform: translateY(0); }
+  25% { transform: translateY(-8px); }
+  50% { transform: translateY(0); }
+  75% { transform: translateY(-4px); }
+}
+</style>
+<!-- AI Chat Widget -->
+<div class="chat-toggle-ai" id="chatToggleBtn" onclick="toggleChat()">
+  🛒
+</div>
+
+<div class="chat-container-ai" id="chatContainer" style="display: none;">
+  <div class="chat-box-ai">
+    <div class="header-ai">
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <span>🛒 AI แนะนำวัสดุ</span>
+        <button onclick="toggleChat()" style="background:none; border:none; color:white; font-size:16px; cursor:pointer; padding:0;">✖</button>
+      </div>
+    </div>
+    <div class="messages-ai" id="ai-messages"></div>
+    <div class="input-area-ai">
+      <input id="ai-input" placeholder="พิมพ์เช่น: ต้องการกระเบื้องปูพื้น..." onkeypress="handleKeyPress(event)">
+      <button onclick="sendAI()">➤</button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* AI Chat Styles */
+.chat-toggle-ai {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 60px;
+    height: 60px;
+    background: #2563eb;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    z-index: 10000;
+    transition: transform 0.3s;
+}
+
+.chat-toggle-ai:hover {
+    transform: scale(1.1);
+}
+
+.chat-container-ai {
+    position: fixed;
+    bottom: 90px;
+    left: 20px;
+    z-index: 9999;
+    font-family: 'Sarabun', sans-serif;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.chat-box-ai {
+    width: 350px;
+    height: 500px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+}
+
+.header-ai {
+    background: #2563eb;
+    color: white;
+    padding: 15px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.messages-ai {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background: #f9fafb;
+    display: flex;
+    flex-direction: column;
+}
+
+.message-ai {
+    margin-bottom: 12px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    max-width: 85%;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.user-ai {
+    background: #2563eb;
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 2px;
+}
+
+.bot-ai {
+    background: white;
+    color: #1f2937;
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.loading-ai {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    align-self: flex-start;
+    font-style: italic;
+    color: #6b7280;
+    padding: 5px 0;
+}
+
+.input-area-ai {
+    display: flex;
+    background: white;
+    padding: 12px;
+    border-top: 1px solid #e5e7eb;
+    gap: 10px;
+    align-items: center;
+}
+
+.input-area-ai input {
+    flex: 1;
+    border: 1px solid #d1d5db;
+    border-radius: 20px;
+    padding: 10px 16px;
+    font-size: 14px;
+    outline: none;
+    font-family: 'Sarabun', sans-serif;
+    width: 100%;
+}
+
+.input-area-ai input:focus {
+    border-color: #2563eb;
+}
+
+.input-area-ai button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.input-area-ai button:hover {
+    background: #1d4ed8;
+}
+
+.ai-image {
+    max-width: 100%;
+    border-radius: 8px;
+    margin-top: 8px;
+    display: block;
+}
+
+@media (max-width: 480px) {
+    .chat-container-ai {
+        left: 10px;
+        bottom: 90px;
+        right: 10px;
+    }
+    .chat-box-ai {
+        width: 100%;
+        height: 60vh;
+    }
+}
+</style>
+
+<script>
+const webhookURLAI = "https://sevenican6.app.n8n.cloud/webhook/b813bf13-6067-4721-a453-9503789c0bce";
+let chatOpen = false;
+
+function toggleChat() {
+    const container = document.getElementById("chatContainer");
+    chatOpen = !chatOpen;
+    container.style.display = chatOpen ? "block" : "none";
+    if(chatOpen) {
+        document.getElementById("ai-input").focus();
+        const messages = document.getElementById("ai-messages");
+        messages.scrollTop = messages.scrollHeight;
+    }
+}
+
+function addMessageAI(text, type, isImage=false) {
+    const div = document.createElement("div");
+    div.className = "message-ai " + type;
+    if (isImage) {
+        const img = document.createElement("img");
+        img.src = text;
+        img.className = "ai-image";
+        img.onload = () => {
+            const messages = document.getElementById("ai-messages");
+            messages.scrollTop = messages.scrollHeight;
+        };
+        div.appendChild(img);
+    } else {
+        div.innerText = text;
+    }
+    const messages = document.getElementById("ai-messages");
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+    return div;
+}
+
+async function sendAI() {
+    const input = document.getElementById("ai-input");
+    const message = input.value.trim();
+    if (!message) return;
+
+    addMessageAI(message, "user-ai");
+    input.value = "";
+
+    const loading = addMessageAI("AI กำลังคิด...", "loading-ai");
+
+    try {
+        const res = await fetch(webhookURLAI, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ message: message })
+        });
+
+        const contentType = res.headers.get("content-type");
+        loading.remove();
+
+        if (contentType && contentType.includes("image")) {
+            const blob = await res.blob();
+            const imageUrl = URL.createObjectURL(blob);
+            addMessageAI(imageUrl, "bot-ai", true);
+        } else {
+            let data;
+            if (contentType && contentType.includes("application/json")) {
+                data = await res.json();
+            } else {
+                const textResponse = await res.text();
+                data = { reply: textResponse };
+            }
+
+            if (data.reply) {
+                addMessageAI(data.reply, "bot-ai");
+            } else if (data.answer) {
+                addMessageAI(data.answer, "bot-ai");
+            } else if (data.message) {
+                addMessageAI(data.message, "bot-ai");
+            } else if (data.output) {
+                addMessageAI(data.output, "bot-ai");
+            } else if (typeof data === 'string') {
+                addMessageAI(data, "bot-ai");
+            } else if (data[0] && data[0].output) {
+                addMessageAI(data[0].output, "bot-ai");
+            } else {
+                addMessageAI("AI ไม่สามารถตอบได้ (ไม่พบฟิลด์ข้อมูลที่รองรับ)", "bot-ai");
+                console.log("Raw Bot Response:", data);
+            }
+        }
+    } catch (err) {
+        console.error("AI chat error:", err);
+        if(loading) loading.remove();
+        addMessageAI("เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง", "bot-ai");
+    }
+}
+
+function handleKeyPress(e) {
+    if (e.key === "Enter") {
+        sendAI();
+    }
+}
+</script>
+</body>
+</html>
