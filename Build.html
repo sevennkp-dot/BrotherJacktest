@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>แบบบ้านพร้อมราคา - สร้างบ้าน | FixHome</title>
+<meta name="description" content="ค้นหาแบบบ้านพร้อมราคา เลือกตามขนาดที่ดิน งบประมาณ ห้องนอน ห้องน้ำ และที่จอดรถ พร้อมดูรายละเอียดและรูปภาพครบถ้วน">
+<meta name="keywords" content="แบบบ้าน, บ้านพร้อมราคา, สร้างบ้าน, แบบบ้าน 2 ห้องนอน, แบบบ้าน 3 ห้องนอน">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+* { box-sizing: border-box; }
+
+body { 
+  font-family: 'Sarabun', sans-serif; 
+  background-color: #f5f7fa; 
+  margin: 0; 
+  padding: 0; 
+  color: #2c3e50;
+}
+
+/* ===== NAVBAR ===== */
+nav {
+  background: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  height: 80px;
+  display: flex;
+  align-items: center;
+  padding: 0 40px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  flex-wrap: wrap;
+}
+
+nav img {
+  height: 50px;
+  object-fit: contain;
+}
+
+nav a {
+  font-size: 15px;
+  font-weight: 600;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  white-space: nowrap;
+  color: #2c3e50;
+  transition: color 0.25s;
+}
+
+nav a:hover {
+  color: #0066cc;
+}
+
+nav .flex-nav {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  height: 100%;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+/* ===== PAGE HEADER ===== */
+.page-header {
+  background: linear-gradient(135deg, #0066cc, #0052a3);
+  color: white;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.page-header h1 {
+  font-size: 40px;
+  margin: 0 0 12px 0;
+  font-weight: 700;
+}
+
+.page-header p {
+  font-size: 18px;
+  margin: 0;
+  opacity: 0.95;
+}
+
+/* ===== FILTER BOX ===== */
+.filter-section {
+  max-width: 1200px;
+  margin: -50px auto 50px;
+  padding: 0 20px;
+  position: relative;
+  z-index: 10;
+}
+
+.filter-box {
+  background: white;
+  padding: 32px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  border: 1px solid #e8ecf1;
+}
+
+.filter-box h3 {
+  margin: 0 0 16px 0;
+  color: #2c3e50;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.filter-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.filter-box input,
+.filter-box select {
+  padding: 11px 14px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-family: 'Sarabun', sans-serif;
+  font-size: 14px;
+  transition: all 0.25s;
+  width: 100%;
+}
+
+.filter-box input:focus,
+.filter-box select:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
+}
+
+.filter-box button {
+  background: #0066cc;
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s;
+  font-family: 'Sarabun', sans-serif;
+  font-size: 15px;
+  width: 100%;
+  grid-column: span 1;
+}
+
+.filter-box button:hover {
+  background: #0052a3;
+  transform: translateY(-2px);
+}
+
+/* ===== HOUSE CONTAINER ===== */
+.house-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 28px;
+  max-width: 1200px;
+  margin: 0 auto 60px;
+  padding: 0 20px;
+}
+
+.house-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border: 1px solid #e8ecf1;
+  transition: all 0.3s;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+
+.house-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+}
+
+.house-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+
+.house-info {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.house-info h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.house-info .price {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0066cc;
+  margin: 12px 0;
+}
+
+.house-info .specs {
+  font-size: 14px;
+  color: #666;
+  margin: 8px 0;
+  line-height: 1.6;
+  flex: 1;
+}
+
+.house-info button {
+  background: #0066cc;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  width: 100%;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Sarabun', sans-serif;
+  margin-top: 12px;
+  transition: all 0.25s;
+}
+
+.house-info button:hover {
+  background: #0052a3;
+}
+
+.no-result {
+  text-align: center;
+  color: #e74c3c;
+  font-weight: 600;
+  font-size: 16px;
+  margin: 60px 0;
+  grid-column: 1 / -1;
+}
+
+/* ===== MODAL ===== */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 32px;
+  position: relative;
+  margin: auto;
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #999;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.25s;
+  padding: 0;
+}
+
+.modal-close:hover {
+  color: #333;
+}
+
+.modal-content h2 {
+  margin: 0 0 12px 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.slider-container {
+  position: relative;
+  width: 100%;
+  margin-bottom: 24px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.main-image {
+  width: 100%;
+  height: 350px;
+  object-fit: cover;
+  display: block;
+}
+
+.slider-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s;
+}
+
+.slider-btn:hover {
+  background: rgba(0,0,0,0.8);
+}
+
+.slider-prev {
+  left: 10px;
+}
+
+.slider-next {
+  right: 10px;
+}
+
+.thumbnail-container {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  margin-bottom: 24px;
+  padding-bottom: 8px;
+}
+
+.thumbnail-container img {
+  width: 100px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: all 0.25s;
+}
+
+.thumbnail-container img:hover {
+  opacity: 0.9;
+}
+
+.thumbnail-container img.active {
+  opacity: 1;
+  border: 3px solid #0066cc;
+}
+
+/* ===== HOUSE DETAILS ===== */
+.house-details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.detail-item {
+  padding: 14px;
+  background: #f5f7fa;
+  border-radius: 8px;
+  border-left: 3px solid #0066cc;
+  font-size: 14px;
+}
+
+.detail-item strong {
+  color: #2c3e50;
+}
+
+hr {
+  margin: 24px 0;
+  border: none;
+  border-top: 1px solid #e8ecf1;
+}
+
+h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 20px 0 12px 0;
+}
+
+/* ===== GRADE & BOQ SECTION ===== */
+.grade-section,
+.boq-section {
+  background: #f5f7fa;
+  padding: 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+.boq-group {
+  margin-bottom: 16px;
+}
+
+.boq-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.boq-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-family: 'Sarabun', sans-serif;
+  font-size: 14px;
+  background: white;
+}
+
+.price-box {
+  background: #0066cc;
+  color: white;
+  padding: 16px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 16px 0;
+}
+
+/* ===== ORDER BUTTON ===== */
+.order-btn {
+  background: #f39c12;
+  color: white;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  width: 100%;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Sarabun', sans-serif;
+  margin-top: 16px;
+  transition: all 0.25s;
+  font-size: 15px;
+}
+
+.order-btn:hover {
+  background: #e67e22;
+  transform: translateY(-2px);
+}
+
+/* ===== ORDER FORM ===== */
+.order-form {
+  margin-top: 20px;
+  display: none;
+  background: #f5f7fa;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.order-form.show {
+  display: block;
+}
+
+.order-form input,
+.order-form textarea {
+  width: 100%;
+  padding: 11px 12px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-family: 'Sarabun', sans-serif;
+  font-size: 14px;
+  transition: all 0.25s;
+}
+
+.order-form input:focus,
+.order-form textarea:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
+}
+
+.order-form textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.submit-order {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  font-weight: 600;
+  font-family: 'Sarabun', sans-serif;
+  transition: all 0.25s;
+}
+
+.submit-order:hover {
+  background: #059669;
+}
+
+/* ===== INFO SECTION ===== */
+.info-box {
+  background: #f0f9ff;
+  border-left: 4px solid #0066cc;
+  padding: 16px;
+  border-radius: 6px;
+  margin: 16px 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  nav { padding: 0 24px; }
+  nav .flex-nav { gap: 20px; }
+  .filter-row { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+  .house-details { gap: 12px; }
+}
+
+@media (max-width: 768px) {
+  nav {
+    flex-direction: column;
+    align-items: flex-start;
+    height: auto;
+    padding: 12px 16px;
+  }
+
+  nav .flex-nav {
+    width: 100%;
+    margin-left: 0;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  nav a { font-size: 14px; }
+
+  .page-header {
+    padding: 40px 20px;
+  }
+
+  .page-header h1 {
+    font-size: 28px;
+  }
+
+  .page-header p {
+    font-size: 16px;
+  }
+
+  .filter-section {
+    margin: -30px auto 40px;
+  }
+
+  .filter-box {
+    padding: 20px;
+  }
+
+  .filter-row {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-box button {
+    width: 100%;
+  }
+
+  .house-container {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+  }
+
+  .house-card img {
+    height: 180px;
+  }
+
+  .modal-content {
+    max-width: 90%;
+    padding: 24px;
+  }
+
+  .house-details {
+    grid-template-columns: 1fr;
+  }
+
+  .slider-container {
+    margin-bottom: 16px;
+  }
+
+  .main-image {
+    height: 250px;
+  }
+
+  .thumbnail-container {
+    gap: 8px;
+  }
+
+  .thumbnail-container img {
+    width: 80px;
+    height: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  nav {
+    padding: 10px 12px;
+  }
+
+  nav img { height: 42px; }
+
+  nav a { font-size: 12px; }
+
+  nav .flex-nav { gap: 8px; }
+
+  .page-header {
+    padding: 30px 16px;
+  }
+
+  .page-header h1 {
+    font-size: 24px;
+  }
+
+  .page-header p {
+    font-size: 14px;
+  }
+
+  .filter-section {
+    margin: -20px auto 30px;
+  }
+
+  .filter-box {
+    padding: 16px;
+  }
+
+  .filter-row {
+    gap: 12px;
+  }
+
+  .house-container {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 0 16px;
+  }
+
+  .house-card img {
+    height: 160px;
+  }
+
+  .house-info {
+    padding: 16px;
+  }
+
+  .house-info h3 {
+    font-size: 16px;
+  }
+
+  .house-info .price {
+    font-size: 18px;
+  }
+
+  .house-info .specs {
+    font-size: 13px;
+  }
+
+  .house-info button {
+    padding: 9px 12px;
+    font-size: 13px;
+  }
+
+  .modal-content {
+    padding: 20px;
+  }
+
+  .modal-content h2 {
+    font-size: 22px;
+  }
+
+  .main-image {
+    height: 200px;
+  }
+
+  .slider-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .house-details {
+    gap: 8px;
+  }
+
+  .detail-item {
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  h3 {
+    font-size: 16px;
+    margin: 16px 0 10px 0;
+  }
+
+  .order-btn {
+    padding: 12px;
+    font-size: 14px;
+  }
+
+  .no-result {
+    font-size: 14px;
+  }
+
+  .line-float, .call-float {
+    width: 52px;
+    height: 52px;
+    font-size: 24px;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <a href="index.html">
+    <img src="https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/ssss/FixHouse-logo.png" alt="FixHouse">
+  </a>
+  <div class="flex-nav">
+    <a href="index.html">หน้าแรก</a>
+    <a href="Build.html">สร้าง</a>
+    <a href="Technician.html">ซ่อม</a>
+    <a href="Buy-Rent.html">เช่า</a>
+    <a href="Materials.html">ร้านวัสดุ</a>
+        <a href="Apply.html" class="active">สมัครงาน</a>
+  
+  </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<section class="page-header">
+  <h1>📐 แบบบ้านพร้อมราคา</h1>
+  <p>เลือกตามขนาดที่ดิน งบประมาณ และความต้องการของคุณ</p>
+</section>
+
+<!-- FILTER BOX -->
+<div class="filter-section">
+  <div class="filter-box">
+    <h3>🔍 ค้นหาแบบบ้านตามเงื่อนไข</h3>
+    
+    <h3 style="margin-top: 24px;">📐 ขนาดที่ดิน</h3>
+    <div class="filter-row">
+      <input type="number" id="landWidth" placeholder="กว้าง (เมตร)">
+      <input type="number" id="landLength" placeholder="ยาว (เมตร)">
+    </div>
+
+    <h3>💰 งบประมาณ</h3>
+    <div class="filter-row">
+      <input type="number" id="minPrice" placeholder="ราคาต่ำสุด (บาท)">
+      <input type="number" id="maxPrice" placeholder="ราคาสูงสุด (บาท)">
+    </div>
+
+    <h3>🏠 ฟังก์ชันบ้าน</h3>
+    <div class="filter-row">
+      <select id="bedrooms">
+        <option value="0">ห้องนอน - ไม่ระบุ</option>
+        <option value="2">ห้องนอน - 2 ห้อง</option>
+        <option value="3">ห้องนอน - 3 ห้อง</option>
+        <option value="4">ห้องนอน - 4 ห้อง</option>
+        <option value="5">ห้องนอน - 5+ ห้อง</option>
+      </select>
+      
+      <select id="bathrooms">
+        <option value="0">ห้องน้ำ - ไม่ระบุ</option>
+        <option value="1">ห้องน้ำ - 1 ห้อง</option>
+        <option value="2">ห้องน้ำ - 2 ห้อง</option>
+        <option value="3">ห้องน้ำ - 3 ห้อง</option>
+        <option value="4">ห้องน้ำ - 4+ ห้อง</option>
+      </select>
+
+      <select id="parking">
+        <option value="0">ที่จอดรถ - ไม่ระบุ</option>
+        <option value="1">ที่จอดรถ - 1 คัน</option>
+        <option value="2">ที่จอดรถ - 2 คัน</option>
+        <option value="3">ที่จอดรถ - 3+ คัน</option>
+      </select>
+    </div>
+
+    <button onclick="filterHouses()">🔍 ค้นหาแบบบ้าน</button>
+  </div>
+</div>
+
+<!-- HOUSE LIST -->
+<main class="house-container" id="houseContainer"></main>
+
+<div id="noResult" class="no-result" style="display:none;">❌ ไม่พบแบบบ้านที่ตรงตามเงื่อนไข</div>
+
+<!-- MODAL -->
+<div id="houseModal" class="modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+const { createClient } = window.supabase;
+const supabaseClient = createClient(
+  "https://uqcjajmqtlchftpqwsrp.supabase.co",
+  "sb_publishable_yWZiH8l1idY0QWGuj6p9sg_GqXPONGX"
+);
+
+let allHouses = [];
+let currentImages = [];
+let currentImageIndex = 0;
+
+async function loadHouses() {
+  const { data, error } = await supabaseClient.from("houses").select("*");
+  if (error) {
+    console.error(error);
+    document.getElementById('houseContainer').innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #e74c3c;">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>';
+    return;
+  }
+  allHouses = data || [];
+  displayHouses(allHouses);
+}
+
+function displayHouses(houses) {
+  const container = document.getElementById("houseContainer");
+  container.innerHTML = "";
+
+  if (houses.length === 0) {
+    document.getElementById('noResult').style.display = "block";
+    return;
+  }
+
+  document.getElementById('noResult').style.display = "none";
+
+  houses.forEach((house, index) => {
+    const card = document.createElement('div');
+    card.className = 'house-card';
+    card.innerHTML = `
+      <img src="${house.image_url}" alt="${house.name}" loading="lazy">
+      <div class="house-info">
+        <h3>${house.name}</h3>
+        <div class="price">฿${Number(house.price).toLocaleString()}</div>
+        <div class="specs">
+          ${house.bedrooms} ห้องนอน | ${house.bathrooms} ห้องน้ำ | ${house.parking} ที่จอดรถ<br>
+          ขนาด ${house.width} × ${house.length} เมตร
+        </div>
+        <button onclick="showDetail(${index})">ดูรายละเอียด</button>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+async function showDetail(index) {
+  const house = allHouses[index];
+
+  const { data: images } = await supabaseClient
+    .from("house_images")
+    .select("image_url, display_order")
+    .eq("house_id", house.id)
+    .order("display_order", { ascending: true });
+
+  if (images && images.length > 0) {
+    currentImages = images.map(img => img.image_url);
+  } else if (house.image_urls) {
+    currentImages = house.image_urls.split(",").map(url => url.trim());
+  } else {
+    currentImages = [house.image_url];
+  }
+
+  currentImageIndex = 0;
+
+  const thumbnails = currentImages.map((img, i) =>
+    `<img src="${img}" class="${i===0?'active':''}" onclick="changeImage(${i}); event.stopPropagation();" alt="รูป ${i+1}">`
+  ).join("");
+
+  document.getElementById("modalBody").innerHTML = `
+    <h2>${house.name}</h2>
+    
+    <div class="slider-container">
+      <img id="mainImage" class="main-image" src="${currentImages[0]}" alt="${house.name}" loading="lazy">
+      <button class="slider-btn slider-prev" onclick="prevImage(); event.stopPropagation()">‹</button>
+      <button class="slider-btn slider-next" onclick="nextImage(); event.stopPropagation()">›</button>
+    </div>
+
+    <div class="thumbnail-container">${thumbnails}</div>
+
+    <div class="house-details">
+      <div class="detail-item"><strong>ราคา:</strong> ฿${Number(house.price).toLocaleString()}</div>
+      <div class="detail-item"><strong>ขนาดที่ดิน:</strong> ${house.width} × ${house.length} ม.</div>
+      <div class="detail-item"><strong>ห้องนอน:</strong> ${house.bedrooms} ห้อง</div>
+      <div class="detail-item"><strong>ห้องน้ำ:</strong> ${house.bathrooms} ห้อง</div>
+      <div class="detail-item"><strong>ที่จอดรถ:</strong> ${house.parking} คัน</div>
+      <div class="detail-item"><strong>พื้นที่ใช้สอย:</strong> ${house.usable_area || '-'} ตร.ม.</div>
+    </div>
+
+    <hr>
+
+    <h3>💎 เลือกเกรดวัสดุ</h3>
+    <div class="grade-section">
+      <select id="gradeSelect${index}" onchange="updatePrice(${index})">
+        <option value="0">Standard - ราคาปกติ</option>
+        <option value="0.15">Premium - เพิ่มขึ้น 15%</option>
+        <option value="0.35">Luxury - เพิ่มขึ้น 35%</option>
+      </select>
+    </div>
+
+    <hr>
+
+    <h3>🧱 เลือกวัสดุทีละรายการ (Interactive BOQ)</h3>
+    <div class="boq-section">
+      <div class="boq-group">
+        <label>หลังคา:</label>
+        <select onchange="updatePrice(${index})" id="roof${index}">
+          <option value="0">กระเบื้องคอนกรีต</option>
+          <option value="120000">กระเบื้องเซรามิก (+120,000 บาท)</option>
+          <option value="80000">Metal Sheet PU (+80,000 บาท)</option>
+        </select>
+      </div>
+
+      <div class="boq-group">
+        <label>พื้น:</label>
+        <select onchange="updatePrice(${index})" id="floor${index}">
+          <option value="0">กระเบื้องแกรนิตโต้</option>
+          <option value="200000">หินอ่อน (+200,000 บาท)</option>
+          <option value="90000">ลามิเนต (+90,000 บาท)</option>
+        </select>
+      </div>
+
+      <div class="boq-group">
+        <label>ผนัง:</label>
+        <select onchange="updatePrice(${index})" id="wall${index}">
+          <option value="0">อิฐมวลเบา</option>
+          <option value="120000">อิฐแดง + ฉนวน (+120,000 บาท)</option>
+        </select>
+      </div>
+
+      <div class="boq-group">
+        <label>หน้าต่าง:</label>
+        <select onchange="updatePrice(${index})" id="window${index}">
+          <option value="0">อลูมิเนียมธรรมดา</option>
+          <option value="120000">กระจก Low-E (+120,000 บาท)</option>
+        </select>
+      </div>
+
+      <div class="boq-group">
+        <label>ห้องน้ำ:</label>
+        <select onchange="updatePrice(${index})" id="bath${index}">
+          <option value="0">COTTO</option>
+          <option value="150000">TOTO / Kohler (+150,000 บาท)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="price-box">
+      ราคาประเมินใหม่: <span id="priceBox${index}">฿${Number(house.price).toLocaleString()}</span>
+    </div>
+
+    <hr>
+
+    <button class="order-btn" onclick="toggleOrderForm(${index}); event.stopPropagation();">📌 สั่งสร้างบ้านรุ่นนี้</button>
+
+    <div class="order-form" id="orderForm${index}">
+      <input type="text" id="customerName${index}" placeholder="ชื่อ - นามสกุล *" required>
+      <input type="tel" id="customerPhone${index}" placeholder="เบอร์โทร *" required>
+      <input type="text" id="customerAddress${index}" placeholder="ที่อยู่สำหรับก่อสร้าง *" required>
+      <input type="text" id="customerLandSize${index}" placeholder="ขนาดที่ดิน (กว้าง × ยาว) *" required>
+      <input type="date" id="customerStartDate${index}" placeholder="ต้องการเริ่มก่อสร้างเมื่อไหร่">
+      <textarea id="customerNote${index}" placeholder="รายละเอียดเพิ่มเติม"></textarea>
+      <button class="submit-order" onclick="submitOrder(${index}); event.stopPropagation();">ยืนยันการสั่งสร้าง</button>
+    </div>
+
+    <hr>
+
+    <h3>⏱️ ระยะเวลาก่อสร้าง</h3>
+    <div class="info-box">
+      <strong>โดยประมาณ 6 - 10 เดือน</strong> (ขึ้นอยู่กับพื้นที่และฤดูกาลก่อสร้าง)
+    </div>
+
+    <h3>🏢 บริษัท / ผู้รับเหมา</h3>
+    <div class="info-box">
+      <strong>⚠️ ตรวจสอบให้แน่นอน</strong><br>
+      โปรดตรวจสอบผลงานที่ผ่านมา รีวิวลูกค้า และสัญญาก่อสร้างก่อนตัดสินใจจ้างงาน
+    </div>
+  `;
+
+  document.getElementById("houseModal").classList.add('show');
+}
+
+function changeImage(index) {
+  currentImageIndex = index;
+  document.getElementById("mainImage").src = currentImages[index];
+  document.querySelectorAll(".thumbnail-container img").forEach((img, i) => {
+    img.classList.toggle("active", i === index);
+  });
+}
+
+function nextImage() {
+  currentImageIndex = (currentImageIndex + 1) % currentImages.length;
+  changeImage(currentImageIndex);
+}
+
+function prevImage() {
+  currentImageIndex = (currentImageIndex - 1 + currentImages.length) % currentImages.length;
+  changeImage(currentImageIndex);
+}
+
+function toggleOrderForm(index) {
+  const form = document.getElementById(`orderForm${index}`);
+  form.classList.toggle('show');
+}
+
+
+
+
+
+
+
+
+
+
+
+async function submitOrder(index) {
+  const house = allHouses[index];
+
+  const name = document.getElementById(`customerName${index}`).value.trim();
+  const phone = document.getElementById(`customerPhone${index}`).value.trim();
+  const address = document.getElementById(`customerAddress${index}`).value.trim();
+  const landSize = document.getElementById(`customerLandSize${index}`).value.trim();
+  const startDate = document.getElementById(`customerStartDate${index}`).value;
+  const note = document.getElementById(`customerNote${index}`).value.trim();
+
+  // 🔧 ดึงวัสดุที่ลูกค้าเลือกและราคาที่ระบบคำนวณ
+  const roofSelect = document.getElementById(`roof${index}`);
+  const roofPrice = parseFloat(roofSelect?.value) || 0;
+  const roofMaterial = roofSelect ? roofSelect.options[roofSelect.selectedIndex].text : "";
+
+  const floorSelect = document.getElementById(`floor${index}`);
+  const floorPrice = parseFloat(floorSelect?.value) || 0;
+  const floorMaterial = floorSelect ? floorSelect.options[floorSelect.selectedIndex].text : "";
+
+  const wallSelect = document.getElementById(`wall${index}`);
+  const wallPrice = parseFloat(wallSelect?.value) || 0;
+  const wallMaterial = wallSelect ? wallSelect.options[wallSelect.selectedIndex].text : "";
+
+  const windowSelect = document.getElementById(`window${index}`);
+  const windowPrice = parseFloat(windowSelect?.value) || 0;
+  const windowMaterial = windowSelect ? windowSelect.options[windowSelect.selectedIndex].text : "";
+
+  const bathSelect = document.getElementById(`bath${index}`);
+  const bathroomPrice = parseFloat(bathSelect?.value) || 0;
+  const bathroomMaterial = bathSelect ? bathSelect.options[bathSelect.selectedIndex].text : "";
+
+  // 💰 ดึงราคาประเมินใหม่ที่แสดงบนหน้าจอ (รวมราคาบ้าน + วัสดุ + เกรดที่เลือก)
+  const estimatedTotalText = document.getElementById(`priceBox${index}`).innerText;
+  const estimatedTotal = parseFloat(estimatedTotalText.replace(/[^0-9.-]+/g, "")) || 0;
+
+  if (!name || !phone || !address || !landSize) {
+    alert('กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครบถ้วน');
+    return;
+  }
+
+  const { error } = await supabaseClient.from('orders').insert([
+    {
+      house_id: house.id,
+      house_name: house.name,
+      price: house.price,
+
+      customer_name: name,
+      customer_phone: phone,
+      address: address,
+      land_size: landSize,
+      start_date: startDate || null,
+      note: note || null,
+
+      roof_material: roofMaterial,
+      roof_price: roofPrice,
+
+      floor_material: floorMaterial,
+      floor_price: floorPrice,
+
+      wall_material: wallMaterial,
+      wall_price: wallPrice,
+
+      window_material: windowMaterial,
+      window_price: windowPrice,
+
+      bathroom_material: bathroomMaterial,
+      bathroom_price: bathroomPrice,
+
+      estimated_total: estimatedTotal
+    }
+  ]);
+
+  if (error) {
+    alert('เกิดข้อผิดพลาด: ' + error.message);
+    console.error(error);
+    return;
+  }
+
+  alert('✅ ส่งคำขอสร้างบ้านเรียบร้อย ทีมงานจะติดต่อกลับเร็วที่สุด');
+  document.getElementById(`orderForm${index}`).classList.remove('show');
+  closeModal();
+}
+
+
+
+
+
+
+
+function closeModal() {
+  document.getElementById("houseModal").classList.remove('show');
+}
+
+function filterHouses() {
+  const width = parseFloat(document.getElementById('landWidth').value) || 0;
+  const length = parseFloat(document.getElementById('landLength').value) || 0;
+  const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
+  const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
+  const bedrooms = parseFloat(document.getElementById('bedrooms').value) || 0;
+  const bathrooms = parseFloat(document.getElementById('bathrooms').value) || 0;
+  const parking = parseFloat(document.getElementById('parking').value) || 0;
+
+  const filtered = allHouses.filter(house => {
+    const matchSize = (width === 0 && length === 0) || (width >= house.width && length >= house.length);
+    const matchPrice = house.price >= minPrice && house.price <= maxPrice;
+    const matchBedrooms = house.bedrooms >= bedrooms;
+    const matchBathrooms = house.bathrooms >= bathrooms;
+    const matchParking = house.parking >= parking;
+    return matchSize && matchPrice && matchBedrooms && matchBathrooms && matchParking;
+  });
+
+  displayHouses(filtered);
+}
+
+function updatePrice(index) {
+  const house = allHouses[index];
+
+  const grade = parseFloat(document.getElementById(`gradeSelect${index}`)?.value || 0);
+
+  const roof = parseInt(document.getElementById(`roof${index}`)?.value || 0);
+  const floor = parseInt(document.getElementById(`floor${index}`)?.value || 0);
+  const wall = parseInt(document.getElementById(`wall${index}`)?.value || 0);
+  const windowM = parseInt(document.getElementById(`window${index}`)?.value || 0);
+  const bath = parseInt(document.getElementById(`bath${index}`)?.value || 0);
+
+  const boqTotal = roof + floor + wall + windowM + bath;
+  let price = house.price + boqTotal;
+  price = price + (price * grade);
+
+  document.getElementById(`priceBox${index}`).innerText = '฿' + price.toLocaleString();
+}
+
+loadHouses();
+</script>
+
+<!-- Floating Contact Buttons -->
+<a href="https://line.me/ti/p/XXXXXXXX" class="line-float" target="_blank" title="แชท LINE">💬</a>
+<a href="tel:0812345678" class="call-float" title="โทรหาเรา">📞</a>
+
+<style>
+.line-float {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  background: #06C755;
+  color: white;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  text-decoration: none;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  z-index: 9999;
+  animation: floatBtn 2s infinite;
+  transition: all 0.3s;
+}
+
+.call-float {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #e53935;
+  color: white;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  text-decoration: none;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  z-index: 9999;
+  animation: floatBtn 2s infinite 0.3s;
+  transition: all 0.3s;
+}
+
+.line-float:hover,
+.call-float:hover {
+  transform: scale(1.15);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+}
+
+@keyframes floatBtn {
+  0% { transform: translateY(0); }
+  25% { transform: translateY(-8px); }
+  50% { transform: translateY(0); }
+  75% { transform: translateY(-4px); }
+  100% { transform: translateY(0); }
+}
+</style>
+
+
+
+
+<!-- AI Chat Widget (Collapsible) -->
+<style>
+/* Scoped CSS for new AI Chat */
+#aiChatWidget {
+position:fixed;
+bottom:80px;
+left:20px;
+width:450px;
+max-width:calc(100vw - 40px);
+height:600px;
+max-height:calc(100vh - 120px);
+z-index:9999;
+display:none; 
+font-family:Segoe UI,Tahoma,sans-serif;
+}
+#aiChatWidget .chat-container {
+width:100%;
+height:100%;
+background:white;
+border-radius:20px;
+box-shadow:0 10px 30px rgba(0,0,0,0.15);
+display:flex;
+flex-direction:column;
+overflow:hidden;
+}
+#aiChatWidget .chat-header {
+background:#2a5298;
+color:white;
+padding:18px;
+text-align:center;
+font-weight:600;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+#aiChatWidget .close-btn {
+cursor:pointer;
+font-size:20px;
+line-height:1;
+user-select:none;
+}
+#aiChatWidget .chat-messages {
+flex:1;
+padding:20px;
+overflow-y:auto;
+display:flex;
+flex-direction:column;
+gap:14px;
+background:#f7f7f7;
+}
+#aiChatWidget .message-wrapper {
+display:flex;
+max-width:85%;
+flex-direction:column;
+}
+#aiChatWidget .user { align-self:flex-end; }
+#aiChatWidget .ai { align-self:flex-start; }
+#aiChatWidget .message {
+padding:12px 16px;
+border-radius:16px;
+font-size:15px;
+line-height:1.5;
+word-wrap:break-word;
+}
+#aiChatWidget .user .message { background:#2a5298; color:white; }
+#aiChatWidget .ai .message { background:#e4e6eb; color:#333; }
+#aiChatWidget .ai-image {
+max-width:100%;
+border-radius:12px;
+margin-top:6px;
+}
+#aiChatWidget .typing {
+background:#e4e6eb;
+color:#333;
+padding:10px 14px;
+border-radius:14px;
+display:none;
+align-self:flex-start;
+font-size:14px;
+}
+#aiChatWidget .chat-input {
+display:flex;
+padding:15px;
+border-top:1px solid #eee;
+gap:10px;
+}
+#aiChatWidget .chat-input input {
+flex:1;
+padding:12px 16px;
+border-radius:20px;
+border:1px solid #ccc;
+outline:none;
+font-size:14px;
+}
+#aiChatWidget .send-btn {
+background:#2a5298;
+color:white;
+border:none;
+width:44px;
+height:44px;
+border-radius:50%;
+cursor:pointer;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:18px;
+padding:0;
+}
+#aiLauncher {
+position:fixed;
+bottom:20px;
+left:20px;
+background:#2a5298;
+color:white;
+padding:12px 16px;
+border-radius:30px;
+cursor:pointer;
+box-shadow:0 8px 20px rgba(0,0,0,0.25);
+z-index:9999;
+font-weight:600;
+transition:all 0.3s;
+font-family:Segoe UI,Tahoma,sans-serif;
+}
+#aiLauncher:hover {
+transform:translateY(-2px);
+box-shadow:0 10px 25px rgba(0,0,0,0.3);
+}
+</style>
+
+<!-- AI Chat Widget -->
+<div class="chat-toggle-ai" id="chatToggleBtn" onclick="toggleChat()">
+  🏡
+</div>
+
+<div class="chat-container-ai" id="chatContainer" style="display: none;">
+  <div class="chat-box-ai">
+    <div class="header-ai">
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <span>🏡 AI สถาปนิกส่วนตัว</span>
+        <button onclick="toggleChat()" style="background:none; border:none; color:white; font-size:16px; cursor:pointer; padding:0;">✖</button>
+      </div>
+    </div>
+    <div class="messages-ai" id="ai-messages"></div>
+    <div class="input-area-ai">
+      <input id="ai-input" placeholder="พิมพ์เช่น: ต้องการบ้าน 2 ชั้น" onkeypress="handleKeyPress(event)">
+      <button onclick="sendAI()">➤</button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* AI Chat Styles */
+.chat-toggle-ai {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 60px;
+    height: 60px;
+    background: #2563eb;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    z-index: 10000;
+    transition: transform 0.3s;
+}
+
+.chat-toggle-ai:hover {
+    transform: scale(1.1);
+}
+
+.chat-container-ai {
+    position: fixed;
+    bottom: 90px;
+    left: 20px;
+    z-index: 9999;
+    font-family: 'Sarabun', sans-serif;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.chat-box-ai {
+    width: 350px;
+    height: 500px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+}
+
+.header-ai {
+    background: #2563eb;
+    color: white;
+    padding: 15px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.messages-ai {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background: #f9fafb;
+    display: flex;
+    flex-direction: column;
+}
+
+.message-ai {
+    margin-bottom: 12px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    max-width: 85%;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.user-ai {
+    background: #2563eb;
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 2px;
+}
+
+.bot-ai {
+    background: white;
+    color: #1f2937;
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.loading-ai {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    align-self: flex-start;
+    font-style: italic;
+    color: #6b7280;
+    padding: 5px 0;
+}
+
+.input-area-ai {
+    display: flex;
+    background: white;
+    padding: 12px;
+    border-top: 1px solid #e5e7eb;
+    gap: 10px;
+    align-items: center;
+}
+
+.input-area-ai input {
+    flex: 1;
+    border: 1px solid #d1d5db;
+    border-radius: 20px;
+    padding: 10px 16px;
+    font-size: 14px;
+    outline: none;
+    font-family: 'Sarabun', sans-serif;
+    width: 100%;
+}
+
+.input-area-ai input:focus {
+    border-color: #2563eb;
+}
+
+.input-area-ai button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.input-area-ai button:hover {
+    background: #1d4ed8;
+}
+
+.ai-image {
+    max-width: 100%;
+    border-radius: 8px;
+    margin-top: 8px;
+    display: block;
+}
+
+@media (max-width: 480px) {
+    .chat-container-ai {
+        left: 10px;
+        bottom: 90px;
+        right: 10px;
+    }
+    .chat-box-ai {
+        width: 100%;
+        height: 60vh;
+    }
+}
+</style>
+
+<script>
+const webhookURLAI = "https://sevennican19.app.n8n.cloud/webhook/ai-house";
+let chatOpen = false;
+
+function toggleChat() {
+    const container = document.getElementById("chatContainer");
+    chatOpen = !chatOpen;
+    container.style.display = chatOpen ? "block" : "none";
+    if(chatOpen) {
+        document.getElementById("ai-input").focus();
+        const messages = document.getElementById("ai-messages");
+        messages.scrollTop = messages.scrollHeight;
+    }
+}
+
+function addMessageAI(text, type, isImage=false) {
+    const div = document.createElement("div");
+    div.className = "message-ai " + type;
+    if (isImage) {
+        const img = document.createElement("img");
+        img.src = text;
+        img.className = "ai-image";
+        img.onload = () => {
+            const messages = document.getElementById("ai-messages");
+            messages.scrollTop = messages.scrollHeight;
+        };
+        div.appendChild(img);
+    } else {
+        div.innerText = text;
+    }
+    const messages = document.getElementById("ai-messages");
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+    return div;
+}
+
+async function sendAI() {
+    const input = document.getElementById("ai-input");
+    const message = input.value.trim();
+    if (!message) return;
+
+    addMessageAI(message, "user-ai");
+    input.value = "";
+
+    const loading = addMessageAI("AI กำลังคิด...", "loading-ai");
+
+    try {
+        const res = await fetch(webhookURLAI, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ message: message })
+        });
+
+        const contentType = res.headers.get("content-type");
+        loading.remove();
+
+        if (contentType && contentType.includes("image")) {
+            const blob = await res.blob();
+            const imageUrl = URL.createObjectURL(blob);
+            addMessageAI(imageUrl, "bot-ai", true);
+        } else {
+            let data;
+            if (contentType && contentType.includes("application/json")) {
+                data = await res.json();
+            } else {
+                const textResponse = await res.text();
+                data = { reply: textResponse };
+            }
+
+            if (data.reply) {
+                addMessageAI(data.reply, "bot-ai");
+            } else if (data.answer) {
+                addMessageAI(data.answer, "bot-ai");
+            } else if (data.message) {
+                addMessageAI(data.message, "bot-ai");
+            } else if (data.output) {
+                addMessageAI(data.output, "bot-ai");
+            } else if (typeof data === 'string') {
+                addMessageAI(data, "bot-ai");
+            } else if (data[0] && data[0].output) {
+                addMessageAI(data[0].output, "bot-ai");
+            } else {
+                addMessageAI("AI ไม่สามารถตอบได้ (ไม่พบฟิลด์ข้อมูลที่รองรับ)", "bot-ai");
+                console.log("Raw Bot Response:", data);
+            }
+        }
+    } catch (err) {
+        console.error("AI chat error:", err);
+        if(loading) loading.remove();
+        addMessageAI("เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง", "bot-ai");
+    }
+}
+
+function handleKeyPress(e) {
+    if (e.key === "Enter") {
+        sendAI();
+    }
+}
+</script>
+</body>
+</html>
