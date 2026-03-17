@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เข้าสู่ระบบ - FixHome</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Sarabun', sans-serif;
+  background: linear-gradient(135deg, #0066cc, #0052a3);
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  color: #2c3e50;
+}
+
+.login-container {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  width: 100%;
+  max-width: 400px;
+}
+
+.logo-section {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.logo-section img {
+  height: 60px;
+  object-fit: contain;
+}
+
+.login-container h1 {
+  font-size: 28px;
+  font-weight: 700;
+  text-align: center;
+  margin: 20px 0 8px 0;
+  color: #2c3e50;
+}
+
+.login-container p {
+  text-align: center;
+  color: #666;
+  margin: 0 0 32px 0;
+  font-size: 14px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-family: 'Sarabun', sans-serif;
+  font-size: 14px;
+  transition: all 0.25s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgba(0,102,204,0.15);
+}
+
+.btn-login {
+  width: 100%;
+  padding: 12px;
+  background: #0066cc;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Sarabun', sans-serif;
+  font-size: 16px;
+  transition: all 0.25s;
+}
+
+.btn-login:hover {
+  background: #0052a3;
+  transform: translateY(-2px);
+}
+
+.btn-login:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.divider {
+  text-align: center;
+  margin: 24px 0;
+  color: #999;
+}
+
+.btn-signup {
+  width: 100%;
+  padding: 12px;
+  background: white;
+  color: #0066cc;
+  border: 2px solid #0066cc;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Sarabun', sans-serif;
+  font-size: 16px;
+  transition: all 0.25s;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-signup:hover {
+  background: #f0f4f8;
+  transform: translateY(-2px);
+}
+
+.error-message {
+  color: #ef4444;
+  font-size: 14px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #fee2e2;
+  border-radius: 6px;
+  display: none;
+}
+
+.error-message.show {
+  display: block;
+}
+
+.back-link {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.back-link a {
+  color: #0066cc;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.back-link a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .login-container {
+    padding: 24px;
+    border-radius: 8px;
+  }
+
+  .login-container h1 {
+    font-size: 24px;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="login-container">
+  <div class="logo-section">
+    <a href="index.html">
+      <img src="https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/ssss/FixHouse-logo.png" alt="FixHome">
+    </a>
+  </div>
+
+  <h1>🔐 เข้าสู่ระบบ</h1>
+  <p>กรุณากรอกอีเมลและรหัสผ่านของคุณ</p>
+
+  <div class="error-message" id="errorMessage"></div>
+
+  <form id="loginForm" onsubmit="handleLogin(event)">
+    <div class="form-group">
+      <label for="email">📧 อีเมล *</label>
+      <input 
+        type="email" 
+        id="email" 
+        placeholder="example@email.com" 
+        required 
+        autocomplete="email"
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="password">🔒 รหัสผ่าน *</label>
+      <input 
+        type="password" 
+        id="password" 
+        placeholder="กรอกรหัสผ่าน" 
+        required
+        autocomplete="current-password"
+      >
+    </div>
+
+    <button type="submit" class="btn-login" id="loginBtn">เข้าสู่ระบบ</button>
+  </form>
+
+  <div class="divider">หรือ</div>
+
+  <a href="signup.html" class="btn-signup">สมัครสมาชิกใหม่</a>
+
+  <div class="back-link">
+    <a href="index.html">← กลับไปหน้าแรก</a>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://uqcjajmqtlchftpqwsrp.supabase.co";
+const SUPABASE_KEY = "sb_publishable_yWZiH8l1idY0QWGuj6p9sg_GqXPONGX";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+async function handleLogin(e) {
+  e.preventDefault();
+
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  const loginBtn = document.getElementById("loginBtn");
+  const errorMessage = document.getElementById("errorMessage");
+
+  if (!email || !password) {
+    showError("กรุณากรอกอีเมลและรหัสผ่าน");
+    return;
+  }
+
+  loginBtn.disabled = true;
+  loginBtn.innerText = "กำลังเข้าสู่ระบบ...";
+
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email: email,
+      password: password
+    });
+
+    if (error) {
+      showError("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+      console.error("Login error:", error);
+      return;
+    }
+
+    console.log("✅ Login successful:", data.user.email);
+    
+    // Redirect to referring page or Technician page
+    const referrer = sessionStorage.getItem("loginRedirect") || "Technician.html";
+    sessionStorage.removeItem("loginRedirect");
+    
+    window.location.href = referrer;
+
+  } catch (err) {
+    showError("เกิดข้อผิดพลาด: " + err.message);
+    console.error(err);
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.innerText = "เข้าสู่ระบบ";
+  }
+}
+
+function showError(message) {
+  const errorMessage = document.getElementById("errorMessage");
+  errorMessage.innerText = message;
+  errorMessage.classList.add("show");
+  setTimeout(() => {
+    errorMessage.classList.remove("show");
+  }, 5000);
+}
+
+// Check if already logged in
+async function checkExistingSession() {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session) {
+    window.location.href = "Technician.html";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", checkExistingSession);
+</script>
+
+</body>
+</html>
