@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>โปรไฟล์ลูกค้า - FixHome</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="customer-profile-styles.css">
+</head>
+<body>
+
+<nav>
+  <a href="index.html">
+    <img src="https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/ssss/FixHouse-logo.png" alt="FixHouse" style="height:50px;">
+  </a>
+  <div class="flex-nav">
+    <a href="index.html">หน้าแรก</a>
+    <a href="Build.html">สร้าง</a>
+    <a href="Technician.html">ซ่อม</a>
+    <a href="Buy-Rent.html">เช่า</a>
+    <a href="Materials.html">ร้านวัสดุ</a>
+  </div>
+  <button class="btn-logout" onclick="logout()">ออกจากระบบ</button>
+</nav>
+
+<div class="profile-layout">
+  <!-- Sidebar -->
+  <aside class="profile-sidebar">
+    <div class="user-card">
+      <div class="avatar-large" id="profileAvatar">U</div>
+      <h2 id="profileName">กำลังโหลด...</h2>
+      <p id="profileEmail">user@example.com</p>
+    </div>
+    
+    <nav class="sidebar-menu">
+      <button class="menu-btn active" onclick="switchTab('tab-info')">👤 ข้อมูลส่วนตัว</button>
+      <button class="menu-btn" onclick="switchTab('tab-repairs')">🔧 ประวัติแจ้งซ่อม</button>
+      <button class="menu-btn" onclick="switchTab('tab-builds')">🏠 ประวัติสั่งสร้าง</button>
+      <button class="menu-btn" onclick="switchTab('tab-materials')">📦 ประวัติสั่งวัสดุ</button>
+      <button class="menu-btn" onclick="switchTab('tab-reviews')">⭐ ประวัติการรีวิว</button>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="profile-content">
+    
+    <!-- Tab Info -->
+    <section id="tab-info" class="tab-pane active">
+      <h2>ข้อมูลส่วนตัว</h2>
+      <div class="card">
+        <form id="profileForm" onsubmit="updateProfile(event)">
+          <div class="form-group">
+            <label>ชื่อ - นามสกุล</label>
+            <input type="text" id="inputName" required>
+          </div>
+          <div class="form-group">
+            <label>เบอร์โทรศัพท์</label>
+            <input type="tel" id="inputPhone">
+          </div>
+          <button type="submit" class="btn-primary" id="btnSaveProfile">บันทึกข้อมูล</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Tab Repairs -->
+    <section id="tab-repairs" class="tab-pane">
+      <h2>ประวัติแจ้งซ่อมบริการ (ด่วน)</h2>
+      <div class="card">
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>วันที่จ้าง</th>
+                <th>ช่างที่บริการ</th>
+                <th>หมวดหมู่</th>
+                <th>ปัญหา</th>
+                <th>สถานะ</th>
+              </tr>
+            </thead>
+            <tbody id="tableRepairs">
+              <tr><td colspan="5" class="text-center">กำลังโหลด...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab Builds (Orders) -->
+    <section id="tab-builds" class="tab-pane">
+      <h2>ประวัติสั่งสร้างอาคาร</h2>
+      <div class="card">
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>วันที่สั่ง</th>
+                <th>แบบ/รุ่น</th>
+                <th>ราคาประเมิน</th>
+                <th>ขนาดที่ดิน (กว้าง×ยาว)</th>
+              </tr>
+            </thead>
+            <tbody id="tableBuilds">
+              <tr><td colspan="4" class="text-center">กำลังโหลด...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab Materials (Material Orders) -->
+    <section id="tab-materials" class="tab-pane">
+      <h2>ประวัติสั่งซื้อวัสดุก่อสร้าง</h2>
+      <div class="card">
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>วันที่สั่ง</th>
+                <th>สินค้า</th>
+                <th>ราคา</th>
+                <th>ที่อยู่จัดส่ง</th>
+              </tr>
+            </thead>
+            <tbody id="tableMaterials">
+              <tr><td colspan="4" class="text-center">กำลังโหลด...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab Reviews (Voting History) -->
+    <section id="tab-reviews" class="tab-pane">
+      <h2>ประวัติการรีวิวช่าง</h2>
+      <div class="card">
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>วันที่รีวิว</th>
+                <th>ช่างที่รีวิว</th>
+                <th>คะแนน</th>
+                <th>คอมเมนต์ / ความคิดเห็น</th>
+              </tr>
+            </thead>
+            <tbody id="tableReviews">
+              <tr><td colspan="4" class="text-center">กำลังโหลด...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Review Modal -->
+<div id="reviewModal" class="modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeReviewModal()">✕</button>
+    <h2>⭐ เขียนรีวิวให้ช่าง</h2>
+    <p id="reviewTechName" style="color: #64748b; margin-top: 0; margin-bottom: 20px;"></p>
+    
+    <div class="form-group">
+      <label>ให้คะแนนดาว *</label>
+      <div class="star-rating" id="starRating">
+        <span data-value="1">★</span><span data-value="2">★</span><span data-value="3">★</span><span data-value="4">★</span><span data-value="5">★</span>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label>ความคิดเห็นเพิ่มเติม</label>
+      <textarea id="reviewComment" rows="4" placeholder="บริการดีเยี่ยม, ช่างสุภาพ, ทำงานเรียบร้อย..."></textarea>
+    </div>
+    
+    <button class="btn-primary" style="width: 100%; margin-top: 10px;" id="btnSubmitReview" onclick="submitReview()">ส่งรีวิว</button>
+  </div>
+</div>
+
+<script src="customer-profile.js"></script>
+</body>
+</html>
