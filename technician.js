@@ -1,0 +1,628 @@
+// ===== CONFIGURATION =====
+const SUPABASE_URL = "https://uqcjajmqtlchftpqwsrp.supabase.co";
+const SUPABASE_KEY = "sb_publishable_yWZiH8l1idY0QWGuj6p9sg_GqXPONGX";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const AI_CHAT_WEBHOOK = "https://sevenican4.app.n8n.cloud/webhook/b89fb2e1-4eb2-43f3-9c26-d83d0fcdc97e";
+
+// ===== STATE ===== 
+let technicians = [];
+let currentTech = null;
+let currentTechImageIndex = 0;
+let currentTechImages = [];
+let currentUser = null;
+let currentConversation = null;
+let messagesSubscription = null;
+let aiChatWidgetOpen = false;
+
+const locationData = {
+  "นครพนม": {
+    "เมืองนครพนม": ["ในเมือง", "หนองญาติ", "อาจสามารถ"],
+    "ศรีสงคราม": ["ศรีสงคราม", "บ้านเอื้อง", "ท่าบ่อสงคราม"]
+  },
+  "มุกดาหาร": {
+    "เมืองมุกดาหาร": ["มุกดาหาร", "บางทรายใหญ่", "ศรีบุญเรือง"]
+  },
+  "กาฬสินธุ์": {
+    "เมืองกาฬสินธุ์": ["กาฬสินธุ์", "ปล้องโยง", "ลือชา"]
+  },
+  "อุดรธานี": {
+    "เมืองอุดรธานี": ["หมากแข้ง", "บ้านเลื่อม", "หนองบัว"]
+  },
+  "หนองคาย": {
+    "เมืองหนองคาย": ["หนองคาย", "ศรีเชียงใหม่", "ท่าลี่"]
+  },
+  "บึงกาฬ": {
+    "เมืองบึงกาฬ": ["บึงกาฬ", "นามน้อย", "สตึก"]
+  }
+};
+
+// ===== AUTHENTICATION =====
+async function checkAuth() {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  
+  if (session) {
+    currentUser = session.user;
+    const { data: customer } = await supabaseClient
+      .from("customers")
+      .select("name")
+      .eq("id", currentUser.id)
+      .single();
+    
+    const userName = customer?.name || currentUser.email;
+    const initial = userName.charAt(0).toUpperCase();
+    
+    document.getElementById("authUserInfo").style.display = "block";
+    document.getElementById("authLoginBtn").style.display = "none";
+    document.getElementById("userName").innerText = userName;
+    document.getElementById("userInitial").innerText = initial;
+  } else {
+    document.getElementById("authUserInfo").style.display = "none";
+    document.getElementById("authLoginBtn").style.display = "block";
+  }
+}
+
+async function logout() {
+  await supabaseClient.auth.signOut();
+  currentUser = null;
+  window.location.href = "login.html";
+}
+
+// ===== TECHNICIAN LOADING =====
+async function loadTechnicians() {
+  const container = document.getElementById("technicianList");
+  container.innerHTML = "<p style='text-align:center; grid-column: 1/-1;'>กำลังโหลดข้อมูล...</p>";
+
+  const { data, error } = await supabaseClient
+    .from("technicians")
+    .select(`
+      *,
+      technician_images (
+        image_url
+      )
+    `)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("❌ Error loading technicians:", error);
+    container.innerHTML = "<p style='color: #e74c3c; text-align:center; grid-column: 1/-1;'>เกิดข้อผิดพลาดในการโหลดข้อมูล</p>";
+    return;
+  }
+
+  technicians = data || [];
+
+  if (technicians.length === 0) {
+    document.getElementById('noData').style.display = "block";
+    container.innerHTML = "";
+    return;
+  }
+
+  document.getElementById('noData').style.display = "none";
+  renderTechnicians(technicians);
+}
+
+function renderTechnicians(list) {
+  const container = document.getElementById("technicianList");
+  container.innerHTML = "";
+
+  list.forEach((tech, index) => {
+    const firstImage = (tech.technician_images && tech.technician_images.length > 0 && tech.technician_images[0].image_url)
+      ? tech.technician_images[0].image_url
+      : "https://via.placeholder.com/400x300?text=No+Image";
+
+    const card = document.createElement('div');
+    card.className = 'tech-card';
+    card.innerHTML = `
+      <img src="${firstImage}" alt="${tech.name}" onerror="this.src='https://via.placeholder.com/400x300?text=ไม่มีรูป'">
+      <div class="tech-info">
+        <h3>${tech.name}</h3>
+        <p>🔧 <strong>หมวดหมู่:</strong> ${tech.category}</p>
+        <p>📍 <strong>พื้นที่:</strong> ${tech.area}</p>
+        <p class="tech-rating">⭐ <strong>คะแนน:</strong> ${tech.rating || "ยังไม่มีรีวิว"}</p>
+        <div class="tech-buttons">
+          <button onclick="openBooking(${index})">📞 ติดต่อ</button>
+          ${currentUser ? `<button class="btn-chat" onclick="openChat(${index})">💬 แชท</button>` : ''}
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function filterTechnicians() {
+  const category = document.getElementById("categoryFilter").value;
+  if (category === "all") {
+    renderTechnicians(technicians);
+  } else {
+    const filtered = technicians.filter(t => t.category === category);
+    renderTechnicians(filtered);
+  }
+}
+
+// ===== BOOKING MODAL =====
+function openBooking(index) {
+  currentTech = technicians[index];
+  currentTechImageIndex = 0;
+
+  let images = (currentTech.technician_images || [])
+    .map(i => i.image_url)
+    .filter(Boolean);
+  if (images.length === 0) {
+    images = ["https://via.placeholder.com/400x300?text=ไม่มีรูป"];
+  }
+  currentTechImages = images;
+
+  document.getElementById("selectedTech").innerText = currentTech.name;
+  document.getElementById("techDetails").innerText = `หมวดหมู่: ${currentTech.category} | พื้นที่: ${currentTech.area} | คะแนน: ${currentTech.rating || "ยังไม่มี"}`;
+
+  updateTechImage();
+
+  const thumbnailContainer = document.getElementById("thumbnailContainer");
+  thumbnailContainer.innerHTML = images.map((img, i) => 
+    `<img src="${img}" class="${i === 0 ? 'active' : ''}" onclick="selectTechImage(${i})" alt="รูป ${i+1}">`
+  ).join("");
+
+  document.getElementById("bookingModal").classList.add('show');
+}
+
+function updateTechImage() {
+  document.getElementById("techSliderImage").src = currentTechImages[currentTechImageIndex];
+  document.querySelectorAll(".thumbnail-container img").forEach((img, i) => {
+    img.classList.toggle("active", i === currentTechImageIndex);
+  });
+}
+
+function nextTechImage() {
+  currentTechImageIndex = (currentTechImageIndex + 1) % currentTechImages.length;
+  updateTechImage();
+}
+
+function prevTechImage() {
+  currentTechImageIndex = (currentTechImageIndex - 1 + currentTechImages.length) % currentTechImages.length;
+  updateTechImage();
+}
+
+function selectTechImage(index) {
+  currentTechImageIndex = index;
+  updateTechImage();
+}
+
+function closeBooking() {
+  document.getElementById("bookingModal").classList.remove('show');
+}
+
+async function confirmBooking() {
+  const name = document.getElementById("customerName").value.trim();
+  const phone = document.getElementById("customerPhone").value.trim();
+  const problem = document.getElementById("problemDetail").value.trim();
+  const province = document.getElementById("province").value;
+  const district = document.getElementById("district").value;
+  const subdistrict = document.getElementById("subdistrict").value;
+  const serviceDate = document.getElementById("serviceDate").value;
+  const serviceTime = document.getElementById("serviceTime").value;
+
+  if (!currentTech) {
+    alert("ไม่พบข้อมูลช่าง");
+    return;
+  }
+
+  const phoneRegex = /^0[0-9]{8,9}$/;
+
+  if (!name || !phone || !problem || !province || !district || !subdistrict) {
+    alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+    return;
+  }
+
+  if (!phoneRegex.test(phone)) {
+    alert("รูปแบบเบอร์โทรไม่ถูกต้อง");
+    return;
+  }
+
+  if (!serviceDate || !serviceTime) {
+    alert("กรุณาเลือกวันที่และเวลา");
+    return;
+  }
+
+  const { error } = await supabaseClient.from("bookings").insert([
+    {
+      technician_id: currentTech.id,
+      tech_name: currentTech.name,
+      category: currentTech.category,
+      customer_id: currentUser ? currentUser.id : null,
+      customer_name: name,
+      customer_phone: phone,
+      problem_detail: problem,
+      province: province,
+      district: district,
+      subdistrict: subdistrict,
+      service_date: serviceDate,
+      service_time: serviceTime,
+      status: "รอดำเนินการ"
+    }
+  ]);
+
+  if (error) {
+    alert("เกิดข้อผิดพลาด: " + error.message);
+    return;
+  }
+
+  alert("✅ บันทึกการจ้างเรียบร้อย!");
+
+  document.getElementById("customerName").value = "";
+  document.getElementById("customerPhone").value = "";
+  document.getElementById("problemDetail").value = "";
+  document.getElementById("province").value = "";
+  document.getElementById("district").innerHTML = '<option value="">เลือกอำเภอ</option>';
+  document.getElementById("subdistrict").innerHTML = '<option value="">เลือกตำบล</option>';
+  document.getElementById("serviceDate").value = "";
+  document.getElementById("serviceTime").value = "";
+
+  closeBooking();
+}
+
+// ===== LOCATION ===== 
+function updateDistricts() {
+  const province = document.getElementById("province").value;
+  const districtSelect = document.getElementById("district");
+  districtSelect.innerHTML = '<option value="">เลือกอำเภอ</option>';
+  document.getElementById("subdistrict").innerHTML = '<option value="">เลือกตำบล</option>';
+
+  if (!locationData[province]) return;
+
+  Object.keys(locationData[province]).forEach(district => {
+    const option = document.createElement("option");
+    option.value = district;
+    option.textContent = district;
+    districtSelect.appendChild(option);
+  });
+}
+
+function updateSubdistricts() {
+  const province = document.getElementById("province").value;
+  const district = document.getElementById("district").value;
+  const subdistrictSelect = document.getElementById("subdistrict");
+  subdistrictSelect.innerHTML = '<option value="">เลือกตำบล</option>';
+
+  if (!locationData[province] || !locationData[province][district]) return;
+
+  locationData[province][district].forEach(subdistrict => {
+    const option = document.createElement("option");
+    option.value = subdistrict;
+    option.textContent = subdistrict;
+    subdistrictSelect.appendChild(option);
+  });
+}
+
+// ===== CHAT =====
+async function openChat(index) {
+  if (!currentUser) {
+    alert("กรุณาเข้าสู่ระบบก่อน");
+    window.location.href = "login.html";
+    return;
+  }
+
+  currentTech = technicians[index];
+
+  document.getElementById("chatTitle").innerText = `💬 แชทกับ ${currentTech.name}`;
+
+  try {
+    const { data: existingConv } = await supabaseClient
+      .from("conversations")
+      .select("*")
+      .eq("customer_id", currentUser.id)
+      .eq("technician_id", currentTech.id);
+
+    if (existingConv && existingConv.length > 0) {
+      currentConversation = existingConv[0];
+    } else {
+      const { data: newConv, error: insertError } = await supabaseClient
+        .from("conversations")
+        .insert([{
+          customer_id: currentUser.id,
+          technician_id: currentTech.id
+        }])
+        .select();
+
+      if (insertError) {
+        alert("ไม่สามารถสร้างการสนทนา: " + insertError.message);
+        return;
+      }
+
+      currentConversation = newConv[0];
+    }
+
+    await loadMessages();
+    document.getElementById("chatModal").classList.add('show');
+    document.getElementById("chatInput").focus();
+
+    if (messagesSubscription) {
+      messagesSubscription.unsubscribe();
+    }
+    
+    messagesSubscription = supabaseClient
+      .channel(`messages:${currentConversation.id}`)
+      .on('postgres_changes', 
+        {
+          event: '*',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${currentConversation.id}`
+        },
+        (payload) => {
+          loadMessages();
+        }
+      )
+      .subscribe();
+
+  } catch (err) {
+    console.error("Chat open error:", err);
+    alert("เกิด���้อผิดพลาด: " + err.message);
+  }
+}
+
+async function loadMessages() {
+  if (!currentConversation || !currentConversation.id) {
+    return;
+  }
+
+  const { data: messages } = await supabaseClient
+    .from("messages")
+    .select("*")
+    .eq("conversation_id", currentConversation.id)
+    .order("created_at", { ascending: true });
+
+  const messagesList = document.getElementById("messagesList");
+  messagesList.innerHTML = (messages || []).map(msg => {
+    const isOwn = msg.sender_id === currentUser.id;
+    const senderName = isOwn ? "คุณ" : currentTech.name;
+    const d = new Date(msg.created_at);
+    const dateStr = d.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+    const timeStr = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
+    
+    return `
+      <div class="message-item ${isOwn ? 'own' : ''}">
+        <div class="message-bubble ${isOwn ? 'own' : 'other'}">
+          <strong style="font-size: 12px;">${senderName}</strong>
+          <p style="margin: 4px 0 0 0;">${msg.message_text || ''}</p>
+          <span class="message-time" style="display:block; margin-top:4px; font-size:11px; opacity:0.8;">${dateStr} ${timeStr}</span>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  const container = document.getElementById("messagesContainer");
+  container.scrollTop = container.scrollHeight;
+}
+
+async function sendMessage() {
+  const input = document.getElementById("chatInput");
+  const message = input.value.trim();
+  
+  if (!message) {
+    alert("กรุณาพิมพ์ข้อความ");
+    return;
+  }
+
+  if (!currentUser || !currentConversation) {
+    alert("ไม่พบการสนทนา");
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("messages")
+    .insert([{
+      conversation_id: currentConversation.id,
+      sender_id: currentUser.id,
+      receiver_id: currentTech.id,
+      message_text: message
+    }]);
+
+  if (error) {
+    alert("เกิดข้อผิดพลาด: " + error.message);
+    return;
+  }
+
+  input.value = "";
+  await loadMessages();
+}
+
+function closeChat() {
+  document.getElementById("chatModal").classList.remove('show');
+  if (messagesSubscription) {
+    messagesSubscription.unsubscribe();
+  }
+}
+
+// ===== AI CHAT WIDGET =====
+function toggleAIChatWidget() {
+  const widget = document.getElementById("aiChatWidget");
+  aiChatWidgetOpen = !aiChatWidgetOpen;
+  widget.style.display = aiChatWidgetOpen ? "block" : "none";
+  
+  if (aiChatWidgetOpen) {
+    document.getElementById("aiChatInput").focus();
+  }
+}
+
+function addAIChatMessage(text, isUser) {
+  const messagesContainer = document.getElementById("aiChatMessages");
+  
+  const wrapper = document.createElement("div");
+  wrapper.className = `message-wrapper ${isUser ? 'user' : 'ai'}`;
+  
+  const messageDiv = document.createElement("div");
+  messageDiv.className = `message ${isUser ? 'user' : 'ai'}`;
+  messageDiv.innerText = text;
+
+  const d = new Date();
+  const dateStr = d.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+  const timeStr = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
+  
+  const timeSpan = document.createElement("span");
+  timeSpan.className = "message-time";
+  timeSpan.style.display = "block";
+  timeSpan.style.marginTop = "4px";
+  timeSpan.style.fontSize = "11px";
+  timeSpan.style.opacity = "0.7";
+  timeSpan.style.textAlign = isUser ? "right" : "left";
+  timeSpan.innerText = `${dateStr} ${timeStr}`;
+  
+  wrapper.appendChild(messageDiv);
+  wrapper.appendChild(timeSpan);
+  messagesContainer.appendChild(wrapper);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function showAIChatLoading() {
+  const messagesContainer = document.getElementById("aiChatMessages");
+  
+  const wrapper = document.createElement("div");
+  wrapper.className = "message-wrapper ai";
+  wrapper.id = "loadingMessage";
+  
+  const messageDiv = document.createElement("div");
+  messageDiv.className = "message loading";
+  messageDiv.innerText = "⏳ กำลังวิเคราะห์...";
+  
+  wrapper.appendChild(messageDiv);
+  messagesContainer.appendChild(wrapper);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function removeAIChatLoading() {
+  const loadingMsg = document.getElementById("loadingMessage");
+  if (loadingMsg) {
+    loadingMsg.remove();
+  }
+}
+
+async function sendAIChat() {
+  const input = document.getElementById("aiChatInput");
+  const text = input.value.trim();
+
+  if (!text) return;
+
+  addAIChatMessage(text, true);
+  input.value = "";
+
+  showAIChatLoading();
+
+  try {
+    const response = await fetch(AI_CHAT_WEBHOOK, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: text })
+    });
+
+    removeAIChatLoading();
+
+    const data = await response.json();
+    const botResponse = data.answer || data.reply || "ขอโทษ ฉันไม่สามารถตอบได้";
+    
+    addAIChatMessage(botResponse, false);
+
+  } catch (err) {
+    console.error("❌ AI Chat Error:", err);
+    removeAIChatLoading();
+    addAIChatMessage("❌ เกิดข้อผิดพลาดในการเชื่อมต่อ", false);
+  }
+}
+
+function handleAIChatKeyPress(event) {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    sendAIChat();
+  }
+}
+
+// ===== CHAT IMAGE UPLOAD =====
+async function handleChatImageUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (!currentUser || !currentConversation) {
+    alert("ไม่พบการสนทนา");
+    return;
+  }
+
+  const fileExt = file.name.split('.').pop();
+  const fileName = `chat_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+  const filePath = `chat_images/${fileName}`;
+
+  try {
+    const { data, error: uploadError } = await supabaseClient.storage
+      .from('ssss')
+      .upload(filePath, file);
+
+    if (uploadError) {
+      console.warn("Storage upload failed, falling back to Base64", uploadError);
+      resizeImageBeforeUpload(file, async (base64Str) => {
+        await sendImageMessage(base64Str);
+      });
+    } else {
+      const { data: publicData } = supabaseClient.storage
+        .from('ssss')
+        .getPublicUrl(filePath);
+      await sendImageMessage(publicData.publicUrl);
+    }
+  } catch (err) {
+    console.warn("Error:", err);
+    resizeImageBeforeUpload(file, async (base64Str) => {
+      await sendImageMessage(base64Str);
+    });
+  }
+}
+
+async function sendImageMessage(imageUrl) {
+  const message = `<img src="${imageUrl}" style="max-width:200px; border-radius:8px; display:block; margin-top:4px;" alt="รูปภาพแชท">`;
+
+  const { error } = await supabaseClient
+    .from("messages")
+    .insert([{
+      conversation_id: currentConversation.id,
+      sender_id: currentUser.id,
+      receiver_id: currentTech.id,
+      message_text: message
+    }]);
+
+  if (error) {
+    alert("เกิดข้อผิดพลาดในการส่งรูปภาพ: " + error.message);
+    return;
+  }
+
+  const inputEl = document.getElementById("chatImageInput");
+  if(inputEl) inputEl.value = '';
+  await loadMessages();
+}
+
+function resizeImageBeforeUpload(file, callback) {
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onload = function(e) {
+    const img = new Image();
+    img.src = e.target.result;
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const MAX_WIDTH = 800;
+      const MAX_HEIGHT = 800;
+      let width = img.width;
+      let height = img.height;
+
+      if (width > height) {
+        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+      } else {
+        if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+      }
+      canvas.width = width; canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      callback(canvas.toDataURL('image/jpeg', 0.8));
+    };
+  };
+}
+
+// ===== INITIALIZE =====
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('🚀 Initializing Technician page...');
+  checkAuth();
+  loadTechnicians();
+});

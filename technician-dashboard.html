@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Technician Dashboard | FixHome</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- FullCalendar -->
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+  <!-- SweetAlert2 for UX -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="technician-dashboard-styles.css?v=3">
+</head>
+<body>
+  <div class="tech-container">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="logo">
+          <img src="https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/ssss/FixHouse-logo.png" alt="FixHome Logo">
+          <span class="tech-badge">TECHNICIAN</span>
+        </a>
+        <button class="close-sidebar-btn" id="closeSidebarBtn">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <ul>
+          <p class="nav-section">เมนูหลัก</p>
+          <li class="nav-item active">
+            <a href="#" class="nav-link">
+              <i class="fa-solid fa-chart-pie"></i>
+              <span>ภาพรวมแผงควบคุม</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link" onclick="switchView('calendar')">
+              <i class="fa-solid fa-calendar-alt"></i>
+              <span>ตารางงาน (Schedule)</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link" onclick="Swal.fire({icon: 'info', title: 'กำลังพัฒนา', text: 'ระบบจัดการรายได้เชิงลึกกำลังเปิดใช้งานเร็วๆ นี้', confirmButtonColor: 'var(--primary)'})">
+              <i class="fa-solid fa-wallet"></i>
+              <span>รายได้ (Income)</span>
+            </a>
+          </li>
+          
+          <p class="nav-section">โปรไฟล์</p>
+          <li class="nav-item">
+            <a href="#" class="nav-link" onclick="Swal.fire({icon: 'info', title: 'กำลังพัฒนา', text: 'หน้าแก้ไขประวัติกำลังเปิดใช้งานเร็วๆ นี้', confirmButtonColor: 'var(--primary)'})">
+              <i class="fa-solid fa-user-pen"></i>
+              <span>แก้ไขประวัติ</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link" onclick="Swal.fire({icon: 'info', title: 'กำลังพัฒนา', text: 'หน้าตั้งค่าระบบกำลังเปิดใช้งานเร็วๆ นี้', confirmButtonColor: 'var(--primary)'})">
+              <i class="fa-solid fa-gear"></i>
+              <span>ตั้งค่าระบบ</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="btn-logout" onclick="logout()">
+          <i class="fa-solid fa-sign-out-alt"></i> ออกจากระบบ
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      
+      <!-- Top Header -->
+      <header class="top-header">
+        <div class="header-left">
+          <button class="menu-toggle-btn" id="menuToggleBtn">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="header-title">ระบบจัดการงาน - ช่างเทคนิค</div>
+        </div>
+
+        <div class="header-right">
+          <div class="notification-wrapper">
+            <button class="icon-btn" title="รายการแชททั้งหมด" onclick="toggleChatList()">
+              <i class="fa-regular fa-message"></i>
+              <span class="badge" id="chatBadge" style="display:none; background:var(--danger);">0</span>
+            </button>
+          </div>
+          
+          <div class="tech-profile">
+            <div class="avatar">
+              <img src="https://ui-avatars.com/api/?name=Tech&background=10b981&color=fff&bold=true" alt="Avatar">
+            </div>
+            <div class="profile-info">
+              <span class="name" id="navUserName">กำลังโหลด...</span>
+              <span class="role">ช่างเทคนิค</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Dashboard Content -->
+      <div class="dashboard-content">
+        <div class="page-header">
+          <div>
+            <h1>สวัสดีช่าง, ยินดีต้อนรับ! 👋</h1>
+            <p>นี่คือข้อมูลสรุปงานและสถิติรายได้ของคุณในตอนนี้</p>
+          </div>
+          <div style="display:flex; gap:12px;">
+            <button class="btn-outline" style="background:#fff;" onclick="switchView('dashboard')" id="btnViewDashboard">
+              <i class="fa-solid fa-chart-pie"></i> แผงควบคุม
+            </button>
+            <button class="btn-primary" onclick="switchView('calendar')" id="btnViewCalendar">
+              <i class="fa-solid fa-calendar-check"></i> ดูตารางงาน
+            </button>
+          </div>
+        </div>
+
+        <div id="dashboardView">
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+          <!-- Stat 1 -->
+          <div class="stat-card">
+            <div class="stat-content">
+              <p class="stat-title">งานทั้งหมดที่ได้รับ</p>
+              <h3 class="stat-value" id="statTotalJobs">0</h3>
+            </div>
+            <div class="stat-icon bg-blue">
+              <i class="fa-solid fa-briefcase"></i>
+            </div>
+          </div>
+
+          <!-- Stat 2 -->
+          <div class="stat-card">
+            <div class="stat-content">
+              <p class="stat-title">งานที่กำลังดำเนินการ</p>
+              <h3 class="stat-value" id="statActiveJobs">0</h3>
+            </div>
+            <div class="stat-icon bg-orange">
+              <i class="fa-solid fa-spinner"></i>
+            </div>
+          </div>
+
+          <!-- Stat 3 -->
+          <div class="stat-card">
+            <div class="stat-content">
+              <p class="stat-title">งานที่เสร็จสิ้น</p>
+              <h3 class="stat-value" id="statCompleted">0</h3>
+            </div>
+            <div class="stat-icon bg-green">
+              <i class="fa-solid fa-check-double"></i>
+            </div>
+          </div>
+
+          <!-- Stat 4 -->
+          <div class="stat-card">
+            <div class="stat-content">
+              <p class="stat-title">รายได้ประเมิน</p>
+              <h3 class="stat-value" id="statIncome">฿0</h3>
+            </div>
+            <div class="stat-icon bg-purple">
+              <i class="fa-solid fa-money-bill-wave"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Layout Grid -->
+        <div class="dashboard-grid-layout">
+          
+          <!-- Left Column (Main Table) -->
+          <div class="card">
+            <div class="card-header border-bottom">
+              <h2>รายการงานล่าสุด (Recent Jobs)</h2>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>รหัสงาน</th>
+                    <th>ลูกค้า</th>
+                    <th>รายละเอียดปัญหา</th>
+                    <th>วันที่จอง</th>
+                    <th>สถานะ</th>
+                    <th>จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody id="jobsTableBody">
+                  <tr>
+                    <td colspan="6" class="text-center">กำลังโหลดข้อมูล...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Job Detail Modal -->
+  <div class="modal-overlay" id="jobModalOverlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="jobModalTitle">รายละเอียดงาน</h3>
+        <button class="modal-close" onclick="closeJobModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" id="jobModalBody">
+        <!-- Content injected via JS -->
+      </div>
+      <div class="modal-footer" id="jobModalFooter">
+        <!-- Actions injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Modal (Messenger Style) -->
+  <div class="modal-overlay" id="chatModalOverlay" style="display:none; z-index:2000; align-items:flex-end; justify-content:flex-end; padding:20px;">
+    <div class="modal-content" style="width:360px; max-width:100%; height:500px; max-height:90vh; display:flex; flex-direction:column; padding:0; overflow:hidden; border-radius:12px; box-shadow:0 12px 28px rgba(0,0,0,0.2); margin:0;">
+      
+      <!-- Header -->
+      <div class="modal-header" style="padding:10px 16px; background:#fff; border-bottom:1px solid #e4e6eb; display:flex; justify-content:space-between; align-items:center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); z-index:10;">
+         <div id="chatModalTitle" style="display:flex; align-items:center;">
+            <!-- Title injected by JS -->
+         </div>
+         <div style="display:flex; gap:16px; color:#0084ff; font-size:18px;">
+            <i class="fa-solid fa-phone" style="cursor:pointer;"></i>
+            <i class="fa-solid fa-video" style="cursor:pointer;"></i>
+            <i class="fa-solid fa-times" onclick="closeChatModal()" style="cursor:pointer; color:#bcc0c4; font-size:20px;"></i>
+         </div>
+      </div>
+      
+      <!-- Body -->
+      <div id="chatMessages" style="flex:1; overflow-y:auto; padding:16px; background:#fff; display:flex; flex-direction:column;">
+         <!-- messages go here -->
+      </div>
+      
+      <!-- Footer Input -->
+      <div class="modal-footer" style="padding:12px; background:#fff; display:flex; align-items:flex-end; gap:8px;">
+         <div style="color:#0084ff; font-size:20px; cursor:pointer; padding:6px 4px;"><i class="fa-solid fa-circle-plus"></i></div>
+         <div style="color:#0084ff; font-size:20px; cursor:pointer; padding:6px 4px;"><i class="fa-solid fa-image"></i></div>
+         <div style="flex:1; background:#f0f2f5; border-radius:20px; display:flex; align-items:center; padding:2px 12px;">
+            <input type="text" id="chatInput" style="flex:1; background:transparent; border:none; outline:none; padding:8px 0; font-size:15px;" placeholder="Aa" onkeypress="if(event.key==='Enter') sendChatMessage()">
+            <i class="fa-solid fa-face-smile" style="color:#0084ff; font-size:20px; cursor:pointer; margin-left:8px;"></i>
+         </div>
+         <button onclick="sendChatMessage()" style="background:none; border:none; color:#0084ff; font-size:20px; cursor:pointer; padding:6px 4px;"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat List Modal -->
+  <div class="modal-overlay" id="chatListModalOverlay" style="display:none; z-index:1900;">
+    <div class="modal-content" style="width:400px; max-width:90%; max-height:80vh; display:flex; flex-direction:column; padding:0; overflow:hidden; border-radius:12px;">
+      
+      <div class="modal-header" style="padding:16px 20px; background:#fff; border-bottom:1px solid #e4e6eb; display:flex; justify-content:space-between; align-items:center;">
+         <h3 style="margin:0; font-size:18px; color:#050505; font-weight:700;">รายการแชททั้งหมด</h3>
+         <button class="close-btn" onclick="closeChatList()" style="background:none; border:none; color:#bcc0c4; font-size:20px; cursor:pointer;"><i class="fa-solid fa-times"></i></button>
+      </div>
+      
+      <div id="chatListContainer" style="flex:1; overflow-y:auto; padding:0; background:#fff; display:flex; flex-direction:column;">
+         <!-- chat list items go here -->
+      </div>
+      
+    </div>
+  </div>
+
+  <script src="technician-dashboard.js?v=6"></script>
+</body>
+</html>
