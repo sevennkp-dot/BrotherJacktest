@@ -149,10 +149,29 @@ nav .flex-nav {
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.1);
   border: 1px solid #e8ecf1;
-  text-align: center;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  text-align: left;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-item label {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #2c3e50;
+  font-size: 14px;
 }
 
 .filter-box select {
+  width: 100%;
   padding: 10px 16px;
   border: 1px solid #d1d5db;
   border-radius: 8px;

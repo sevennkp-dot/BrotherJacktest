@@ -39,6 +39,7 @@ function displayHouses(houses) {
         <h3>${house.name}</h3>
         <div class="price">฿${Number(house.price).toLocaleString()}</div>
         <div class="specs">
+          <strong>ประเภท:</strong> ${house.building_type || 'บ้าน'}<br>
           ${house.bedrooms} ห้องนอน | ${house.bathrooms} ห้องน้ำ | ${house.parking} ที่จอดรถ<br>
           ขนาด ${house.width} × ${house.length} เมตร
         </div>
@@ -90,6 +91,7 @@ async function showDetail(index) {
     <div class="thumbnail-container">${thumbnails}</div>
 
     <div class="house-details">
+      <div class="detail-item"><strong>ประเภท:</strong> ${house.building_type || 'บ้าน'}</div>
       <div class="detail-item"><strong>ราคา:</strong> ฿${Number(house.price).toLocaleString()}</div>
       <div class="detail-item"><strong>ขนาดที่ดิน:</strong> ${house.width} × ${house.length} ม.</div>
       <div class="detail-item"><strong>ห้องนอน:</strong> ${house.bedrooms} ห้อง</div>
@@ -162,7 +164,7 @@ async function showDetail(index) {
 
     <hr>
 
-    <button class="order-btn" onclick="toggleOrderForm(${index}); event.stopPropagation();">📌 สั่งสร้างบ้านรุ่นนี้</button>
+    <button class="order-btn" onclick="toggleOrderForm(${index}); event.stopPropagation();">📌 สั่งสร้างรุ่นนี้</button>
 
     <div class="order-form" id="orderForm${index}">
       <input type="text" id="customerName${index}" placeholder="ชื่อ - นามสกุล *" required>
@@ -290,7 +292,7 @@ async function submitOrder(index) {
     return;
   }
 
-  alert('✅ ส่งคำขอสร้างบ้านเรียบร้อย ทีมงานจะติดต่อกลับเร็วที่สุด');
+  alert('✅ ส่งคำขอเรียบร้อย ทีมงานจะติดต่อกลับเร็วที่สุด');
   document.getElementById(`orderForm${index}`).classList.remove('show');
   closeModal();
 }
@@ -300,6 +302,7 @@ function closeModal() {
 }
 
 function filterHouses() {
+  const buildingType = document.getElementById('buildingType')?.value || 'all';
   const width = parseFloat(document.getElementById('landWidth').value) || 0;
   const length = parseFloat(document.getElementById('landLength').value) || 0;
   const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
@@ -309,12 +312,14 @@ function filterHouses() {
   const parking = parseFloat(document.getElementById('parking').value) || 0;
 
   const filtered = allHouses.filter(house => {
+    const houseType = house.building_type || 'บ้าน';
+    const matchType = buildingType === 'all' || houseType === buildingType;
     const matchSize = (width === 0 && length === 0) || (width >= house.width && length >= house.length);
     const matchPrice = house.price >= minPrice && house.price <= maxPrice;
     const matchBedrooms = house.bedrooms >= bedrooms;
     const matchBathrooms = house.bathrooms >= bathrooms;
     const matchParking = house.parking >= parking;
-    return matchSize && matchPrice && matchBedrooms && matchBathrooms && matchParking;
+    return matchType && matchSize && matchPrice && matchBedrooms && matchBathrooms && matchParking;
   });
 
   displayHouses(filtered);
@@ -510,7 +515,7 @@ async function openAdminChatForBuild(index, event) {
     adminUserId = adminProfile.id;
   }
 
-  document.getElementById("chatTitle").innerText = `💬 สอบถามแบบบ้าน`;
+  document.getElementById("chatTitle").innerText = `💬 สอบถามข้อมูล`;
   const houseContext = allHouses[index];
 
   try {
@@ -544,7 +549,8 @@ async function openAdminChatForBuild(index, event) {
 
     // Context message logic: Fill the input box, so the user can easily send it
     if(houseContext) {
-      document.getElementById("chatInput").value = `สนใจสร้างบ้านรุ่น: ${houseContext.name} ราคาเริ่มต้น: ฿${Number(houseContext.price).toLocaleString()}`;
+      const typeStr = houseContext.building_type || 'บ้าน';
+      document.getElementById("chatInput").value = `สนใจสร้าง${typeStr}รุ่น: ${houseContext.name} ราคาเริ่มต้น: ฿${Number(houseContext.price).toLocaleString()}`;
     }
 
     if (messagesSubscription) {

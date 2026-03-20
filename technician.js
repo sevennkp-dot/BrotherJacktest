@@ -115,9 +115,13 @@ function renderTechnicians(list) {
       <img src="${firstImage}" alt="${tech.name}" onerror="this.src='https://via.placeholder.com/400x300?text=ไม่มีรูป'">
       <div class="tech-info">
         <h3>${tech.name}</h3>
+        <p style="margin: 4px 0; font-weight: 600; font-size: 13px; color: ${tech.is_online !== false ? '#10b981' : '#ef4444'};">${tech.is_online !== false ? '🟢 ว่าง พร้อมรับงาน' : '🔴 ไม่ว่าง'}</p>
         <p>🔧 <strong>หมวดหมู่:</strong> ${tech.category}</p>
         <p>📍 <strong>พื้นที่:</strong> ${tech.area}</p>
-        <p class="tech-rating">⭐ <strong>คะแนน:</strong> ${tech.rating || "ยังไม่มีรีวิว"}</p>
+        <p class="tech-rating" style="display: flex; gap: 8px; align-items: center;">
+          <span style="color:#f59e0b; letter-spacing: 2px;">${'⭐'.repeat(Math.round(parseFloat(tech.rating) || 0))}${'☆'.repeat(5 - Math.round(parseFloat(tech.rating) || 0))}</span> 
+          <strong>${tech.rating ? parseFloat(tech.rating).toFixed(1) : "ยังไม่มีรีวิว"}</strong>
+        </p>
         <div class="tech-buttons">
           <button onclick="openBooking(${index})">📞 ติดต่อ</button>
           ${currentUser ? `<button class="btn-chat" onclick="openChat(${index})">💬 แชท</button>` : ''}
@@ -130,12 +134,74 @@ function renderTechnicians(list) {
 
 function filterTechnicians() {
   const category = document.getElementById("categoryFilter").value;
-  if (category === "all") {
-    renderTechnicians(technicians);
-  } else {
-    const filtered = technicians.filter(t => t.category === category);
-    renderTechnicians(filtered);
-  }
+  const province = document.getElementById("filterProvince")?.value || "all";
+  const district = document.getElementById("filterDistrict")?.value || "all";
+  const subdistrict = document.getElementById("filterSubdistrict")?.value || "all";
+
+  const filtered = technicians.filter(t => {
+    if (category !== "all" && t.category !== category) return false;
+
+    if (province !== "all") {
+      if (t.province) {
+        if (t.province !== province) return false;
+      } else if (t.area && !t.area.includes(province)) {
+        return false;
+      }
+    }
+
+    if (district !== "all") {
+       if (t.district) {
+         if (t.district !== district) return false;
+       } else if (t.area && !t.area.includes(district)) {
+         return false;
+       }
+    }
+
+    if (subdistrict !== "all") {
+       if (t.subdistrict) {
+         if (t.subdistrict !== subdistrict) return false;
+       } else if (t.area && !t.area.includes(subdistrict)) {
+         return false;
+       }
+    }
+
+    return true;
+  });
+
+  renderTechnicians(filtered);
+}
+
+// ===== FILTER LOCATION UPDATE =====
+function updateFilterDistricts() {
+  const province = document.getElementById("filterProvince").value;
+  const districtSelect = document.getElementById("filterDistrict");
+  districtSelect.innerHTML = '<option value="all">ทั้งหมด</option>';
+  document.getElementById("filterSubdistrict").innerHTML = '<option value="all">ทั้งหมด</option>';
+
+  if (province === "all" || !locationData[province]) return;
+
+  Object.keys(locationData[province]).forEach(district => {
+    const option = document.createElement("option");
+    option.value = district;
+    option.textContent = district;
+    districtSelect.appendChild(option);
+  });
+}
+
+function updateFilterSubdistricts() {
+  const province = document.getElementById("filterProvince").value;
+  const district = document.getElementById("filterDistrict").value;
+  const subdistrictSelect = document.getElementById("filterSubdistrict");
+  subdistrictSelect.innerHTML = '<option value="all">ทั้งหมด</option>';
+
+  if (province === "all" || district === "all" || !locationData[province] || !locationData[province][district]) return;
+
+  locationData[province][district].forEach(subdistrict => {
+    const option = document.createElement("option");
+    option.value = subdistrict;
+    option.textContent = subdistrict;
+    subdistrictSelect.appendChild(option);
+  });
 }
 
 // ===== BOOKING MODAL =====
@@ -160,6 +226,30 @@ function openBooking(index) {
   thumbnailContainer.innerHTML = images.map((img, i) => 
     `<img src="${img}" class="${i === 0 ? 'active' : ''}" onclick="selectTechImage(${i})" alt="รูป ${i+1}">`
   ).join("");
+
+  // Load reviews
+  const reviewsContainer = document.getElementById("techReviewsList");
+  reviewsContainer.innerHTML = "กำลังโหลด...";
+  supabaseClient.from("reviews")
+    .select("rating, comment, customer_name, created_at")
+    .eq("technician_id", currentTech.id)
+    .order("created_at", { ascending: false })
+    .then(({data, error}) => {
+      if (error || !data || data.length === 0) {
+        reviewsContainer.innerHTML = "<p style='color:#666; font-size:14px; text-align:center;'>ยังไม่มีรีวิวสำหรับช่างท่านนี้</p>";
+        return;
+      }
+      reviewsContainer.innerHTML = data.map(r => `
+        <div class="review-item" style="background:#f9fafb; padding:12px; border-radius:8px; margin-bottom:12px; border-left: 3px solid #f59e0b;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <strong style="font-size: 14px;">${r.customer_name || 'ลูกค้า'}</strong>
+            <span style="color:#f59e0b; font-size:12px;">${'⭐'.repeat(Math.round(r.rating || 5))}</span>
+          </div>
+          <p style="margin:0; font-size:13px; color:#444;">${r.comment || ''}</p>
+          <span style="font-size:11px; color:#999; margin-top:6px; display:block;">${new Date(r.created_at).toLocaleDateString('th-TH')}</span>
+        </div>
+      `).join("");
+    });
 
   document.getElementById("bookingModal").classList.add('show');
 }
@@ -199,6 +289,8 @@ async function confirmBooking() {
   const subdistrict = document.getElementById("subdistrict").value;
   const serviceDate = document.getElementById("serviceDate").value;
   const serviceTime = document.getElementById("serviceTime").value;
+  const problemImageInput = document.getElementById("problemImage");
+  const problemImageFile = problemImageInput.files[0];
 
   if (!currentTech) {
     alert("ไม่พบข้อมูลช่าง");
@@ -222,6 +314,26 @@ async function confirmBooking() {
     return;
   }
 
+  const btnConfirm = document.querySelector(".btn-confirm");
+  const originalBtnText = btnConfirm.innerHTML;
+  btnConfirm.innerHTML = "⏳ กำลังบันทึก...";
+  btnConfirm.disabled = true;
+
+  let imageUrl = null;
+  if (problemImageFile) {
+    const fileExt = problemImageFile.name.split('.').pop();
+    const fileName = `problem_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+    const filePath = `problem_images/${fileName}`;
+    
+    const { data: uploadData, error: uploadError } = await supabaseClient.storage.from('ssss').upload(filePath, problemImageFile);
+    if (!uploadError) {
+      const { data: publicData } = supabaseClient.storage.from('ssss').getPublicUrl(filePath);
+      imageUrl = publicData.publicUrl;
+    } else {
+      console.error("Image upload failed:", uploadError);
+    }
+  }
+
   const { error } = await supabaseClient.from("bookings").insert([
     {
       technician_id: currentTech.id,
@@ -231,6 +343,7 @@ async function confirmBooking() {
       customer_name: name,
       customer_phone: phone,
       problem_detail: problem,
+      problem_image: imageUrl,
       province: province,
       district: district,
       subdistrict: subdistrict,
@@ -239,6 +352,9 @@ async function confirmBooking() {
       status: "รอดำเนินการ"
     }
   ]);
+
+  btnConfirm.innerHTML = originalBtnText;
+  btnConfirm.disabled = false;
 
   if (error) {
     alert("เกิดข้อผิดพลาด: " + error.message);
@@ -255,9 +371,24 @@ async function confirmBooking() {
   document.getElementById("subdistrict").innerHTML = '<option value="">เลือกตำบล</option>';
   document.getElementById("serviceDate").value = "";
   document.getElementById("serviceTime").value = "";
+  document.getElementById("problemImage").value = "";
+  document.getElementById("problemImagePreview").style.display = "none";
 
   closeBooking();
 }
+
+// Image Preview Event
+document.getElementById('problemImage')?.addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  const previewContainer = document.getElementById('problemImagePreview');
+  const previewImage = document.getElementById('previewImage');
+  if (file) {
+    previewImage.src = window.URL.createObjectURL(file);
+    previewContainer.style.display = 'block';
+  } else {
+    previewContainer.style.display = 'none';
+  }
+});
 
 // ===== LOCATION ===== 
 function updateDistricts() {
