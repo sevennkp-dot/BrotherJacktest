@@ -422,10 +422,39 @@ function handleKeyPress(e) {
   }
 }
 
+async function populateLocationFilters() {
+  try {
+    const { data, error } = await sb.from('properties').select('province, district, subdistrict');
+    if (error) throw error;
+
+    if (!data) return;
+
+    const provinces = [...new Set(data.map(p => p.province).filter(Boolean))].sort();
+    const districts = [...new Set(data.map(p => p.district).filter(Boolean))].sort();
+    const subdistricts = [...new Set(data.map(p => p.subdistrict).filter(Boolean))].sort();
+
+    const provSelect = document.getElementById('filterProvince');
+    const distSelect = document.getElementById('filterDistrict');
+    const subSelect = document.getElementById('filterSubdistrict');
+
+    // Clear existing besides first option
+    provSelect.innerHTML = '<option value="">จังหวัด</option>';
+    distSelect.innerHTML = '<option value="">อำเภอ</option>';
+    subSelect.innerHTML = '<option value="">ตำบล</option>';
+
+    provinces.forEach(p => provSelect.add(new Option(p, p)));
+    districts.forEach(d => distSelect.add(new Option(d, d)));
+    subdistricts.forEach(s => subSelect.add(new Option(s, s)));
+  } catch (err) {
+    console.error("Error populating filters:", err);
+  }
+}
+
 // ===== INITIALIZE =====
 document.addEventListener('DOMContentLoaded', () => {
   console.log('🚀 Initializing Buy-Rent page...');
   checkAuth();
+  populateLocationFilters();
   loadProperties();
 });
 
