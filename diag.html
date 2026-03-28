@@ -1,0 +1,37 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div id="output">Running diagnostic...</div>
+    <script>
+        const SUPABASE_URL = "https://uqcjajmqtlchftpqwsrp.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_yWZiH8l1idY0QWGuj6p9sg_GqXPONGX";
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function diag() {
+            const out = document.getElementById('output');
+            try {
+                out.innerHTML += "<br>Fetching one technician to inspect columns...";
+                const { data, error } = await sb
+                    .from("technicians")
+                    .select("*")
+                    .limit(1);
+                
+                if (error) {
+                    out.innerHTML += "<br>❌ Error: " + JSON.stringify(error, null, 2);
+                } else if (data.length > 0) {
+                    out.innerHTML += "<br>✅ Found columns: " + Object.keys(data[0]).join(", ");
+                } else {
+                    out.innerHTML += "<br>❓ No technicians found in table.";
+                }
+            } catch (e) {
+                out.innerHTML += "<br>🚨 Exception: " + e.message;
+            }
+        }
+        diag();
+    </script>
+</body>
+</html>

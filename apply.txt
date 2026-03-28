@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>สมัครงาน - ร่วมเป็นส่วนหนึ่งกับเรา | FixHome</title>
+<meta name="description" content="ร่วมงานกับ FixHome สมัครงานในตำแหน่งที่คุณถนัด ช่างก่อสร้าง สถาปนิก วิดวะ หรือพนักงานขาย">
+<meta name="keywords" content="สมัครงาน, หางานช่าง, หางานผู้รับเหมา, สมัครงานก่อสร้าง">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+* { box-sizing: border-box; }
+
+body { 
+  font-family: 'Sarabun', sans-serif; 
+  background-color: #f5f7fa; 
+  margin: 0; 
+  padding: 0; 
+  color: #2c3e50;
+}
+
+/* ===== NAVBAR ===== */
+/* ===== NAVBAR ===== */
+nav {
+  background: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  padding: 0 40px;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+nav img {
+  height: 50px;
+  object-fit: contain;
+}
+
+nav a {
+  font-size: 15px;
+  font-weight: 600;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  white-space: nowrap;
+  color: #2c3e50;
+  transition: color 0.25s;
+}
+
+nav a:hover {
+  color: #0066cc;
+}
+
+nav .flex-nav {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.auth-menu {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.auth-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: #f0f4f8;
+  border-radius: 20px;
+}
+
+.auth-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #0066cc;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.btn-logout {
+  background: #ef4444;
+  color: white;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.25s;
+  font-family: 'Sarabun', sans-serif;
+}
+
+.btn-logout:hover {
+  background: #dc2626;
+}
+
+.btn-login {
+  background: #0066cc;
+  color: white;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  font-family: 'Sarabun', sans-serif;
+}
+
+.btn-login:hover {
+  background: #0052a3;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  nav { padding: 0 24px; }
+  nav .flex-nav { gap: 20px; }
+}
+
+@media (max-width: 768px) {
+  nav {
+    flex-direction: column;
+    align-items: flex-start;
+    height: auto;
+    padding: 12px 16px;
+  }
+
+  nav .flex-nav {
+    width: 100%;
+    margin-left: 0;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  nav a { font-size: 14px; }
+}
+
+@media (max-width: 480px) {
+  nav {
+    padding: 10px 12px;
+  }
+
+  nav img { height: 42px; }
+
+  nav a { font-size: 12px; }
+
+  nav .flex-nav { gap: 8px; }
+}
+.auth-menu {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.auth-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: #f0f4f8;
+  border-radius: 20px;
+}
+
+.auth-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #0066cc;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.btn-logout {
+  background: #ef4444;
+  color: white;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.25s;
+  font-family: 'Sarabun', sans-serif;
+}
+
+.btn-logout:hover {
+  background: #dc2626;
+}
+
+.btn-login {
+  background: #0066cc;
+  color: white;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  font-family: 'Sarabun', sans-serif;
+}
+
+.btn-login:hover {
+  background: #0052a3;
+}
+
+/* ===== PAGE HEADER ===== */
+.page-header {
+  background: linear-gradient(135deg, #0066cc, #0052a3);
+  color: white;
+  padding: 60px 20px 80px 20px;
+  text-align: center;
+}
+
+.page-header h1 {
+  font-size: 40px;
+  margin: 0 0 12px 0;
+  font-weight: 700;
+}
+
+.page-header p {
+  font-size: 18px;
+  margin: 0;
+  opacity: 0.95;
+}
+
+/* ===== FILTER/FORM BOX ===== */
+.filter-section {
+  max-width: 800px;
+  margin: -50px auto 50px;
+  padding: 0 20px;
+  position: relative;
+  z-index: 10;
+}
+
+.filter-box {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  border: 1px solid #e8ecf1;
+}
+
+.filter-box h3 {
+  margin: 0 0 24px 0;
+  color: #2c3e50;
+  font-weight: 700;
+  font-size: 22px;
+  text-align: center;
+}
+
+.filter-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.filter-box label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.filter-box input,
+.filter-box select,
+.filter-box textarea {
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-family: 'Sarabun', sans-serif;
+  font-size: 15px;
+  transition: all 0.25s;
+  width: 100%;
+  background: #fff;
+}
+
+.filter-box textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.filter-box input:focus,
+.filter-box select:focus,
+.filter-box textarea:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgba(0,102,204,0.15);
+}
+
+.filter-box button {
+  background: #0066cc;
+  color: white;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s;
+  font-family: 'Sarabun', sans-serif;
+  font-size: 16px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.filter-box button:hover {
+  background: #0052a3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,102,204,0.3);
+}
+
+/* ===== HOUSE/BENEFITS CONTAINER ===== */
+.house-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 28px;
+  max-width: 1000px;
+  margin: 0 auto 60px;
+  padding: 0 20px;
+}
+
+.house-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border: 1px solid #e8ecf1;
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+}
+
+.house-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.1);
+}
+
+.house-info {
+  padding: 30px 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.house-info .icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.house-info h3 {
+  margin: 0 0 12px 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #2c3e50;
+  text-align: center;
+}
+
+.house-info .specs {
+  font-size: 15px;
+  color: #666;
+  margin: 0;
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  nav {
+    flex-direction: column;
+    align-items: flex-start;
+    height: auto;
+    padding: 12px 16px;
+  }
+
+  nav .flex-nav {
+    width: 100%;
+    margin-left: 0;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  nav a { font-size: 14px; }
+
+  .page-header {
+    padding: 40px 20px 60px;
+  }
+
+  .page-header h1 {
+    font-size: 28px;
+  }
+
+  .filter-section {
+    margin: -30px auto 40px;
+  }
+
+  .filter-box {
+    padding: 24px;
+  }
+
+  .filter-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  nav img { height: 42px; }
+  nav a { font-size: 13px; }
+  
+  .page-header h1 { font-size: 24px; }
+  .page-header p { font-size: 14px; }
+  
+  .filter-box { padding: 20px; }
+  .filter-box h3 { font-size: 18px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <a href="index.html">
+    <img src="https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/ssss/FixHouse-logo.png" alt="FixHouse">
+  </a>
+  <div class="flex-nav">
+    <a href="index.html">หน้าแรก</a>
+    <a href="Build.html">สร้าง</a>
+    <a href="Technician.html">ซ่อม</a>
+    <a href="Buy-Rent.html">เช่า</a>
+    <a href="Materials.html">ร้านวัสดุ</a>
+    <a href="Apply.html" class="active">สมัครงาน</a>
+
+      <div class="auth-menu">
+      <div id="authUserInfo" style="display: none;">
+        <div class="auth-user">
+          <div class="auth-user-avatar" id="userInitial">U</div>
+          <span id="userName">User</span>
+          <button class="btn-logout" onclick="logout()">ออกจากระบบ</button>
+        </div>
+      </div>
+      <div id="authLoginBtn" style="display: block;">
+        <a href="login.html" class="btn-login">🔐 เข้าสู่ระบบ</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<section class="page-header">
+  <h1>🤝 ร่วมงานกับเรา</h1>
+  <p>มาเป็นส่วนหนึ่งของทีม FixHouse ผู้เชี่ยวชาญด้านงานก่อสร้างและซ่อมแซม</p>
+</section>
+
+<!-- APPLICATION FORM SECTION -->
+<div class="filter-section">
+  <div class="filter-box">
+    <h3>📝 แบบฟอร์มสมัครงาน</h3>
+    <form id="applyForm">
+
+      <div class="filter-row">
+        <div>
+          <label>ประเภทช่าง *</label>
+          <select id="position" required>
+            <option value="">-- เลือกประเภทงาน --</option>
+            <option value="ช่างไฟ">⚡ ช่างไฟ</option>
+            <option value="ช่างแอร์">❄️ ช่างแอร์</option>
+            <option value="ช่างประปา">🚿 ช่างประปา</option>
+            <option value="แม่บ้าน">🧹 แม่บ้าน</option>
+            <option value="ช่างยนต์">🚗 ช่างยนต์</option>
+            <option value="อู่ซ่อมรถ">🛠️ อู่ซ่อมรถ</option>
+            <option value="พ่นสีรถ">🎨 พ่นสีรถ</option>
+            <option value="ช่างแอร์รถยนต์">💨 ช่างแอร์รถยนต์</option>
+          </select>
+        </div>
+
+        <div>
+          <label>ประสบการณ์ (ปี) *</label>
+          <input type="number" id="experienceYears" required>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div>
+          <label>ชื่อ-นามสกุล *</label>
+          <input type="text" id="fullname" required>
+        </div>
+
+        <div>
+          <label>เบอร์โทรศัพท์ *</label>
+          <input type="tel" id="phone" required>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div>
+          <label>จังหวัด *</label>
+          <input type="text" id="province" placeholder="เช่น สกลนคร" required>
+        </div>
+
+        <div>
+          <label>พื้นที่รับงาน</label>
+          <input type="text" id="serviceArea" placeholder="เช่น สกลนคร / อุดรธานี">
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div>
+          <label>จำนวนทีมงาน</label>
+          <select id="teamSize">
+            <option value="1">ทำคนเดียว</option>
+            <option value="2-3">2-3 คน</option>
+            <option value="4-5">4-5 คน</option>
+            <option value="5+">มากกว่า 5 คน</option>
+          </select>
+        </div>
+
+        <div>
+          <label>มีรถสำหรับออกงาน</label>
+          <select id="vehicle">
+            <option value="ไม่มี">ไม่มี</option>
+            <option value="มอเตอร์ไซค์">มอเตอร์ไซค์</option>
+            <option value="รถกระบะ">รถกระบะ</option>
+            <option value="รถบรรทุก">รถบรรทุก</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div>
+          <label>ค่าแรงต่อวัน (บาท)</label>
+          <input type="number" id="dailyRate">
+        </div>
+
+        <div>
+          <label>เวลาที่สะดวกรับงาน</label>
+          <select id="availability">
+            <option value="ทุกวัน">ทุกวัน</option>
+            <option value="จันทร์-ศุกร์">จันทร์-ศุกร์</option>
+            <option value="เสาร์อาทิตย์">เสาร์อาทิตย์</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div>
+          <label>Line ID</label>
+          <input type="text" id="lineId">
+        </div>
+
+        <div>
+          <label>Email</label>
+          <input type="email" id="email">
+        </div>
+      </div>
+
+      <div class="filter-row" style="grid-template-columns:1fr;">
+        <div>
+          <label>เครื่องมือที่มี</label>
+          <textarea id="tools"></textarea>
+        </div>
+      </div>
+
+      <div class="filter-row" style="grid-template-columns:1fr;">
+        <div>
+          <label>รายละเอียดประสบการณ์งานช่าง</label>
+          <textarea id="experience"></textarea>
+        </div>
+      </div>
+
+      <div class="filter-row" style="grid-template-columns:1fr;">
+        <div>
+          <label>ลิงก์ผลงาน (ถ้ามี)</label>
+          <input type="url" id="portfolio" placeholder="เช่น Facebook / YouTube / Website">
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div>
+          <label>อัปโหลดรูปโปรไฟล์ช่าง</label>
+          <input type="file" id="profileImage" accept="image/*">
+        </div>
+
+        <div>
+          <label>อัปโหลดรูปผลงาน (หลายรูปได้)</label>
+          <input type="file" id="portfolioImages" accept="image/*" multiple>
+        </div>
+      </div>
+
+      <div class="filter-box" style="margin-top: 20px; padding: 20px; background: #f9fafb; border: 1px dashed #cbd5e1; box-shadow: none;">
+        <h4 style="margin-top: 0; margin-bottom: 15px; font-size: 16px; color: #2c3e50;">📄 เอกสารแนบเพิ่มเติม</h4>
+        <div class="filter-row">
+          <div>
+            <label>รูปบัตรประชาชน *</label>
+            <input type="file" id="idCardImage" accept="image/*" required>
+          </div>
+          <div>
+            <label>รูปใบรับรองอบรม (ถ้ามี)</label>
+            <input type="file" id="trainingCertImage" accept="image/*">
+          </div>
+        </div>
+        <div class="filter-row" style="margin-bottom: 0;">
+          <div>
+            <label>รูปใบประกาศนียบัตร (ถ้ามี)</label>
+            <input type="file" id="certificateImage" accept="image/*">
+          </div>
+          <div>
+            <label>รูปใบอนุญาตช่าง (ถ้ามี)</label>
+            <input type="file" id="licenseImage" accept="image/*">
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-row" style="margin-top:10px;margin-bottom:0;">
+        <button type="submit" id="submitBtn">สมัครเป็นช่างกับ FixHouse 🚀</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- BENEFITS SECTION -->
+<div style="text-align: center; margin-bottom: 40px;">
+  <h2 style="font-size: 28px; font-weight: 700; color: #2c3e50;">สวัสดิการและเหตุผลที่ควรเริ่มงานกับเรา</h2>
+</div>
+
+<div class="house-container">
+  
+  <div class="house-card">
+     <div class="house-info">
+       <div class="icon">🌟</div>
+       <h3>สวัสดิการดีเยี่ยม</h3>
+       <p class="specs">ประกันสังคม โบนัสประจำปี วันหยุดพักผ่อน และอื่นๆ เพื่อคุณภาพชีวิตที่ดีของคนในทีม</p>
+     </div>
+  </div>
+
+  <div class="house-card">
+     <div class="house-info">
+       <div class="icon">📈</div>
+       <h3>โอกาสเติบโต</h3>
+       <p class="specs">สนับสนุนการเรียนรู้ มีเส้นทางความก้าวหน้าชัดเจน พัฒนาทักษะใหม่ๆ อยู่เสมอ</p>
+     </div>
+  </div>
+
+  <div class="house-card">
+     <div class="house-info">
+       <div class="icon">🤝</div>
+       <h3>ทีมเวิร์คที่อบอุ่น</h3>
+       <p class="specs">ทำงานในบรรยากาศเป็นมิตร คอยช่วยเหลือและแก้ปัญหาร่วมกันเหมือนเพื่อนและครอบครัว</p>
+     </div>
+  </div>
+
+</div>
+
+<script>
+const SUPABASE_URL = "https://uqcjajmqtlchftpqwsrp.supabase.co";
+const SUPABASE_KEY = "sb_publishable_yWZiH8l1idY0QWGuj6p9sg_GqXPONGX";
+
+// ใช้ชื่อ client อื่นเพื่อไม่ชนกับตัวแปร global supabase
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+document.getElementById('applyForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const position = document.getElementById('position').value;
+  const experienceYears = document.getElementById('experienceYears').value;
+  const fullname = document.getElementById('fullname').value;
+  const phone = document.getElementById('phone').value;
+  const province = document.getElementById('province').value;
+  const serviceArea = document.getElementById('serviceArea').value;
+  const teamSize = document.getElementById('teamSize').value;
+  const vehicle = document.getElementById('vehicle').value;
+  const dailyRate = document.getElementById('dailyRate').value;
+  const availability = document.getElementById('availability').value;
+  const email = document.getElementById('email').value;
+  const lineId = document.getElementById('lineId').value;
+  const tools = document.getElementById('tools').value;
+  const experience = document.getElementById('experience').value;
+  const portfolio = document.getElementById('portfolio').value;
+
+  const profileImageFile = document.getElementById('profileImage').files[0];
+  const portfolioFiles = document.getElementById('portfolioImages').files;
+  
+  const idCardImageFile = document.getElementById('idCardImage').files[0];
+  const trainingCertImageFile = document.getElementById('trainingCertImage').files[0];
+  const certificateImageFile = document.getElementById('certificateImage').files[0];
+  const licenseImageFile = document.getElementById('licenseImage').files[0];
+
+  if(!position || !fullname || !phone || !province || !experienceYears) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'ข้อมูลไม่ครบถ้วน',
+      text: 'กรุณากรอกข้อมูลที่จำเป็นให้ครบ',
+      confirmButtonColor: '#0066cc'
+    });
+    return;
+  }
+
+  // ตรวจสอบขนาดไฟล์รูป (ไม่เกิน 5MB)
+  const MAX_SIZE = 5 * 1024 * 1024;
+  const allSingleFiles = [
+    { file: profileImageFile, name: 'รูปโปรไฟล์' },
+    { file: idCardImageFile, name: 'รูปบัตรประชาชน' },
+    { file: trainingCertImageFile, name: 'รูปใบรับรองอบรม' },
+    { file: certificateImageFile, name: 'รูปใบประกาศนียบัตร' },
+    { file: licenseImageFile, name: 'รูปใบอนุญาตช่าง' }
+  ];
+
+  for (let item of allSingleFiles) {
+    if (item.file && item.file.size > MAX_SIZE) {
+      Swal.fire({ icon: 'warning', title: 'ไฟล์ใหญ่เกินไป', text: `${item.name} ต้องมีขนาดไม่เกิน 5MB`, confirmButtonColor: '#0066cc' });
+      return;
+    }
+  }
+
+  if (portfolioFiles.length > 0) {
+    for (let file of portfolioFiles) {
+      if (file.size > MAX_SIZE) {
+        Swal.fire({ icon: 'warning', title: 'ไฟล์ใหญ่เกินไป', text: `รูปผลงาน "${file.name}" มีขนาดเกิน 5MB`, confirmButtonColor: '#0066cc' });
+        return;
+      }
+    }
+  }
+
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.disabled = true;
+  submitBtn.innerText = 'กำลังส่งข้อมูล...';
+
+  Swal.fire({
+    title: 'กำลังส่งข้อมูล...',
+    text: 'กรุณารอสักครู่ เรากำลังอัปโหลดข้อมูลและรูปภาพของคุณ',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
+  try {
+    const uploadSingleFile = async (file, prefix) => {
+      if (!file) return null;
+      const ext = file.name.split('.').pop();
+      const fileName = `technicians/${prefix}_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+      const { error } = await sb.storage.from('technician-images').upload(fileName, file);
+      if (error) throw new Error(`อัปโหลดไฟล์ล้มเหลว: ${error.message}`);
+      return `${SUPABASE_URL}/storage/v1/object/public/technician-images/${fileName}`;
+    };
+
+    let profileImageUrl = await uploadSingleFile(profileImageFile, 'profile');
+    let idCardImageUrl = await uploadSingleFile(idCardImageFile, 'idcard');
+    let trainingCertImageUrl = await uploadSingleFile(trainingCertImageFile, 'training');
+    let certificateImageUrl = await uploadSingleFile(certificateImageFile, 'cert');
+    let licenseImageUrl = await uploadSingleFile(licenseImageFile, 'license');
+    
+    let portfolioImageUrls = [];
+
+    // ===== Upload portfolio images =====
+    if(portfolioFiles.length > 0){
+      for (let file of portfolioFiles) {
+        const ext = file.name.split('.').pop();
+        const fileName = `technicians/work_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+
+        const { error: uploadError } = await sb.storage
+          .from('technician-images')
+          .upload(fileName, file);
+
+        if(!uploadError){
+          const url = `${SUPABASE_URL}/storage/v1/object/public/technician-images/${fileName}`;
+          portfolioImageUrls.push(url);
+        } else {
+          console.warn(`อัปโหลดรูปผลงานล้มเหลว: ${file.name}`, uploadError);
+        }
+      }
+    }
+
+    const { error } = await sb
+      .from('job_applications')
+      .insert([
+        {
+          position: position,
+          experience_years: experienceYears,
+          fullname: fullname,
+          phone: phone,
+          province: province,
+          service_area: serviceArea,
+          team_size: teamSize,
+          vehicle: vehicle,
+          daily_rate: dailyRate,
+          availability: availability,
+          email: email,
+          line_id: lineId,
+          tools: tools,
+          experience: experience,
+          portfolio: portfolio,
+          profile_image: profileImageUrl,
+          portfolio_images: portfolioImageUrls,
+          id_card_image: idCardImageUrl,
+          training_cert_image: trainingCertImageUrl,
+          certificate_image: certificateImageUrl,
+          license_image: licenseImageUrl
+        }
+      ]);
+
+    if(error){
+      throw error;
+    }
+
+    Swal.fire({
+      icon: 'success',
+      title: 'ส่งใบสมัครสำเร็จ!',
+      text: 'ข้อมูลถูกบันทึกเรียบร้อย ทีมงานจะติดต่อกลับเร็วๆนี้',
+      confirmButtonColor: '#0066cc'
+    }).then(()=>{
+      document.getElementById('applyForm').reset();
+    });
+
+  } catch (err) {
+    Swal.fire({
+      icon: 'error',
+      title: 'เกิดข้อผิดพลาด',
+      text: err.message || 'ไม่สามารถส่งข้อมูลได้ กรุณาลองใหม่อีกครั้ง',
+      confirmButtonColor: '#0066cc'
+    });
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.innerText = 'สมัครเป็นช่างกับ FixHouse 🚀';
+  }
+
+});
+
+async function checkAuth() {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  
+  if (session) {
+    const user = session.user;
+    const { data: customer } = await supabaseClient
+      .from("customers")
+      .select("name")
+      .eq("id", user.id)
+      .single();
+    
+    const userName = customer?.name || user.email;
+    const initial = userName.charAt(0).toUpperCase();
+    
+    document.getElementById("authUserInfo").style.display = "block";
+    document.getElementById("authLoginBtn").style.display = "none";
+    document.getElementById("userName").innerText = userName;
+    document.getElementById("userInitial").innerText = initial;
+  } else {
+    document.getElementById("authUserInfo").style.display = "none";
+    document.getElementById("authLoginBtn").style.display = "block";
+  }
+}
+
+async function logout() {
+  await supabaseClient.auth.signOut();
+  window.location.href = "login.html";
+}
+
+// Run on page load
+document.addEventListener('DOMContentLoaded', checkAuth);
+
+
+
+</script>
+
+</body>
+</html>
+
+

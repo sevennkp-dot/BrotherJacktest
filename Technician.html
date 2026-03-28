@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>บริการแจ้งซ่อมด่วน - FixHome</title>
+  <meta name="description" content="บริการซ่อมไฟฟ้า ประปา แอร์ ได้แก้ไขทันทีจากช่างมืออาชีพ">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="technician-styles.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <a href="index.html">
+    <img src="https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/ssss/FixHouse-logo.png" alt="FixHouse">
+  </a>
+  <div class="flex-nav">
+    <a href="index.html">หน้าแรก</a>
+    <a href="Build.html">สร้าง</a>
+    <a href="Technician.html">ซ่อม</a>
+    <a href="Buy-Rent.html">เช่า</a>
+    <a href="Materials.html">ร้านวัสดุ</a>
+    <a href="Apply.html">สมัครงาน</a>
+    
+    <div class="auth-menu">
+      <div id="authUserInfo" style="display: none;">
+        <div class="auth-user">
+          <a href="customer-profile.html" style="display:flex; align-items:center; gap:8px; text-decoration:none; color:inherit; cursor:pointer;" title="โปรไฟล์ของฉัน">
+            <div class="auth-user-avatar" id="userInitial">U</div>
+            <span id="userName">User</span>
+          </a>
+          <button class="btn-logout" onclick="logout()">ออกจากระบบ</button>
+        </div>
+      </div>
+      <div id="authLoginBtn" style="display: block;">
+        <a href="login.html" class="btn-login">🔐 เข้าสู่ระบบ</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<section class="page-header">
+  <h1>⚡ บริการแจ้งซ่อมด่วน</h1>
+  <p>ติดต่อช่างมืออาชีพ ซ่อมไฟฟ้า ประปา แอร์ ได้ทันที</p>
+</section>
+
+<!-- FILTER SECTION -->
+<div class="filter-section">
+  <div class="filter-box">
+    <div class="filter-grid">
+      <div class="filter-item">
+        <label for="categoryFilter">🔧 หมวดหมู่:</label>
+        <select id="categoryFilter" onchange="filterTechnicians()">
+          <option value="all">ทั้งหมด</option>
+          <option value="ไฟฟ้า">ไฟฟ้า</option>
+          <option value="ประปา">ประปา</option>
+          <option value="แอร์">แอร์</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label for="availabilityFilter">⚡ ความด่วน:</label>
+        <select id="availabilityFilter" onchange="filterTechnicians()">
+          <option value="all">ทั้งหมด</option>
+          <option value="รับงานทันที">รับงานทันที</option>
+          <option value="รับงานล่วงหน้า">รับงานล่วงหน้า</option>
+          <option value="รับงานล่วงหน้า ,รับงานทันที">รับงานล่วงหน้า ,รับงานทันที</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label for="filterProvince">📍 จังหวัด:</label>
+        <select id="filterProvince" onchange="updateFilterDistricts(); filterTechnicians();">
+          <option value="all">ทั้งหมด</option>
+          <option value="นครพนม">นครพนม</option>
+          <option value="มุกดาหาร">มุกดาหาร</option>
+          <option value="กาฬสินธุ์">กาฬสินธุ์</option>
+          <option value="อุดรธานี">อุดรธานี</option>
+          <option value="หนองคาย">หนองคาย</option>
+          <option value="บึงกาฬ">บึงกาฬ</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label for="filterDistrict">อำเภอ:</label>
+        <select id="filterDistrict" onchange="updateFilterSubdistricts(); filterTechnicians();">
+          <option value="all">ทั้งหมด</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label for="filterSubdistrict">ตำบล:</label>
+        <select id="filterSubdistrict" onchange="filterTechnicians()">
+          <option value="all">ทั้งหมด</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<main>
+  <h2>ช่างซ่อมที่ว่างตามเวลา</h2>
+  <div id="technicianList"></div>
+  <div id="noData" class="no-data" style="display:none;">❌ ไม่มีข้อมูลช่างในระบบ</div>
+</main>
+
+<!-- BOOKING MODAL -->
+<div id="bookingModal" class="modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeBooking()">✕</button>
+    
+    <!-- Hero Header -->
+    <div class="modal-header-hero">
+      <div id="techSkillBadgeContainer"></div>
+      <h2 id="selectedTech" style="margin-bottom: 8px;"></h2>
+      <p class="tech-details" id="techDetails" style="margin-bottom: 0;"></p>
+    </div>
+
+    <!-- Profile Detail Grid -->
+    <div class="tech-profile-grid">
+      <!-- Left: Bio & Skills -->
+      <div class="profile-main-info">
+        <div class="slider-container">
+          <img id="techSliderImage" class="main-image" alt="ช่าง">
+          <button class="slider-btn slider-prev" onclick="prevTechImage()">‹</button>
+          <button class="slider-btn slider-next" onclick="nextTechImage()">›</button>
+        </div>
+        <div class="thumbnail-container" id="thumbnailContainer"></div>
+
+        <div class="info-section">
+          <h3><i class="fa-solid fa-star"></i> เกี่ยวกับช่าง / จุดเด่น</h3>
+          <p id="techSellingPoints" style="font-size: 14px; line-height: 1.6; color: #475569;"></p>
+        </div>
+
+        <div class="info-section">
+          <h3><i class="fa-solid fa-screwdriver-wrench"></i> ความเชี่ยวชาญ & เครื่องมือ</h3>
+          <div id="techExpertiseTags" class="expertise-tags" style="margin-bottom: 12px;"></div>
+          <p id="techTools" style="font-size: 13px; color: #64748b; background: #f8fafc; padding: 10px; border-radius: 6px;"></p>
+        </div>
+
+        <div class="info-section">
+          <h3><i class="fa-solid fa-history"></i> ประสบการณ์ทำงาน</h3>
+          <div id="techExperienceList" class="experience-list"></div>
+        </div>
+      </div>
+
+      <!-- Right: Specs & Reviews -->
+      <div class="profile-side-info">
+        <div class="info-section">
+          <h3><i class="fa-solid fa-clipboard-list"></i> ข้อมูลการให้บริการ</h3>
+          <div class="tech-specs-card">
+            <div class="spec-row"><span class="label">เรทราคา</span><span class="value" id="specRate">-</span></div>
+            <div class="spec-row"><span class="label">เวลาทำการ</span><span class="value" id="specHours">-</span></div>
+            <div class="spec-row"><span class="label">ความด่วน</span><span class="value" id="specUrgency">-</span></div>
+            <div class="spec-row"><span class="label">ขนาดทีม</span><span class="value" id="specTeam">-</span></div>
+            <div class="spec-row"><span class="label">ยานพาหนะ</span><span class="value" id="specVehicle">-</span></div>
+          </div>
+        </div>
+
+        <div class="info-section">
+           <h3><i class="fa-solid fa-images"></i> ผลงานที่ผ่านมา</h3>
+           <div id="techPortfolioGrid" class="portfolio-grid"></div>
+        </div>
+
+        <div id="techReviewsSection" class="info-section">
+          <h3><i class="fa-solid fa-comment-dots"></i> รีวิวจากลูกค้า</h3>
+          <div id="techReviewsList" style="max-height: 300px; overflow-y: auto;">กำลังโหลดรีวิว...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Booking Form Section -->
+    <div class="booking-form-wrap">
+      <div class="form-section" style="margin-top: 0; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+        <h3 style="font-size: 20px; margin-bottom: 20px; color: #0066cc;">📝 นัดหมายบริการ / จ้างงาน</h3>
+  
+        <div class="form-group">
+          <label for="customerName">ชื่อ - นามสกุล *</label>
+          <input type="text" id="customerName" placeholder="เช่น สมชาย มีชัยวัฒน์" required>
+        </div>
+  
+        <div class="form-group">
+          <label for="customerPhone">เบอร์โทร *</label>
+          <input type="tel" id="customerPhone" placeholder="เช่น 0812345678" required>
+        </div>
+  
+        <div class="form-group">
+          <label for="problemDetail">รายละเอียดปัญหา *</label>
+          <textarea id="problemDetail" placeholder="อธิบายปัญหาที่คุณต้องการให้ช่างช่วยเหลือ" required></textarea>
+        </div>
+  
+        <div class="form-group">
+          <label for="problemImage">📷 รูปภาพปัญหา (ถ้ามี)</label>
+          <input type="file" id="problemImage" accept="image/*">
+          <div id="problemImagePreview" style="margin-top: 10px; display: none;">
+            <img id="previewImage" style="max-width: 100%; border-radius: 8px; max-height: 200px; object-fit: contain; border: 1px solid #e8ecf1;" alt="Preview" />
+          </div>
+        </div>
+  
+        <h3 style="margin-top: 32px; font-size: 16px;">📍 สถานที่ให้บริการ</h3>
+  
+        <div class="form-group">
+          <label for="province">จังหวัด *</label>
+          <select id="province" required onchange="updateDistricts()">
+            <option value="">เลือกจังหวัด</option>
+            <option value="นครพนม">นครพนม</option>
+            <option value="มุกดาหาร">มุกดาหาร</option>
+            <option value="กาฬสินธุ์">กาฬสินธุ์</option>
+            <option value="อุดรธานี">อุดรธานี</option>
+            <option value="หนองคาย">หนองคาย</option>
+            <option value="บึงกาฬ">บึงกาฬ</option>
+          </select>
+        </div>
+  
+        <div class="form-row">
+          <div class="form-group">
+            <label for="district">อำเภอ *</label>
+            <select id="district" required onchange="updateSubdistricts()">
+              <option value="">เลือกอำเภอ</option>
+            </select>
+          </div>
+  
+          <div class="form-group">
+            <label for="subdistrict">ตำบล *</label>
+            <select id="subdistrict" required>
+              <option value="">เลือกตำบล</option>
+            </select>
+          </div>
+        </div>
+  
+        <div class="form-row">
+          <div class="form-group">
+            <label for="serviceDate">วันที่ต้องการบริการ *</label>
+            <input type="date" id="serviceDate" required>
+          </div>
+  
+          <div class="form-group">
+            <label for="serviceTime">ช่วงเวลาที่สะดวก *</label>
+            <select id="serviceTime" required>
+              <option value="">เลือกช่วงเวลา</option>
+              <option value="เช้า (08:00-12:00)">เช้า (08:00-12:00)</option>
+              <option value="บ่าย (13:00-17:00)">บ่าย (13:00-17:00)</option>
+              <option value="เย็น (17:00-20:00)">เย็น (17:00-20:00)</option>
+              <option value="ด่วน (ASAP)">ด่วน (ASAP)</option>
+            </select>
+          </div>
+        </div>
+  
+
+        <div class="button-group" style="margin-top: 30px;">
+          <button class="btn btn-confirm" onclick="confirmBooking()" style="padding: 15px; font-size: 16px;">✓ ยืนยันข้อมูลนัดหมาย</button>
+          <button class="btn btn-cancel" onclick="closeBooking()" style="background: #f1f5f9; color: #64748b;">ยกเลิก</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHAT MODAL -->
+<div id="chatModal" class="modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeChat()">✕</button>
+    <h2 id="chatTitle">💬 แชทกับช่าง</h2>
+    
+    <div id="messagesContainer">
+      <div id="messagesList"></div>
+    </div>
+
+    <div class="chat-input-area">
+      <input type="file" id="chatImageInput" accept="image/*" style="display:none;" onchange="handleChatImageUpload(event)">
+      <button class="btn-image" onclick="document.getElementById('chatImageInput').click()" title="ส่งรูปภาพ">📷</button>
+      <input type="text" id="chatInput" placeholder="พิมพ์ข้อความ...">
+      <button onclick="sendMessage()">ส่ง</button>
+    </div>
+  </div>
+</div>
+
+<!-- Floating Contact Buttons -->
+<a href="https://line.me/ti/p/XXXXXXXX" class="line-float" target="_blank" title="แชท LINE">💬</a>
+<a href="tel:0812345678" class="call-float" title="โทรหาเรา">📞</a>
+
+<!-- AI Chat Widget Button -->
+<button id="aiLauncher" onclick="toggleAIChatWidget()" title="เปิด AI ช่วยซ่อม">🤖</button>
+
+<!-- AI Chat Widget -->
+<div id="aiChatWidget">
+  <div class="chat-container">
+    <div class="chat-header">
+      <span>🤖 AI ผู้ช่วยซ่อมบ้าน</span>
+      <button class="close-btn" onclick="toggleAIChatWidget()">✕</button>
+    </div>
+    <div id="aiChatMessages" class="chat-messages"></div>
+    <div class="chat-input">
+      <input type="text" id="aiChatInput" placeholder="พิมพ์ปัญหา..." onkeypress="handleAIChatKeyPress(event)">
+      <button onclick="sendAIChat()">➤</button>
+    </div>
+  </div>
+</div>
+
+<script src="technician.js" defer></script>
+</body>
+</html>

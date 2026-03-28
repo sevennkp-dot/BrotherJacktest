@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>สมัครงาน - ร่วมเป็นส่วนหนึ่งกับเรา | FixHome</title>
+  <meta name="description" content="ร่วมงานกับ FixHome สมัครงานในตำแหน่งที่คุณถนัด ช่างก่อสร้าง สถาปนิก วิดวะ หรือพนักงานขาย">
+  <meta name="keywords" content="สมัครงาน, หางานช่าง, หางานผู้รับเหมา, สมัครงานก่อสร้าง">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <a href="index.html">
+    <img src="https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/ssss/FixHouse-logo.png" alt="FixHouse">
+  </a>
+  <div class="flex-nav">
+    <a href="index.html">หน้าแรก</a>
+    <a href="Build.html">สร้าง</a>
+    <a href="Technician.html">ซ่อม</a>
+    <a href="Buy-Rent.html">เช่า</a>
+    <a href="Materials.html">ร้านวัสดุ</a>
+    <a href="Apply.html">สมัครงาน</a>
+    
+    <div class="auth-menu">
+      <div id="authUserInfo" style="display: none;">
+        <div class="auth-user">
+          <a href="customer-profile.html" style="display:flex; align-items:center; gap:8px; text-decoration:none; color:inherit; cursor:pointer;" title="โปรไฟล์ของฉัน">
+            <div class="auth-user-avatar" id="userInitial">U</div>
+            <span id="userName">User</span>
+          </a>
+          <button class="btn-logout" onclick="logout()">ออกจากระบบ</button>
+        </div>
+      </div>
+      <div id="authLoginBtn" style="display: block;">
+        <a href="login.html" class="btn-login">🔐 เข้าสู่ระบบ</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<section class="page-header">
+  <h1>🤝 ร่วมงานกับเรา</h1>
+  <p>มาเป็นส่วนหนึ่งของทีม FixHouse ผู้เชี่ยวชาญด้านงานก่อสร้างและซ่อมแซม</p>
+</section>
+
+<!-- APPLICATION FORM SECTION -->
+<div class="filter-section">
+  <div class="filter-box">
+    <h3>📝 แบบฟอร์มสมัครงาน</h3>
+    <form id="applyForm">
+
+      <div class="filter-row">
+        <div>
+          <label>ประเภทช่าง *</label>
+          <select id="position" required>
+            <option value="">-- เลือกประเภทงาน --</option>
+            <option value="ช่างไฟ">⚡ ช่างไฟ</option>
+            <option value="ช่างแอร์">❄️ ช่างแอร์</option>
+            <option value="ช่างประปา">🚿 ช่างประปา</option>
+            <option value="แม่บ้าน">🧹 แม่บ้าน</option>
+            <option value="ช่างยนต์">🚗 ช่างยนต์</option>
+            <option value="อู่ซ่อมรถ">🛠️ อู่ซ่อมรถ</option>
+            <option value="พ่นสีรถ">🎨 พ่นสีรถ</option>
+            <option value="ช่างแอร์รถยนต์">💨 ช่างแอร์รถยนต์</option>
+          </select>
+        </div>
+
+        <div>
+          <label>ระดับความสามารถ (Skill Level) *</label>
+          <select id="skillLevel" required>
+            <option value="">-- เลือกระดับ --</option>
+            <option value="มือใหม่">มือใหม่ (ประสบการณ์น้อยกว่า 1 ปี)</option>
+            <option value="ทั่วไป">ทั่วไป (ประสบการณ์ 1-5 ปี)</option>
+            <option value="มืออาชีพ">มืออาชีพ (ประสบการณ์ 5 ปีขึ้นไป)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div>
+          <label>ประสบการณ์ (ปี) *</label>
+          <input type="number" id="experienceYears" required>
+        </div>
+
+        <div>
+          <label>ความเชี่ยวชาญเฉพาะทาง</label>
+          <input type="text" id="expertise" placeholder="เช่น ติดตั้งแอร์ฝังฝ้า, เดินสายไฟโรงงาน">
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div>
+          <label>ชื่อ-นามสกุล *</label>
+          <input type="text" id="fullname" required>
+        </div>
+
+        <div>
+          <label>เบอร์โทรศัพท์ *</label>
+          <input type="tel" id="phone" required>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div>
+          <label>ตำบล *</label>
+          <input type="text" id="subdistrict" placeholder="เช่น ธาตุเชิงชุม" required>
+        </div>
+
+        <div>
+          <label>อำเภอ *</label>
+          <input type="text" id="district" placeholder="เช่น เมือง" required>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div>
+          <label>จังหวัด *</label>
+          <input type="text" id="province" placeholder="เช่น สกลนคร" required>
+        </div>
+
+        <div>
+          <label>พื้นที่รับงาน ภายใน (จังหวัด/เขต)</label>
+          <input type="text" id="serviceArea" placeholder="เช่น สกลนคร / อุดรธานี">
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div>
+          <label>ระยะทางที่รับงานสูงสุด (กิโลเมตร)</label>
+          <input type="number" id="serviceDistance" placeholder="เช่น 50">
+        </div>
+
+        <div>
+          <label>พิกัดตำแหน่ง (GPS)</label>
+          <div style="display:flex; gap:10px;">
+            <button type="button" onclick="getLocation()" style="background:#f39c12; padding:8px; border-radius:4px; margin-bottom:0; flex:1;">📍 ดึงตำแหน่ง</button>
+            <input type="text" id="latitude" placeholder="Lat" readonly style="flex:1;">
+            <input type="text" id="longitude" placeholder="Lng" readonly style="flex:1;">
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div>
+          <label>จำนวนทีมงาน</label>
+          <select id="teamSize">
+            <option value="1">ทำคนเดียว</option>
+            <option value="2-3">2-3 คน</option>
+            <option value="4-5">4-5 คน</option>
+            <option value="5+">มากกว่า 5 คน</option>
+          </select>
+        </div>
+
+        <div>
+          <label>มีรถสำหรับออกงาน</label>
+          <div style="display:flex; gap:15px; flex-wrap:wrap; margin-top:8px;">
+            <label style="font-weight:normal;"><input type="checkbox" name="vehicle" value="มอเตอร์ไซค์"> มอเตอร์ไซค์</label>
+            <label style="font-weight:normal;"><input type="checkbox" name="vehicle" value="รถกระบะ"> รถกระบะ</label>
+            <label style="font-weight:normal;"><input type="checkbox" name="vehicle" value="รถบรรทุก"> รถบรรทุก</label>
+            <label style="font-weight:normal;"><input type="checkbox" name="vehicle" value="ไม่มี"> ไม่มี</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div>
+          <label>รูปแบบค่าแรง *</label>
+          <select id="rateType" required>
+            <option value="รายวัน">รายวัน</option>
+            <option value="เหมาจ่าย">เหมาจ่าย</option>
+            <option value="รายชั่วโมง">รายชั่วโมง</option>
+          </select>
+        </div>
+
+        <div>
+          <label>ค่าแรง (บาท)</label>
+          <input type="number" id="dailyRate" placeholder="เช่น 500">
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div>
+          <label>ความพร้อมรับงาน</label>
+          <div style="display:flex; gap:15px; flex-wrap:wrap; margin-top:8px;">
+            <label style="font-weight:normal;"><input type="checkbox" name="availability" value="รับงานทันที"> รับงานทันที</label>
+            <label style="font-weight:normal;"><input type="checkbox" name="availability" value="รับงานล่วงหน้า"> รับงานล่วงหน้า</label>
+          </div>
+        </div>
+
+        <div>
+          <label>ช่วงเวลาทำงานที่สะดวก (เลือกได้หลายข้อ)</label>
+          <div style="display:flex; gap:15px; flex-wrap:wrap; margin-top:8px;">
+            <label style="font-weight:normal;"><input type="checkbox" name="workHours" value="เช้า"> เช้า</label>
+            <label style="font-weight:normal;"><input type="checkbox" name="workHours" value="บ่าย"> บ่าย</label>
+            <label style="font-weight:normal;"><input type="checkbox" name="workHours" value="กลางคืน"> กลางคืน</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div>
+          <label>Line ID</label>
+          <input type="text" id="lineId">
+        </div>
+
+        <div>
+          <label>Email</label>
+          <input type="email" id="email">
+        </div>
+      </div>
+
+      <div class="filter-row" style="grid-template-columns:1fr;">
+        <div>
+          <label>จำนวนงานที่เคยทำ (โดยประมาณ)</label>
+          <input type="number" id="pastWorkCount" placeholder="เช่น 50">
+        </div>
+      </div>
+
+      <div class="filter-row" style="grid-template-columns:1fr;">
+        <div>
+          <label>ประวัติการทำงาน (เคยทำงานอะไรบ้าง)</label>
+          <div style="display:flex; gap:15px; flex-wrap:wrap; margin-top:8px;">
+            <label style="font-weight:normal;"><input type="checkbox" name="pastWorkTypes" value="งานบ้านทั่วไป"> งานบ้านทั่วไป</label>
+            <label style="font-weight:normal;"><input type="checkbox" name="pastWorkTypes" value="งานโครงการ"> งานโครงการ</label>
+            <label style="font-weight:normal;"><input type="checkbox" name="pastWorkTypes" value="งานอาคารสูง"> งานอาคารสูง</label>
+            <label style="font-weight:normal;"><input type="checkbox" name="pastWorkTypes" value="งานโรงงาน"> งานโรงงาน</label>
+          </div>
+          <textarea id="experience" placeholder="รายละเอียดประสบการณ์เพิ่มเติม (ถ้ามี)" style="margin-top:10px;"></textarea>
+        </div>
+      </div>
+
+      <div class="filter-row" style="grid-template-columns:1fr;">
+        <div>
+          <label>เครื่องมือที่มีพร้อมใช้งาน</label>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px;">
+            <label style="font-weight:normal;"><input type="checkbox" name="tools" value="สว่านไร้สาย"> สว่านไร้สาย</label>
+            <label style="font-weight:normal;"><input type="checkbox" name="tools" value="ตู้เชื่อม"> ตู้เชื่อม</label>
+            <label style="font-weight:normal;"><input type="checkbox" name="tools" value="เครื่องตัด/หินเจียร"> เครื่องตัด/หินเจียร</label>
+            <label style="font-weight:normal;"><input type="checkbox" name="tools" value="บันไดสูง"> บันไดสูง (เกิน 3 ม.)</label>
+            <label style="font-weight:normal;"><input type="checkbox" name="tools" value="เกจวัดน้ำยาแอร์"> เกจวัดน้ำยาแอร์</label>
+            <label style="font-weight:normal;"><input type="checkbox" name="tools" value="อื่นๆ"> เครื่องมือเฉพาะทางอื่นๆ</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-row" style="grid-template-columns:1fr;">
+        <div>
+          <label>จุดเด่น / จุดขายของคุณ</label>
+          <div style="display:flex; gap:15px; flex-wrap:wrap; margin-top:8px;">
+            <label style="font-weight:normal;"><input type="checkbox" name="sellingPoints" value="งานไว"> ⚡ งานไว</label>
+            <label style="font-weight:normal;"><input type="checkbox" name="sellingPoints" value="รับประกันงาน"> 🛡️ รับประกันงาน</label>
+            <label style="font-weight:normal;"><input type="checkbox" name="sellingPoints" value="ราคาถูก"> 💸 ราคาประหยัด</label>
+            <label style="font-weight:normal;"><input type="checkbox" name="sellingPoints" value="คุยง่ายใจดี"> 😊 คุยง่าย เป็นกันเอง</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-row" style="grid-template-columns:1fr;">
+        <div>
+          <label>ลิงก์ผลงาน (ถ้ามี)</label>
+          <input type="url" id="portfolio" placeholder="เช่น Facebook / YouTube / Website">
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div>
+          <label>อัปโหลดรูปโปรไฟล์ช่าง</label>
+          <input type="file" id="profileImage" accept="image/*">
+        </div>
+
+        <div>
+          <label>อัปโหลดรูปผลงาน (บังคับอย่างน้อย 1 รูป) *</label>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <select id="portfolioCategory" required style="width:100%;">
+              <option value="">-- ระบุประเภทงานในรูป --</option>
+              <option value="ติดตั้งใหม่">งานติดตั้งใหม่</option>
+              <option value="ซ่อมแซม">งานซ่อมแซม/แก้ไข</option>
+              <option value="รีโนเวท">งานรีโนเวท</option>
+            </select>
+            <input type="file" id="portfolioImages" accept="image/*" multiple required>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-box" style="margin-top: 20px; padding: 20px; background: #f9fafb; border: 1px dashed #cbd5e1; box-shadow: none;">
+        <h4 style="margin-top: 0; margin-bottom: 15px; font-size: 16px; color: #2c3e50;">📄 การยืนยันตัวตนและเอกสารเพิ่มเติม</h4>
+        <div class="filter-row">
+          <div>
+            <label>รูปบัตรประชาชน *</label>
+            <input type="file" id="idCardImage" accept="image/*" required>
+          </div>
+          <div>
+            <label>รูป Selfie คู่บัตรประจำตัวประชาชน *</label>
+            <input type="file" id="selfieImage" accept="image/*" required>
+          </div>
+        </div>
+        <div class="filter-row" style="margin-bottom: 0;">
+          <div>
+            <label>รูปใบรับรองอบรม (ถ้ามี)</label>
+            <input type="file" id="trainingCertImage" accept="image/*">
+          </div>
+        </div>
+        <div class="filter-row" style="margin-bottom: 0;">
+          <div>
+            <label>รูปใบประกาศนียบัตร (ถ้ามี)</label>
+            <input type="file" id="certificateImage" accept="image/*">
+          </div>
+          <div>
+            <label>รูปใบอนุญาตช่าง (ถ้ามี)</label>
+            <input type="file" id="licenseImage" accept="image/*">
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-row" style="margin-top:10px;margin-bottom:0;">
+        <button type="submit" id="submitBtn">สมัครเป็นช่างกับ FixHouse 🚀</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- BENEFITS SECTION -->
+<div style="text-align: center; margin-bottom: 40px;">
+  <h2 style="font-size: 28px; font-weight: 700; color: #2c3e50;">สวัสดิการและเหตุผลที่ควรเริ่มงานกับเรา</h2>
+</div>
+
+<div class="house-container">
+  
+  <div class="house-card">
+     <div class="house-info">
+       <div class="icon">🌟</div>
+       <h3>สวัสดิการดีเยี่ยม</h3>
+       <p class="specs">ประกันสังคม โบนัสประจำปี วันหยุดพักผ่อน และอื่นๆ เพื่อคุณภาพชีวิตที่ดีของคนในทีม</p>
+     </div>
+  </div>
+
+  <div class="house-card">
+     <div class="house-info">
+       <div class="icon">📈</div>
+       <h3>โอกาสเติบโต</h3>
+       <p class="specs">สนับสนุนการเรียนรู้ มีเส้นทางความก้าวหน้าชัดเจน พัฒนาทักษะใหม่ๆ อยู่เสมอ</p>
+     </div>
+  </div>
+
+  <div class="house-card">
+     <div class="house-info">
+       <div class="icon">🤝</div>
+       <h3>ทีมเวิร์คที่อบอุ่น</h3>
+       <p class="specs">ทำงานในบรรยากาศเป็นมิตร คอยช่วยเหลือและแก้ปัญร่วมกันเหมือนเพื่อนและครอบครัว</p>
+     </div>
+  </div>
+
+</div>
+
+<script src="apply.js"></script>
+</body>
+</html>
