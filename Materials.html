@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ร้านวัสดุก่อสร้าง - FixHome</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="materials-styles.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <a href="index.html">
+    <img src="https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/ssss/FixHouse-logo.png" alt="FixHouse">
+  </a>
+  <div class="flex-nav">
+    <a href="index.html">หน้าแรก</a>
+    <a href="Build.html">สร้าง</a>
+    <a href="Technician.html">ซ่อม</a>
+    <a href="Buy-Rent.html">เช่า</a>
+    <a href="Materials.html">ร้านวัสดุ</a>
+    <a href="Apply.html" id="navApply">สมัครงาน</a>
+    <div id="roleDashboardLink" style="display: inline-block;"></div>
+    
+    <div class="auth-menu">
+      <div id="authUserInfo" style="display: none;">
+        <div class="auth-user">
+          <a href="customer-profile.html" style="display:flex; align-items:center; gap:8px; text-decoration:none; color:inherit; cursor:pointer;" title="โปรไฟล์ของฉัน">
+            <div class="auth-user-avatar" id="userInitial">U</div>
+            <span id="userName">User</span>
+          </a>
+          <button class="btn-logout" onclick="logout()">ออกจากระบบ</button>
+        </div>
+      </div>
+      <div id="authLoginBtn" style="display: block;">
+        <a href="login.html" class="btn-login">🔐 เข้าสู่ระบบ</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<section class="page-header">
+  <h1>🏪 ร้านวัสดุก่อสร้าง</h1>
+  <p>ค้นหาร้านวัสดุที่ใกล้คุณ พร้อมข้อมูลสมบูรณ์และเว็บไซต์</p>
+</section>
+
+<!-- SEARCH SECTION -->
+<div class="search-section">
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="ค้นหาชื่อร้าน...">
+    <input type="text" id="subdistrictInput" placeholder="ตำบล">
+    <input type="text" id="districtInput" placeholder="อำเภอ">
+    <input type="text" id="provinceInput" placeholder="จังหวัด">
+    <button onclick="searchShops()">🔍 ค้นหา</button>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<main>
+  <h2>ร้านวัสดุแนะนำใกล้คุณ</h2>
+  <div id="shopContainer"></div>
+</main>
+
+<div id="noResult" class="no-result" style="display:none;">❌ ไม่พบร้านค้า</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>&copy; 2026 FixHome - ศูนย์รวมร้านวัสดุก่อสร้าง | สิทธิ์ทั้งหมดสงวนไว้</p>
+</footer>
+
+<!-- Floating Contact Buttons -->
+<a href="https://line.me/ti/p/XXXXXXXX" class="line-float" target="_blank" title="แชท LINE">💬</a>
+<a href="tel:0812345678" class="call-float" title="โทรหาเรา">📞</a>
+
+<!-- AI Chat Widget -->
+<div class="chat-toggle-ai" id="chatToggleBtn" onclick="toggleChat()">
+  🛒
+</div>
+
+<div class="chat-container-ai" id="chatContainer" style="display: none;">
+  <div class="chat-box-ai">
+    <div class="header-ai">
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <span>🛒 AI แนะนำวัสดุ</span>
+        <button onclick="toggleChat()" style="background:none; border:none; color:white; font-size:16px; cursor:pointer; padding:0;">✖</button>
+      </div>
+    </div>
+    <div class="messages-ai" id="ai-messages"></div>
+    <div class="input-area-ai">
+      <input id="ai-input" placeholder="พิมพ์เช่น: ต้องการกระเบื้องปูพื้น..." onkeypress="handleKeyPress(event)">
+      <button onclick="sendAI()">➤</button>
+    </div>
+  </div>
+</div>
+
+<script src="materials.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Technician Dashboard | FixHome</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- FullCalendar -->
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+  <!-- SweetAlert2 for UX -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="technician-dashboard-styles.css?v=3">
+</head>
+<body>
+  <div class="tech-container">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="logo">
+          <img src="https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/ssss/FixHouse-logo.png" alt="FixHome Logo">
+          <span class="tech-badge">TECHNICIAN</span>
+        </a>
+        <button class="close-sidebar-btn" id="closeSidebarBtn">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <ul>
+          <p class="nav-section">เมนูหลัก</p>
+          <li class="nav-item active">
+            <a href="#" class="nav-link" onclick="switchView('dashboard')">
+              <i class="fa-solid fa-chart-pie"></i>
+              <span>ภาพรวมแผงควบคุม</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link" onclick="switchView('calendar')">
+              <i class="fa-solid fa-calendar-alt"></i>
+              <span>ตารางงาน (Schedule)</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link" onclick="switchView('income')">
+              <i class="fa-solid fa-wallet"></i>
+              <span>รายได้ (Income)</span>
+            </a>
+          </li>
+          
+          <li class="nav-item">
+            <a href="#" class="nav-link" onclick="switchView('reviews')">
+              <i class="fa-solid fa-star"></i>
+              <span>รีวิวและคำชม</span>
+            </a>
+          </li>
+
+          <p class="nav-section">โปรไฟล์</p>
+          <li class="nav-item">
+            <a href="#" class="nav-link" onclick="switchView('profile')">
+              <i class="fa-solid fa-user-pen"></i>
+              <span>แก้ไขประวัติ</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link" onclick="switchView('settings')">
+              <i class="fa-solid fa-gear"></i>
+              <span>ตั้งค่าระบบ</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="btn-logout" onclick="logout()">
+          <i class="fa-solid fa-sign-out-alt"></i> ออกจากระบบ
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      
+      <!-- Top Header -->
+      <header class="top-header">
+        <div class="header-left">
+          <button class="menu-toggle-btn" id="menuToggleBtn">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="header-title">ระบบจัดการงาน - ช่างเทคนิค</div>
+        </div>
+
+        <div class="header-right">
+          <div class="notification-wrapper">
+            <button class="icon-btn" title="รายการแชททั้งหมด" onclick="toggleChatList()">
+              <i class="fa-regular fa-message"></i>
+              <span class="badge" id="chatBadge" style="display:none; background:var(--danger);">0</span>
+            </button>
+          </div>
+          
+          <div class="tech-profile">
+            <div class="avatar">
+              <img src="https://ui-avatars.com/api/?name=Tech&background=10b981&color=fff&bold=true" alt="Avatar">
+            </div>
+            <div class="profile-info">
+              <span class="name" id="navUserName">กำลังโหลด...</span>
+              <span class="role">ช่างเทคนิค</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Dashboard Content -->
+      <div class="dashboard-content">
+        <div class="page-header" id="mainPageHeader">
+          <div>
+            <h1 id="pageMainTitle">สวัสดีช่าง, ยินดีต้อนรับ! 👋</h1>
+            <p id="pageSubTitle">นี่คือข้อมูลสรุปงานและสถิติรายได้ของคุณในตอนนี้</p>
+          </div>
+          <div style="display:flex; gap:12px;" id="headerButtonsContainer">
+            <button class="btn-primary" onclick="switchView('dashboard')" id="btnViewDashboard">
+              <i class="fa-solid fa-chart-pie"></i> แผงควบคุม
+            </button>
+            <button class="btn-outline" onclick="switchView('calendar')" id="btnViewCalendar">
+              <i class="fa-solid fa-calendar-check"></i> ดูตารางงาน
+            </button>
+          </div>
+        </div>
+
+        <div id="dashboardView">
+        
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+          <div class="welcome-content">
+            <h2 id="welcomeTitle">สวัสดี, วันนี้มีงานใหม่รอคุณอยู่!</h2>
+            <p>ตรวจสอบตารางงานวันนี้ของคุณ เตรียมความพร้อมเพื่อให้บริการอย่างเต็มประสิทธิภาพ</p>
+          </div>
+          <div class="welcome-artwork">
+            <i class="fa-solid fa-screwdriver-wrench"></i>
+          </div>
+        </div>
+
+        <!-- Premium Stats Grid -->
+        <div class="stats-grid premium">
+          <!-- Stat 1 -->
+          <div class="stat-card">
+            <div class="stat-main">
+              <p class="stat-title">งานที่ได้รับมอบหมาย</p>
+              <h3 class="stat-value" id="statTotalJobs">0</h3>
+            </div>
+            <div class="stat-icon-wrap bg-blue-light">
+              <i class="fa-solid fa-briefcase text-blue"></i>
+            </div>
+          </div>
+
+          <!-- Stat 2 -->
+          <div class="stat-card">
+            <div class="stat-main">
+              <p class="stat-title">งานที่ต้องทำวันนี้</p>
+              <h3 class="stat-value" id="statActiveJobs">0</h3>
+            </div>
+            <div class="stat-icon-wrap bg-orange-light">
+              <i class="fa-solid fa-bolt text-orange"></i>
+            </div>
+          </div>
+
+          <!-- Stat 3 -->
+          <div class="stat-card">
+            <div class="stat-main">
+              <p class="stat-title">งานที่เสร็จสิ้นแล้ว</p>
+              <h3 class="stat-value" id="statCompleted">0</h3>
+            </div>
+            <div class="stat-icon-wrap bg-green-light">
+              <i class="fa-solid fa-check-double text-green"></i>
+            </div>
+          </div>
+
+          <!-- Stat 4 -->
+          <div class="stat-card">
+            <div class="stat-content">
+              <p class="stat-title">รายได้ประเมิน</p>
+              <h3 class="stat-value" id="statIncome">฿0</h3>
+            </div>
+            <div class="stat-icon bg-purple">
+              <i class="fa-solid fa-money-bill-wave"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Layout Grid -->
+        <div class="dashboard-grid-layout">
+          
+          <!-- Left Column (Main Table) -->
+          <div class="card premium-card">
+            <div class="card-header border-bottom">
+              <h2><i class="fa-solid fa-clipboard-list" style="margin-right: 8px; color: var(--primary);"></i> รายการจองล่าสุด (Recent Bookings)</h2>
+              <button class="btn-outline-small" onclick="switchView('calendar')">ดูทั้งหมด</button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>วันที่ / เวลา</th>
+                    <th>ลูกค้า</th>
+                    <th>หมวดหมู่</th>
+                    <th>สถานะ</th>
+                    <th style="text-align: center;">จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody id="jobsTableBody">
+                  <tr>
+                    <td colspan="5" class="text-center">กำลังโหลดข้อมูล...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <!-- Right Column (Today's Tasks Widget) -->
+          <div class="card premium-card right-widget">
+            <div class="card-header border-bottom">
+              <h2><i class="fa-solid fa-clock" style="margin-right: 8px; color: var(--warning);"></i> งานที่ต้องทำช่วงนี้</h2>
+            </div>
+            <div class="widget-body">
+              <ul class="task-timeline" id="todayTasksList">
+                <li class="empty-timeline">กำลังโหลดคิวงาน...</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+        </div> <!-- End of dashboardView -->
+
+        <!-- Calendar View -->
+        <div id="calendarView" style="display: none; width: 100%;">
+          
+          <div class="calendar-header-banner">
+            <div class="banner-content">
+              <h2>จัดการตารางงานของคุณ (Schedule)</h2>
+              <p>ดูคิวงานและวางแผนเวลาทำงานของคุณได้อย่างมืออาชีพ</p>
+            </div>
+          </div>
+
+          <div class="calendar-grid-layout">
+            <!-- Left Sidebar for Legend & Mini Stats -->
+            <div class="calendar-sidebar">
+              
+              <div class="card premium-card" style="margin-bottom: 20px;">
+                <div class="card-header border-bottom" style="padding: 16px 20px;">
+                  <h3 style="font-size: 15px; font-weight: 700; color: var(--text-main); margin: 0;"><i class="fa-solid fa-layer-group text-primary"></i> สถานะคิวงาน</h3>
+                </div>
+                <div style="padding: 20px;">
+                  <ul class="legend-list">
+                    <li><span class="legend-dot status-pending"></span> รอดำเนินการ / รอยืนยัน</li>
+                    <li><span class="legend-dot status-inprogress"></span> กำลังดำเนินการ</li>
+                    <li><span class="legend-dot status-completed"></span> เสร็จสิ้นแล้ว</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="card premium-card">
+                <div class="card-header border-bottom" style="padding: 16px 20px;">
+                  <h3 style="font-size: 15px; font-weight: 700; color: var(--text-main); margin: 0;"><i class="fa-solid fa-chart-line text-warning"></i> สรุปประจำเดือน</h3>
+                </div>
+                <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+                  <div class="mini-stat">
+                    <span class="mini-stat-label">งานทั้งหมด</span>
+                    <span class="mini-stat-value" id="calTotalJobs">0</span>
+                  </div>
+                  <div class="mini-stat">
+                    <span class="mini-stat-label">เสร็จสิ้นแล้ว</span>
+                    <span class="mini-stat-value text-green" id="calCompletedJobs">0</span>
+                  </div>
+                  <div class="mini-stat">
+                    <span class="mini-stat-label">รอดำเนินการ</span>
+                    <span class="mini-stat-value text-orange" id="calPendingJobs">0</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Right Area for actual FullCalendar -->
+            <div class="calendar-main-area">
+              <div class="card premium-card" style="height: 100%;">
+                <div style="padding: 24px; background: #fff; border-radius: var(--radius-lg); height: 100%; min-height: 600px;">
+                  <div id="calendar" class="fc-theme-standard"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        
+        <!-- Income View -->
+        <div id="incomeView" style="display: none; width: 100%;">
+
+          <!-- Time Filter Tabs -->
+          <div class="income-filter-bar">
+            <button class="income-filter-btn active" id="filterToday" onclick="setIncomeFilter('today')">
+              <i class="fa-solid fa-sun"></i> วันนี้
+            </button>
+            <button class="income-filter-btn" id="filterWeek" onclick="setIncomeFilter('week')">
+              <i class="fa-solid fa-calendar-week"></i> สัปดาห์นี้
+            </button>
+            <button class="income-filter-btn" id="filterMonth" onclick="setIncomeFilter('month')">
+              <i class="fa-solid fa-calendar-days"></i> เดือนนี้
+            </button>
+            <button class="income-filter-btn" id="filterAll" onclick="setIncomeFilter('all')">
+              <i class="fa-solid fa-layer-group"></i> ทั้งหมด
+            </button>
+          </div>
+
+          <!-- KPI Cards Row -->
+          <div class="income-kpi-grid">
+            <!-- Total Income -->
+            <div class="income-kpi-card income-kpi-main">
+              <div class="income-kpi-glow"></div>
+              <div class="income-kpi-icon">
+                <i class="fa-solid fa-coins"></i>
+              </div>
+              <div class="income-kpi-body">
+                <p class="income-kpi-label">รายได้รวม</p>
+                <h2 class="income-kpi-value" id="incomeTotalAmount">฿0</h2>
+                <span class="income-kpi-badge" id="incomeTrendBadge">
+                  <i class="fa-solid fa-arrow-trend-up"></i> <span id="incomeTrendText">เสร็จแล้ว</span>
+                </span>
+              </div>
+            </div>
+            <!-- Jobs Count -->
+            <div class="income-kpi-card">
+              <div class="income-kpi-icon income-icon-green">
+                <i class="fa-solid fa-briefcase-clock"></i>
+              </div>
+              <div class="income-kpi-body">
+                <p class="income-kpi-label">งานที่ได้รับเงิน</p>
+                <h2 class="income-kpi-value" id="incomeJobsCount">0</h2>
+                <span style="font-size:12px; color: var(--text-light);">งานที่เสร็จสิ้น</span>
+              </div>
+            </div>
+            <!-- Labor Income -->
+            <div class="income-kpi-card">
+              <div class="income-kpi-icon income-icon-purple">
+                <i class="fa-solid fa-person-digging"></i>
+              </div>
+              <div class="income-kpi-body">
+                <p class="income-kpi-label">ค่าแรงงาน</p>
+                <h2 class="income-kpi-value" id="incomeLaborAmount">฿0</h2>
+                <span style="font-size:12px; color: var(--text-light);">จากค่าบริการ</span>
+              </div>
+            </div>
+            <!-- Average Per Job -->
+            <div class="income-kpi-card">
+              <div class="income-kpi-icon income-icon-orange">
+                <i class="fa-solid fa-chart-simple"></i>
+              </div>
+              <div class="income-kpi-body">
+                <p class="income-kpi-label">เฉลี่ยต่องาน</p>
+                <h2 class="income-kpi-value" id="incomeAvgAmount">฿0</h2>
+                <span style="font-size:12px; color: var(--text-light);">บาท / งาน</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts & Breakdown Row -->
+          <div class="income-middle-row">
+            <!-- Mini Bar Chart -->
+            <div class="card income-chart-card">
+              <div class="card-header border-bottom" style="padding-bottom: 12px;">
+                <div>
+                  <h2 style="font-size:16px;">📊 รายได้ย้อนหลัง 7 วัน</h2>
+                  <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">บาท / วัน</p>
+                </div>
+              </div>
+              <div class="income-bar-chart-wrap">
+                <div class="income-bar-chart" id="incomeBarChart">
+                  <!-- JS rendered -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Revenue Breakdown -->
+            <div class="card income-breakdown-card">
+              <div class="card-header border-bottom" style="padding-bottom: 12px;">
+                <h2 style="font-size:16px;">💼 สัดส่วนรายได้</h2>
+              </div>
+              <div class="income-breakdown-body">
+                <div class="income-breakdown-item">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                    <span style="font-size:13px; font-weight:600; color: var(--text-main);">⚡ ค่าแรงงาน</span>
+                    <span style="font-size:13px; font-weight:700; color: #4f46e5;" id="breakdownLaborPct">0%</span>
+                  </div>
+                  <div class="income-progress-track">
+                    <div class="income-progress-bar income-bar-labor" id="barLabor" style="width:0%"></div>
+                  </div>
+                  <div style="font-size:12px; color:var(--text-muted); margin-top:4px;" id="breakdownLaborAmt">฿0</div>
+                </div>
+                <div class="income-breakdown-item" style="margin-top:18px;">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                    <span style="font-size:13px; font-weight:600; color: var(--text-main);">🔩 ค่าวัสดุอุปกรณ์</span>
+                    <span style="font-size:13px; font-weight:700; color: #10b981;" id="breakdownMatPct">0%</span>
+                  </div>
+                  <div class="income-progress-track">
+                    <div class="income-progress-bar income-bar-material" id="barMaterial" style="width:0%"></div>
+                  </div>
+                  <div style="font-size:12px; color:var(--text-muted); margin-top:4px;" id="breakdownMatAmt">฿0</div>
+                </div>
+                <div style="margin-top:20px; padding:12px 16px; background:linear-gradient(135deg,#f0fdf4,#dcfce7); border-radius:10px; display:flex; justify-content:space-between; align-items:center; border:1px solid #bbf7d0;">
+                  <span style="font-size:13px; font-weight:700; color:#065f46;">💰 รายได้สุทธิรวม</span>
+                  <span style="font-size:16px; font-weight:800; color:#059669;" id="breakdownTotal">฿0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Transaction History Table -->
+          <div class="card income-table-card">
+            <div class="card-header border-bottom" style="padding-bottom:14px;">
+              <div>
+                <h2 style="font-size:16px;">🧾 ประวัติธุรกรรม</h2>
+                <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">รายละเอียดแต่ละงานที่เสร็จสิ้นและรับเงินแล้ว</p>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span id="incomeTransactionCount" style="font-size:12px; background:#f1f5f9; padding:4px 12px; border-radius:20px; color:var(--text-muted); font-weight:600;">0 รายการ</span>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table income-tx-table">
+                <thead>
+                  <tr>
+                    <th>วันที่รับงาน</th>
+                    <th>รหัสงาน</th>
+                    <th>ลูกค้า</th>
+                    <th>ประเภทงาน</th>
+                    <th style="text-align:right;">ค่าแรง</th>
+                    <th style="text-align:right;">ค่าวัสดุ</th>
+                    <th style="text-align:right;">รวม</th>
+                    <th>สถานะ</th>
+                  </tr>
+                </thead>
+                <tbody id="incomeTableBody">
+                  <tr>
+                    <td colspan="8" class="text-center" style="padding:40px; color:var(--text-muted);">
+                      <i class="fa-solid fa-spinner fa-spin" style="margin-right:8px;"></i> กำลังโหลด...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Profile View -->
+        <div id="profileView" style="display: none; width: 100%;">
+          <div class="card" style="max-width: 1000px; margin: 0 auto; box-shadow: var(--shadow-lg); border-radius: 20px;">
+            <div class="card-header border-bottom" style="padding: 24px; display: flex; justify-content: space-between; align-items: center;">
+              <h2 style="font-size: 22px; font-weight: 700; color: var(--text-main); margin: 0;"><i class="fa-solid fa-user-circle" style="margin-right: 10px; color: var(--primary);"></i> จัดการโปรไฟล์มืออาชีพ (Professional Profile)</h2>
+              <button class="btn-outline" onclick="switchView('dashboard')" style="padding: 8px 16px; font-size: 13px;">กลับหน้าหลัก</button>
+            </div>
+            
+            <div class="profile-edit-body" style="padding: 30px;">
+              <form id="profileForm">
+                
+                <!-- Section 1: Basic Info (Keep minimal as requested) -->
+                <div class="profile-section-card" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+                  <h3 style="font-size: 16px; margin: 0 0 20px 0; color: var(--primary); display: flex; align-items: center; gap: 10px;"><i class="fa-solid fa-id-card"></i> ข้อมูลพื้นฐานเเละตัวตน</h3>
+                  <div style="display: grid; grid-template-columns: 140px 1fr; gap: 30px; align-items: center;">
+                    <div class="avatar-upload-container" style="position: relative;">
+                      <img id="profilePreview" src="https://ui-avatars.com/api/?name=Tech&background=10b981&color=fff&bold=true&size=160" style="width: 130px; height: 130px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary-light);">
+                      <button type="button" class="action-btn" style="position: absolute; bottom: 5px; right: 5px; width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: white; border: 3px solid white; cursor: pointer; display: flex; align-items: center; justify-content: center;" onclick="document.getElementById('avatarInput').click()">
+                        <i class="fa-solid fa-camera" style="font-size: 14px;"></i>
+                      </button>
+                      <input type="file" id="avatarInput" accept="image/*" style="display: none;" onchange="previewAvatar(event)">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                      <div class="form-group">
+                        <label class="form-label" style="font-weight: 600;">ชื่อ-นามสกุล</label>
+                        <input type="text" id="editFullName" class="form-select" style="background: #f8fafc;" placeholder="ระบุชื่อจริง-นามสกุล">
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" style="font-weight: 600;">เบอร์โทรศัพท์</label>
+                        <input type="tel" id="editPhone" class="form-select" style="background: #f8fafc;" placeholder="0xx-xxxxxxx">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Section 2: Expertise & Experience -->
+                <div class="profile-section-card" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+                  <h3 style="font-size: 16px; margin: 0 0 20px 0; color: var(--primary); display: flex; align-items: center; gap: 10px;"><i class="fa-solid fa-briefcase"></i> ทักษะเเละความชำนาญ</h3>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div class="form-group">
+                      <label class="form-label" style="font-weight: 600;">ประเภทงานหลัก</label>
+                      <select id="editCategory" class="form-select" style="background: #f8fafc;">
+                        <option value="ไฟฟ้า">⚡ ช่างไฟ</option>
+                        <option value="ช่างแอร์">❄️ ช่างแอร์</option>
+                        <option value="ช่างประปา">🚿 ช่างประปา</option>
+                        <option value="แม่บ้าน">🧹 แม่บ้าน</option>
+                        <option value="ช่างยนต์">🚗 ช่างยนต์</option>
+                        <option value="ก่อสร้าง">🛠️ งานก่อสร้าง</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" style="font-weight: 600;">ระดับฝีมือ</label>
+                      <select id="editSkillLevel" class="form-select" style="background: #f8fafc;">
+                        <option value="มือใหม่">มือใหม่ (< 1 ปี)</option>
+                        <option value="ทั่วไป">ทั่วไป (1-5 ปี)</option>
+                        <option value="มืออาชีพ">มืออาชีพ (> 5 ปี)</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" style="font-weight: 600;">ประสบการณ์ (ปี)</label>
+                      <input type="number" id="editExpYears" class="form-select" style="background: #f8fafc;" placeholder="เช่น 5">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" style="font-weight: 600;">ความเชี่ยวชาญเฉพาะทาง</label>
+                    <textarea id="editExpertise" class="form-select" rows="2" style="background: #f8fafc;" placeholder="เช่น ติดตั้งแอร์ฝังฝ้า, เดินสายไฟโรงงาน"></textarea>
+                  </div>
+                </div>
+
+                <!-- Section 3: Service Area & Location -->
+                <div class="profile-section-card" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+                  <h3 style="font-size: 16px; margin: 0 0 20px 0; color: var(--primary); display: flex; align-items: center; gap: 10px;"><i class="fa-solid fa-map-location-dot"></i> พื้นที่ให้บริการเเละระยะทาง</h3>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div class="form-group">
+                      <label class="form-label" style="font-weight: 600;">ตำบล</label>
+                      <input type="text" id="editSubdistrict" class="form-select" style="background: #f8fafc;">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" style="font-weight: 600;">อำเภอ</label>
+                      <input type="text" id="editDistrict" class="form-select" style="background: #f8fafc;">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" style="font-weight: 600;">จังหวัด</label>
+                      <input type="text" id="editProvince" class="form-select" style="background: #f8fafc;">
+                    </div>
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                      <label class="form-label" style="font-weight: 600;">พื้นที่รับงาน (จังหวัด/เขต)</label>
+                      <input type="text" id="editServiceArea" class="form-select" style="background: #f8fafc;" placeholder="เช่น สกลนคร / อุดรธานี">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" style="font-weight: 600;">ระยะทางรับงานสูงสุด (กม.)</label>
+                      <input type="number" id="editServiceDistance" class="form-select" style="background: #f8fafc;">
+                    </div>
+                  </div>
+                  
+                  <!-- New GPS Coordinates Row -->
+                  <div style="margin-top: 20px; padding: 15px; background: #f1f5f9; border-radius: 12px; display: grid; grid-template-columns: 1fr 1fr auto; gap: 15px; align-items: flex-end;">
+                    <div class="form-group" style="margin: 0;">
+                      <label class="form-label" style="font-size: 13px; font-weight: 700; color: #475569;"><i class="fa-solid fa-location-crosshairs"></i> Latitude</label>
+                      <input type="text" id="editLat" class="form-select" style="background: #fff; height: 38px; font-size: 14px;" readonly placeholder="พิกัดละติจูด">
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                      <label class="form-label" style="font-size: 13px; font-weight: 700; color: #475569;"><i class="fa-solid fa-location-crosshairs"></i> Longitude</label>
+                      <input type="text" id="editLng" class="form-select" style="background: #fff; height: 38px; font-size: 14px;" readonly placeholder="พิกัดลองจิจูด">
+                    </div>
+                    <button type="button" onclick="getCurrentLocation()" class="btn-primary" style="height: 38px; padding: 0 15px; font-size: 13px; white-space: nowrap; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 102, 204, 0.2);">
+                      <i class="fa-solid fa-compass"></i> ดึงพิกัดปัจจุบัน
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Section 4: Team, Vehicle & Rates -->
+                <div class="profile-section-card" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+                  <h3 style="font-size: 16px; margin: 0 0 20px 0; color: var(--primary); display: flex; align-items: center; gap: 10px;"><i class="fa-solid fa-truck-pickup"></i> รูปแบบงาน ทีมงาน เเละค่าแรง</h3>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 20px;">
+                    <div class="form-group">
+                      <label class="form-label" style="font-weight: 600;">จำนวนทีมงาน</label>
+                      <select id="editTeamSize" class="form-select" style="background: #f8fafc;">
+                        <option value="1">ทำคนเดียว</option>
+                        <option value="2-3">2-3 คน</option>
+                        <option value="4-5">4-5 คน</option>
+                        <option value="5+">มากกว่า 5 คน</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" style="font-weight: 600;">ยานพาหนะออกงาน</label>
+                      <div id="checkVehicle" style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 8px;">
+                        <label style="font-weight: normal; font-size: 14px;"><input type="checkbox" name="v_vehicle" value="มอเตอร์ไซค์"> มอเตอร์ไซค์</label>
+                        <label style="font-weight: normal; font-size: 14px;"><input type="checkbox" name="v_vehicle" value="รถกระบะ"> รถกระบะ</label>
+                        <label style="font-weight: normal; font-size: 14px;"><input type="checkbox" name="v_vehicle" value="รถบรรทุก"> รถบรรทุก</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                    <div class="form-group">
+                      <label class="form-label" style="font-weight: 600;">รูปแบบค่าแรง</label>
+                      <select id="editRateType" class="form-select" style="background: #f8fafc;">
+                        <option value="รายวัน">รายวัน</option>
+                        <option value="เหมาจ่าย">เหมาจ่าย</option>
+                        <option value="รายชั่วโมง">รายชั่วโมง</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" style="font-weight: 600;">เรทค่าแรงเบื้องต้น (บาท)</label>
+                      <input type="number" id="editDailyRate" class="form-select" style="background: #f8fafc;">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Section 5: Tools & Selling Points -->
+                <div class="profile-section-card" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+                  <h3 style="font-size: 16px; margin: 0 0 20px 0; color: var(--primary); display: flex; align-items: center; gap: 10px;"><i class="fa-solid fa-toolbox"></i> เครื่องมือเเละจุดเด่น</h3>
+                  <div class="form-group">
+                    <label class="form-label" style="font-weight: 600;">เครื่องมือที่มีพร้อมใช้งาน (เลือกได้หลายข้อ)</label>
+                    <div id="checkTools" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 8px;">
+                      <label style="font-weight: normal; font-size: 14px;"><input type="checkbox" name="v_tools" value="สว่านไร้สาย"> สว่านไร้สาย</label>
+                      <label style="font-weight: normal; font-size: 14px;"><input type="checkbox" name="v_tools" value="ตู้เชื่อม"> ตู้เชื่อม</label>
+                      <label style="font-weight: normal; font-size: 14px;"><input type="checkbox" name="v_tools" value="เครื่องตัด"> เครื่องตัด</label>
+                      <label style="font-weight: normal; font-size: 14px;"><input type="checkbox" name="v_tools" value="บันไดสูง"> บันไดสูง (>3ม.)</label>
+                      <label style="font-weight: normal; font-size: 14px;"><input type="checkbox" name="v_tools" value="เกจแอร์"> เกจวัดน้ำยาแอร์</label>
+                      <label style="font-weight: normal; font-size: 14px;"><input type="checkbox" name="v_tools" value="อื่นๆ"> เครื่องมืออื่นๆ</label>
+                    </div>
+                  </div>
+                  <div class="form-group" style="margin-top: 20px;">
+                    <label class="form-label" style="font-weight: 600;">จุดเด่น / จุดขายของคุณ</label>
+                    <div id="checkPoints" style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 8px;">
+                      <label style="font-weight: normal; font-size: 14px;"><input type="checkbox" name="v_points" value="งานไว"> ⚡ งานไว</label>
+                      <label style="font-weight: normal; font-size: 14px;"><input type="checkbox" name="v_points" value="รับประกันงาน"> 🛡️ รับประกันงาน</label>
+                      <label style="font-weight: normal; font-size: 14px;"><input type="checkbox" name="v_points" value="ราคาประหยัด"> 💸 ราคาประหยัด</label>
+                      <label style="font-weight: normal; font-size: 14px;"><input type="checkbox" name="v_points" value="คุยง่าย"> 😊 คุยง่าย เป็นกันเอง</label>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Section 6: Portfolio & Status -->
+                <div class="profile-section-card" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+                  <h3 style="font-size: 16px; margin: 0 0 20px 0; color: var(--primary); display: flex; align-items: center; gap: 10px;"><i class="fa-solid fa-image"></i> ประวัติผลงานเเละลิงก์เพิ่มเติม</h3>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 20px;">
+                    <div class="form-group">
+                      <label class="form-label" style="font-weight: 600;">จำนวนงานที่เคยทำ (โดยประมาณ)</label>
+                      <input type="number" id="editPastWorkCount" class="form-select" style="background: #f8fafc;">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" style="font-weight: 600;">ลิงก์ผลงาน (Facebook / YouTube)</label>
+                      <input type="url" id="editPortfolio" class="form-select" style="background: #f8fafc;" placeholder="https://...">
+                    </div>
+                  </div>
+                  
+                  <div class="form-group status-box" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 24px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e2e8f0; margin-top: 10px;">
+                    <div style="flex: 1;">
+                      <label class="form-label" style="margin: 0; font-size: 16px; font-weight: 800; color: var(--text-main);">🟢 สถานะพร้อมรับงาน (Online Status)</label>
+                      <p style="margin: 4px 0 0; font-size: 14px; color: #64748b;">หากปิดสถานะ ลูกค้าจะไม่สามารถค้นหาคุณเจอในระบบ</p>
+                    </div>
+                    <div class="toggle-container" style="display: flex; align-items: center; gap: 12px;">
+                      <span id="statusLabel" style="font-size: 14px; font-weight: 600; color: #10b981;">Online</span>
+                      <label class="switch-ui" style="position: relative; display: inline-block; width: 60px; height: 30px;">
+                        <input type="checkbox" id="editIsOnline" style="opacity: 0; width: 0; height: 0;" onchange="updateStatusLabel(this)">
+                        <span class="slider-ui round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 30px;">
+                          <span class="knob" style="position: absolute; height: 22px; width: 22px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;"></span>
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="margin-top: 40px; display: flex; gap: 16px; justify-content: flex-end;">
+                  <button type="button" class="btn-outline" style="min-width: 150px; height: 50px;" onclick="switchView('dashboard')">ยกเลิก</button>
+                  <button type="button" onclick="updateProfile()" class="btn-primary" id="btnSaveProfile" style="min-width: 200px; height: 50px; font-size: 16px;">
+                    <i class="fa-solid fa-save"></i> บันทึกข้อมูลโปรไฟล์
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings View -->
+        <div id="settingsView" style="display: none; width: 100%;">
+          <div class="card" style="background-color: #ffffff; max-width: 1000px; margin: 0 auto; box-shadow: var(--shadow-lg); border-radius: 20px;">
+            <div class="card-header border-bottom" style="padding: 24px; display: flex; justify-content: space-between; align-items: center;">
+              <h2 style="font-size: 22px; font-weight: 700; color: var(--text-main); margin: 0;"><i class="fa-solid fa-gear" style="margin-right: 10px; color: var(--primary);"></i> ตั้งค่าระบบ (System Settings)</h2>
+              <button class="btn-outline" onclick="switchView('dashboard')" style="padding: 8px 16px; font-size: 13px;">กลับหน้าหลัก</button>
+            </div>
+            
+            <div class="settings-body" style="padding: 30px; display: grid; gap: 24px;">
+              
+              <!-- Notifications Setting -->
+              <div class="profile-section-card" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px;">
+                <h3 style="font-size: 16px; margin: 0 0 20px 0; color: var(--primary); display: flex; align-items: center; gap: 10px;"><i class="fa-solid fa-bell"></i> การแจ้งเตือน (Notifications)</h3>
+                
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <span class="setting-title">แจ้งเตือนแชทและข้อความใหม่</span>
+                    <span class="setting-desc">เปิดแชทเด้งเตือนเมื่อลูกค้าทักผ่านแพลตฟอร์ม</span>
+                  </div>
+                  <label class="switch-ui">
+                    <input type="checkbox" id="settingNotifyChat" checked onchange="toggleSetting('chat', this.checked)">
+                    <span class="slider-ui round"><span class="knob"></span></span>
+                  </label>
+                </div>
+                <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 16px 0;">
+                
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <span class="setting-title">แจ้งเตือนงานใหม่ทางอีเมล</span>
+                    <span class="setting-desc">ส่งใบแจ้งเตือนและรายละเอียดงานใหม่ไปที่อีเมลของคุณ</span>
+                  </div>
+                  <label class="switch-ui">
+                    <input type="checkbox" id="settingNotifyEmail" onchange="toggleSetting('email', this.checked)">
+                    <span class="slider-ui round"><span class="knob"></span></span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Security Setting -->
+              <div class="profile-section-card" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px;">
+                <h3 style="font-size: 16px; margin: 0 0 20px 0; color: var(--primary); display: flex; align-items: center; gap: 10px;"><i class="fa-solid fa-lock"></i> ความปลอดภัย (Security)</h3>
+                
+                <div class="form-group" style="margin-bottom: 20px; max-width: 400px;">
+                  <label class="form-label" style="font-weight: 600;">รหัสผ่านใหม่</label>
+                  <input type="password" id="settingNewPwd" class="form-select" style="background: #f8fafc;" placeholder="กรอกรหัสผ่านใหม่ (ต้องมากกว่า 6 ตัวอักษร)">
+                </div>
+                <div class="form-group" style="margin-bottom: 20px; max-width: 400px;">
+                  <label class="form-label" style="font-weight: 600;">ยืนยันรหัสผ่านใหม่</label>
+                  <input type="password" id="settingConfirmPwd" class="form-select" style="background: #f8fafc;" placeholder="ยืนยันรหัสผ่านใหม่อีกครั้ง">
+                </div>
+                <button type="button" class="btn-primary" onclick="updatePassword()" id="btnUpdatePwd" style="height: 44px; padding: 0 20px;">
+                  <i class="fa-solid fa-key"></i> บันทึกเปลี่ยนรหัสผ่าน
+                </button>
+              </div>
+
+              <!-- Preferences Setting -->
+              <div class="profile-section-card" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px;">
+                <h3 style="font-size: 16px; margin: 0 0 20px 0; color: var(--primary); display: flex; align-items: center; gap: 10px;"><i class="fa-solid fa-globe"></i> การแสดงผลและภาษา (Preferences)</h3>
+                
+                <div class="form-group" style="max-width: 400px; margin-bottom: 20px;">
+                  <label class="form-label" style="font-weight: 600;">ภาษาของระบบ (Language)</label>
+                  <select id="settingLanguage" class="form-select" style="background: #f8fafc;" onchange="changeLanguage(this.value)">
+                    <option value="th">ภาษาไทย (Thai)</option>
+                    <option value="en">English (US)</option>
+                  </select>
+                </div>
+
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <span class="setting-title"><i class="fa-solid fa-moon text-muted" style="margin-right:6px;"></i>โหมดกลางคืน (Dark Mode)</span>
+                    <span class="setting-desc">สลับโทนสีของแผงควบคุมหลักเป็นโทนมืด (เร็วๆ นี้)</span>
+                  </div>
+                  <label class="switch-ui" style="opacity: 0.5;">
+                    <input type="checkbox" disabled>
+                    <span class="slider-ui round"><span class="knob"></span></span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Danger Zone -->
+              <div class="profile-section-card" style="background: #fff; border: 1px dashed #ef4444; border-radius: 16px; padding: 24px;">
+                <h3 style="font-size: 16px; margin: 0 0 10px 0; color: #ef4444; display: flex; align-items: center; gap: 10px;"><i class="fa-solid fa-triangle-exclamation"></i> Danger Zone</h3>
+                <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">การลบบัญชีหรือระงับการใช้งานจะส่งผลกระทบต่อข้อมูลการจองและประวัติของคุณทั้งหมด ไม่สามารถเรียกคืนได้หลังยืนยัน</p>
+                <div style="display: flex; gap: 16px;">
+                  <button type="button" class="action-btn" style="background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; font-size: 14px; font-weight: 600; padding: 10px 20px; border-radius: 8px;" onclick="deactivateAccount()">
+                    ระงับบัญชีของคุณ
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Reviews View -->
+        <div id="reviewsView" style="display: none; width: 100%;">
+          <div class="page-header" style="margin-bottom: 24px;">
+            <div>
+              <h1 style="font-size: 24px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">⭐ รีวิวและคะแนนของคุณ</h1>
+              <p style="color: var(--text-muted); font-size: 14px;">ความคิดเห็นและความประทับใจจากลูกค้าที่เคยใช้บริการ</p>
+            </div>
+          </div>
+          
+          <div class="stats-grid premium" style="margin-bottom: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div class="stat-card" style="background: white; padding: 20px; border-radius: 16px; box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center;">
+              <div class="stat-main">
+                <p class="stat-title" style="font-size: 13px; color: var(--text-muted); margin-bottom: 4px;">คะแนนเฉลี่ย</p>
+                <h3 class="stat-value" id="avgRatingValue" style="font-size: 28px; font-weight: 800; color: var(--text-main);">0.0</h3>
+              </div>
+              <div class="stat-icon-wrap bg-orange-light" style="width: 48px; height: 48px; border-radius: 12px; background: #fff7ed; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-star" style="color: #f59e0b; font-size: 20px;"></i>
+              </div>
+            </div>
+            <div class="stat-card" style="background: white; padding: 20px; border-radius: 16px; box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center;">
+              <div class="stat-main">
+                <p class="stat-title" style="font-size: 13px; color: var(--text-muted); margin-bottom: 4px;">จำนวนรีวิวทั้งหมด</p>
+                <h3 class="stat-value" id="totalReviewsCount" style="font-size: 28px; font-weight: 800; color: var(--text-main);">0</h3>
+              </div>
+              <div class="stat-icon-wrap bg-blue-light" style="width: 48px; height: 48px; border-radius: 12px; background: #eff6ff; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-comments" style="color: #3b82f6; font-size: 20px;"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="card premium-card" style="background: white; border-radius: 20px; box-shadow: var(--shadow-md); overflow: hidden;">
+            <div class="card-header border-bottom" style="padding: 20px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center;">
+              <h2 style="font-size: 18px; font-weight: 700; color: var(--text-main); margin: 0;"><i class="fa-solid fa-list-check" style="margin-right: 12px; color: var(--primary);"></i> รายการรีวิวล่าสุด</h2>
+            </div>
+            <div class="reviews-container" id="reviewsContainer" style="padding: 20px;">
+              <div class="text-center" style="padding: 40px; color: var(--text-muted); text-align: center;">
+                <i class="fa-solid fa-spinner fa-spin" style="margin-right: 8px;"></i> กำลังโหลดรีวิว...
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div> <!-- End of dashboard-content padding container -->
+    </main>
+  </div>
+
+  <!-- Job Detail Modal -->
+  <div class="modal-overlay" id="jobModalOverlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="jobModalTitle">รายละเอียดงาน</h3>
+        <button class="modal-close" onclick="closeJobModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" id="jobModalBody">
+        <!-- Content injected via JS -->
+      </div>
+      <div class="modal-footer" id="jobModalFooter">
+        <!-- Actions injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Modal (Messenger Style) -->
+  <div class="modal-overlay" id="chatModalOverlay" style="display:none; z-index:2000; align-items:flex-end; justify-content:flex-end; padding:20px;">
+    <div class="modal-content" style="width:360px; max-width:100%; height:500px; max-height:90vh; display:flex; flex-direction:column; padding:0; overflow:hidden; border-radius:12px; box-shadow:0 12px 28px rgba(0,0,0,0.2); margin:0;">
+      
+      <!-- Header -->
+      <div class="modal-header" style="padding:10px 16px; background:#fff; border-bottom:1px solid #e4e6eb; display:flex; justify-content:space-between; align-items:center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); z-index:10;">
+         <div id="chatModalTitle" style="display:flex; align-items:center;">
+            <!-- Title injected by JS -->
+         </div>
+         <div style="display:flex; gap:16px; color:#0084ff; font-size:18px;">
+            <i class="fa-solid fa-times" onclick="closeChatModal()" style="cursor:pointer; color:#bcc0c4; font-size:20px;"></i>
+         </div>
+      </div>
+      
+      <!-- Body -->
+      <div id="chatMessages" style="flex:1; overflow-y:auto; padding:16px; background:#fff; display:flex; flex-direction:column;">
+         <!-- messages go here -->
+      </div>
+      
+      <!-- Footer Input -->
+      <div class="modal-footer" style="padding:12px; background:#fff; display:flex; align-items:flex-end; gap:8px;">
+         <input type="file" id="chatImageInput" accept="image/*" style="display:none;" onchange="sendChatImage(event)">
+         <div onclick="document.getElementById('chatImageInput').click()" style="color:#0084ff; font-size:20px; cursor:pointer; padding:6px 4px;"><i class="fa-solid fa-image"></i></div>
+         <div style="flex:1; background:#f0f2f5; border-radius:20px; display:flex; align-items:center; padding:2px 12px;">
+            <input type="text" id="chatInput" style="flex:1; background:transparent; border:none; outline:none; padding:8px 0; font-size:15px;" placeholder="Aa" onkeypress="if(event.key==='Enter') sendChatMessage()">
+            <i class="fa-solid fa-face-smile" onclick="toggleEmojiPicker()" style="color:#0084ff; font-size:20px; cursor:pointer; margin-left:8px;"></i>
+         </div>
+         <button onclick="sendChatMessage()" style="background:none; border:none; color:#0084ff; font-size:20px; cursor:pointer; padding:6px 4px;"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat List Modal -->
+  <div class="modal-overlay" id="chatListModalOverlay" style="display:none; z-index:1900;">
+    <div class="modal-content" style="width:400px; max-width:90%; max-height:80vh; display:flex; flex-direction:column; padding:0; overflow:hidden; border-radius:12px;">
+      
+      <div class="modal-header" style="padding:16px 20px; background:#fff; border-bottom:1px solid #e4e6eb; display:flex; justify-content:space-between; align-items:center;">
+         <div style="display:flex; align-items:center; gap:12px;">
+            <h3 style="margin:0; font-size:18px; color:#050505; font-weight:700;">รายการแชททั้งหมด</h3>
+            <button onclick="markAllMessagesAsRead()" style="background:#f0f7ff; border:none; color:#0084ff; font-size:11px; cursor:pointer; font-weight:600; padding:4px 10px; border-radius:100px; display:flex; align-items:center; gap:4px;">
+               <i class="fa-solid fa-check-double"></i> อ่านทั้งหมด
+            </button>
+         </div>
+         <button class="close-btn" onclick="closeChatList()" style="background:none; border:none; color:#bcc0c4; font-size:20px; cursor:pointer;"><i class="fa-solid fa-times"></i></button>
+      </div>
+      
+      <div id="chatListContainer" style="flex:1; overflow-y:auto; padding:0; background:#fff; display:flex; flex-direction:column;">
+         <!-- chat list items go here -->
+      </div>
+      
+    </div>
+  </div>
+
+  <script src="technician-dashboard.js?v=9"></script>
+</body>
+</html>

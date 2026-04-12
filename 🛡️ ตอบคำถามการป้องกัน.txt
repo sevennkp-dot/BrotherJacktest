@@ -1,0 +1,46 @@
+🛡️ วิธีแก้ทีละข้อ
+✅ 1. ย้าย logic ไป n8n
+👉 แล้วให้ n8n:
+รับข้อมูล
+ตรวจสอบ
+insert ลง Supabase
+
+
+✅ 2. เปิด Row Level Security (RLS) ใน Supabase
+
+
+
+✅ 3. เพิ่ม CAPTCHA 🔥 (โคตรสำคัญ)
+
+ใช้:
+
+Google reCAPTCHA
+Cloudflare Turnstile (แนะนำ)
+
+
+✅ 4. จำกัดขนาด + ประเภทไฟล์
+ตอนนี้คุณเช็คแค่ size ✅
+แต่ควรเพิ่ม:
+
+if (!file.type.startsWith("image/")) {
+  alert("อนุญาตเฉพาะรูปภาพ");
+}
+
+✅ 5. เปลี่ยน Storage เป็น Private
+ตอนนี้คุณใช้:
+public URL
+
+👉 แนะนำ:
+ใช้ private bucket
+generate signed URL ตอนเรียกดู
+
+✅ 6. เพิ่ม Rate Limit (กันยิงรัว)
+ทำใน n8n:
+เช็ค IP
+จำกัด เช่น 5 ครั้ง / นาที
+
+✅ 7. ตรวจสอบข้อมูลใน n8n อีกชั้น
+เช่น:
+เบอร์โทร = ตัวเลขเท่านั้น
+email ต้อง valid
+required fields

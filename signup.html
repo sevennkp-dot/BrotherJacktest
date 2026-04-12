@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>สมัครสมาชิก - FixHome</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="signup-styles.css">
+</head>
+<body>
+
+<div class="signup-container">
+  <div class="logo-section">
+    <a href="index.html">
+      <img src="https://uqcjajmqtlchftpqwsrp.supabase.co/storage/v1/object/public/ssss/FixHouse-logo.png" alt="FixHome">
+    </a>
+  </div>
+
+  <h1>✨ สมัครสมาชิก</h1>
+  <p>เพิ่มชื่อ อีเมล และรหัสผ่านใหม่</p>
+
+  <div class="error-message" id="errorMessage"></div>
+
+  <form id="signupForm" onsubmit="handleSignup(event)">
+    <div class="form-group">
+      <label for="name">👤 ชื่อเต็ม *</label>
+      <input 
+        type="text" 
+        id="name" 
+        placeholder="เช่น สมชาย มีชัยวัฒน์" 
+        required
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="phone">📱 เบอร์โทรศัพท์ *</label>
+      <input 
+        type="tel" 
+        id="phone" 
+        placeholder="เช่น 0812345678" 
+        required
+        pattern="[0-9]{9,10}"
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="email">📧 อีเมล *</label>
+      <input 
+        type="email" 
+        id="email" 
+        placeholder="example@email.com" 
+        required
+        autocomplete="email"
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="password">🔒 รหัสผ่าน *</label>
+      <input 
+        type="password" 
+        id="password" 
+        placeholder="อย่างน้อย 6 ตัวอักษร" 
+        required
+        autocomplete="new-password"
+        minlength="6"
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="confirmPassword">🔒 ยืนยันรหัสผ่าน *</label>
+      <input 
+        type="password" 
+        id="confirmPassword" 
+        placeholder="ยืนยันรหัสผ่าน" 
+        required
+        autocomplete="new-password"
+      >
+    </div>
+
+    <button type="submit" class="btn-signup" id="signupBtn">สร้างบัญชี</button>
+  </form>
+
+  <button type="button" class="btn-google" onclick="signInWithGoogle()">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" width="20" style="margin-right: 8px;">
+    สมัครสมาชิกด้วย Google
+  </button>
+
+  <button type="button" class="btn-line" onclick="signInWithLine()">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="LINE" width="20" style="margin-right: 8px;">
+    สมัครสมาชิกด้วย LINE
+  </button>
+
+  <div class="divider">หรือ</div>
+
+  <a href="login.html" class="btn-login">เข้าสู่ระบบ</a>
+
+  <div class="back-link">
+    <a href="index.html">← กลับไปหน้าแรก</a>
+  </div>
+</div>
+
+<script src="signup.js" defer></script>
+</body>
+</html>

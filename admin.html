@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | FixHome</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="admin-styles.css">
+</head>
+<body>
+
+  <!-- Toast Notification Wrapper -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <div class="admin-wrapper">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <a href="index.html" class="logo">
+          <div class="logo-icon"><i class="fa-solid fa-wrench"></i></div>
+          <span class="logo-text">Fix<span class="text-primary">Home</span></span>
+        </a>
+        <div class="role-badge">ADMIN</div>
+        <button class="menu-close" id="menuClose"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="sidebar-menu">
+        <p class="menu-label">เมนูหลัก</p>
+        <a href="admin.html" class="menu-item active">
+          <i class="fa-solid fa-border-all"></i>
+          <span>ภาพรวมระบบ</span>
+        </a>
+        
+        <p class="menu-label mt-4">ผู้ใช้งาน</p>
+        <a href="admin-customers.html" class="menu-item">
+          <i class="fa-solid fa-users"></i>
+          <span>ลูกค้า</span>
+        </a>
+        <a href="admin-technicians.html" class="menu-item">
+          <i class="fa-solid fa-user-gear"></i>
+          <span>ช่างซ่อม</span>
+        </a>
+
+        
+        <p class="menu-label mt-4">อสังหาริมทรัพย์</p>
+        <a href="admin-properties.html" class="menu-item">
+          <i class="fa-solid fa-city"></i>
+          <span>ตึก & บ้าน</span>
+        </a>
+        
+        
+        <p class="menu-label mt-4">คอนเทนต์ & สื่อ</p>
+        <a href="admin-content.html" class="menu-item">
+          <i class="fa-regular fa-images"></i>
+          <span>ผลงาน & ร้านค้า</span>
+        </a>
+        
+        
+        <p class="menu-label mt-4">ติดต่อสอบถาม</p>
+        <a href="admin-chats.html" class="menu-item">
+          <i class="fa-solid fa-comments"></i>
+          <span>แชทลูกค้า</span>
+        </a>
+        <a href="admin-requests.html" class="menu-item">
+          <i class="fa-solid fa-envelope-open-text"></i>
+          <span>ออเดอร์ & ความสนใจ</span>
+        </a>
+        
+        <p class="menu-label mt-4">ระบบ</p>
+        <a href="admin-campaigns.html" class="menu-item">
+          <i class="fa-solid fa-tag"></i>
+          <span>จัดการแคมเปญ</span>
+        </a>
+        <a href="admin-reviews.html" class="menu-item" id="menu-reviews">
+          <i class="fa-solid fa-star"></i>
+          <span>จัดการรีวิว</span>
+        </a>
+        <a href="admin-reports.html" class="menu-item">
+          <i class="fa-solid fa-chart-line"></i>
+          <span>รายงานสถิติ</span>
+        </a>
+        <a href="admin-settings.html" class="menu-item">
+          <i class="fa-solid fa-gear"></i>
+          <span>ตั้งค่าระบบ</span>
+        </a>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="logout-btn" onclick="logout()">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          <span>ออกจากระบบ</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      
+      <!-- Top header -->
+      <header class="top-nav">
+        <div class="nav-left">
+          <button class="menu-toggle" id="menuToggle">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" placeholder="ค้นหางาน ลูกค้า หรือช่าง...">
+          </div>
+        </div>
+
+        <div class="nav-right">
+          
+          <button class="icon-btn action-btn notification-btn">
+            <i class="fa-regular fa-bell"></i>
+            <span class="notification-indicator"></span>
+          </button>
+          
+          <div class="admin-profile" id="adminProfileMenu">
+            <div class="profile-text text-right mr-3 hidden-sm">
+              <p class="name font-weight-bold mb-0" id="adminNameDisplay">แอดมินระบบ</p>
+              <p class="role text-muted small mb-0">ผู้ดูแลสูงสุด</p>
+            </div>
+            <img src="https://ui-avatars.com/api/?name=Admin&background=4f46e5&color=fff&rounded=true&bold=true" alt="Admin" class="profile-img">
+            <i class="fa-solid fa-chevron-down ml-2 text-muted text-sm hidden-sm"></i>
+          </div>
+        </div>
+      </header>
+
+      <!-- Dashboard inner wrapper -->
+      <div class="content-wrapper">
+        
+        <!-- Page Title & Actions -->
+        <div class="page-title-box">
+          <div>
+            <h1 class="page-title">แดชบอร์ดภาพรวม</h1>
+            <p class="page-subtitle text-muted">สรุปภาพรวมการดำเนินงานและสถิติรายวันของโมเดล FixHome</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-secondary"><i class="fa-solid fa-file-export mr-2"></i>ส่งออกข้อมูล</button>
+            <button class="btn btn-primary"><i class="fa-solid fa-plus mr-2"></i>สร้างงานใหม่</button>
+          </div>
+        </div>
+
+        <!-- 4 Stat Cards -->
+        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+          <!-- Card  -->
+          <div class="stat-card">
+            <div class="stat-icon-wrapper bg-indigo-light">
+              <i class="fa-solid fa-users text-indigo"></i>
+            </div>
+            <div class="stat-details">
+              <p class="stat-label">ผู้ใช้งานทั้งหมด</p>
+              <h3 class="stat-number" id="statUsers">0</h3>
+            </div>
+            <div class="stat-status positive">
+              <i class="fa-solid fa-arrow-trend-up"></i> +12.5%
+            </div>
+          </div>
+          
+          <!-- Card  -->
+          <div class="stat-card">
+            <div class="stat-icon-wrapper bg-emerald-light">
+              <i class="fa-solid fa-helmet-safety text-emerald"></i>
+            </div>
+            <div class="stat-details">
+              <p class="stat-label">ช่างเทคนิคในระบบ</p>
+              <h3 class="stat-number" id="statTechs">0</h3>
+            </div>
+            <div class="stat-status positive">
+              <i class="fa-solid fa-arrow-trend-up"></i> +4.2%
+            </div>
+          </div>
+
+
+          
+          <!-- Card 5 -->
+          <div class="stat-card">
+            <div class="stat-icon-wrapper bg-indigo-light">
+              <i class="fa-solid fa-file-contract text-indigo"></i>
+            </div>
+            <div class="stat-details">
+              <p class="stat-label">ใบสั่งสร้างใหม่</p>
+              <h3 class="stat-number" id="statOrders">0</h3>
+            </div>
+            <div class="stat-status pending">
+              <i class="fa-solid fa-clock"></i> Pending
+            </div>
+          </div>
+
+          <!-- Card 6 -->
+          <div class="stat-card">
+            <div class="stat-icon-wrapper bg-emerald-light">
+              <i class="fa-solid fa-comments text-emerald"></i>
+            </div>
+            <div class="stat-details">
+              <p class="stat-label">คำขอเช่า/ซื้อ</p>
+              <h3 class="stat-number" id="statInterests">0</h3>
+            </div>
+            <div class="stat-status pending">
+              <i class="fa-solid fa-phone"></i> Action Req.
+            </div>
+          </div>
+
+          <!-- Card 7 -->
+          <div class="stat-card">
+            <div class="stat-icon-wrapper bg-amber-light">
+              <i class="fa-solid fa-building text-amber"></i>
+            </div>
+            <div class="stat-details">
+              <p class="stat-label">อสังหาฯ ในระบบ</p>
+              <h3 class="stat-number" id="statProperties">0</h3>
+            </div>
+            <div class="stat-status positive">
+              <i class="fa-solid fa-check"></i> Listed
+            </div>
+          </div>
+
+          <!-- Card 8: Reviews -->
+          <div class="stat-card">
+            <div class="stat-icon-wrapper bg-indigo-light">
+              <i class="fa-solid fa-star text-indigo"></i>
+            </div>
+            <div class="stat-details">
+              <p class="stat-label">รีวิวจากลูกค้า</p>
+              <h3 class="stat-number" id="statReviews">0</h3>
+            </div>
+            <div class="stat-status positive">
+               <i class="fa-solid fa-check"></i> Active
+            </div>
+          </div>
+    
+          <!-- Card 8 -->
+          <div class="stat-card">
+            <div class="stat-icon-wrapper bg-rose-light">
+              <i class="fa-solid fa-wallet text-rose"></i>
+            </div>
+            <div class="stat-details">
+              <p class="stat-label">รายได้ประเมินรวม</p>
+              <h3 class="stat-number format-currency" id="statRevenue">0</h3>
+            </div>
+            <div class="stat-status positive">
+              <i class="fa-solid fa-arrow-trend-up"></i> +8.1%
+            </div>
+          </div>
+        </div>
+
+        <!-- Layout Grid: Left (Tables) & Right (Widgets) -->
+        <div class="main-grid">
+          
+          <!-- Left Column -->
+          <div class="main-column">
+            
+            <!-- Recent Activity Tabs -->
+            <div class="glass-card mb-4" id="recentActivityCard">
+              <div class="card-header" style="border-bottom: 1px solid var(--glass-border); padding-bottom: 0;">
+                <div style="display: flex; gap: 20px; overflow-x: auto;" class="dashboard-tabs">
+                  <button class="dash-tab active" onclick="switchDashTab('dashOrders')" id="btn-dashOrders">
+                    <i class="fa-solid fa-file-contract"></i> ใบสั่งสร้างบ้าน (Orders)
+                  </button>
+                  <button class="dash-tab" onclick="switchDashTab('dashInterests')" id="btn-dashInterests">
+                    <i class="fa-solid fa-comments"></i> คำขอเช่า/ซื้อ (Interests)
+                  </button>
+                  <button class="dash-tab" onclick="switchDashTab('dashBookings')" id="btn-dashBookings">
+                    <i class="fa-solid fa-user-gear"></i> การจองช่าง (Bookings)
+                  </button>
+                </div>
+              </div>
+              <div class="card-body p-0">
+                
+                <!-- Orders Tab -->
+                <div id="dashOrders" class="dash-content active">
+                  <div class="table-responsive">
+                    <table class="table" style="width:100%; border-collapse:collapse;">
+                      <thead>
+                        <tr style="border-bottom: 1px solid var(--glass-border); background: rgba(0,0,0,0.02);">
+                          <th style="padding:12px; text-align:left; font-weight:600; font-size:14px;">วันที่</th>
+                          <th style="padding:12px; text-align:left; font-weight:600; font-size:14px;">ลูกค้า/ติดต่อ</th>
+                          <th style="padding:12px; text-align:left; font-weight:600; font-size:14px;">บริการ</th>
+                          <th style="padding:12px; text-align:left; font-weight:600; font-size:14px;">ประเมิน/งบ</th>
+                          <th style="padding:12px; text-align:left; font-weight:600; font-size:14px;">สถานะ</th>
+                        </tr>
+                      </thead>
+                      <tbody id="recentOrdersList">
+                        <tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-muted);">กำลังโหลดข้อมูล...</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div style="padding:10px; text-align:center; border-top:1px solid var(--glass-border);">
+                    <a href="admin-requests.html" style="font-size:14px; color:var(--primary); text-decoration:none;">ดูออเดอร์ทั้งหมด <i class="fa-solid fa-arrow-right text-xs"></i></a>
+                  </div>
+                </div>
+
+                <!-- Interests Tab -->
+                <div id="dashInterests" class="dash-content" style="display:none;">
+                  <div class="table-responsive">
+                    <table class="table" style="width:100%; border-collapse:collapse;">
+                      <thead>
+                        <tr style="border-bottom: 1px solid var(--glass-border); background: rgba(0,0,0,0.02);">
+                          <th style="padding:12px; text-align:left; font-weight:600; font-size:14px;">วันที่</th>
+                          <th style="padding:12px; text-align:left; font-weight:600; font-size:14px;">ผู้ติดต่อ</th>
+                          <th style="padding:12px; text-align:left; font-weight:600; font-size:14px;">ประเภท</th>
+                          <th style="padding:12px; text-align:left; font-weight:600; font-size:14px;">งบ/ค่าเช่า</th>
+                          <th style="padding:12px; text-align:left; font-weight:600; font-size:14px;">สถานะ</th>
+                        </tr>
+                      </thead>
+                      <tbody id="recentInterestsList">
+                        <tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-muted);">กำลังโหลดข้อมูล...</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div style="padding:10px; text-align:center; border-top:1px solid var(--glass-border);">
+                    <a href="admin-requests.html" style="font-size:14px; color:var(--primary); text-decoration:none;">ดูคำขอทั้งหมด <i class="fa-solid fa-arrow-right text-xs"></i></a>
+                  </div>
+                </div>
+
+                <!-- Bookings Tab -->
+                <div id="dashBookings" class="dash-content" style="display:none;">
+                  <div class="table-responsive">
+                    <table class="table" style="width:100%; border-collapse:collapse;">
+                      <thead>
+                        <tr style="border-bottom: 1px solid var(--glass-border); background: rgba(0,0,0,0.02);">
+                          <th style="padding:12px; text-align:left; font-weight:600; font-size:14px;">วันที่</th>
+                          <th style="padding:12px; text-align:left; font-weight:600; font-size:14px;">ลูกค้า</th>
+                          <th style="padding:12px; text-align:left; font-weight:600; font-size:14px;">งานที่แจ้ง</th>
+                          <th style="padding:12px; text-align:left; font-weight:600; font-size:14px;">ช่างที่นัด</th>
+                          <th style="padding:12px; text-align:left; font-weight:600; font-size:14px;">สถานะ</th>
+                        </tr>
+                      </thead>
+                      <tbody id="recentBookingsList">
+                        <tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-muted);">กำลังโหลดข้อมูล...</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div style="padding:10px; text-align:center; border-top:1px solid var(--glass-border);">
+                    <!-- The current admin pages don't have a specific bookings page, might need to link to requests or somewhere else -->
+                    <span style="font-size:14px; color:var(--text-muted);">การจองช่างล่าสุด</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <style>
+              .dash-tab {
+                background: none;
+                border: none;
+                padding: 15px 10px;
+                color: var(--text-muted);
+                font-weight: 500;
+                font-size: 15px;
+                cursor: pointer;
+                border-bottom: 3px solid transparent;
+                transition: all 0.2s ease;
+                white-space: nowrap;
+              }
+              .dash-tab.active {
+                color: var(--primary);
+                border-bottom-color: var(--primary);
+              }
+              .dash-tab:hover:not(.active) {
+                color: var(--text-main);
+              }
+              .dash-tab i { margin-right: 6px; }
+              #recentActivityCard .table td {
+                padding: 12px;
+                border-bottom: 1px solid var(--glass-border);
+                vertical-align: middle;
+                font-size: 14px;
+              }
+            </style>
+
+            <!-- Script for tab switching -->
+            <script>
+              function switchDashTab(tabId) {
+                const tabs = document.querySelectorAll('.dash-content');
+                const btns = document.querySelectorAll('.dash-tab');
+                
+                tabs.forEach(t => t.style.display = 'none');
+                btns.forEach(b => b.classList.remove('active'));
+                
+                document.getElementById(tabId).style.display = 'block';
+                document.getElementById('btn-' + tabId).classList.add('active');
+              }
+            </script>
+            
+          </div>
+
+          <!-- Right Column -->
+          <div class="side-column">
+            <!-- Approval Widget -->
+            <div class="glass-card mb-4">
+              <div class="card-header">
+                <h2>รอการอนุมัติ</h2>
+                <span class="badge badge-primary" id="pendingApprovalsBadge">0</span>
+              </div>
+              <div class="card-body p-0">
+                <div class="list-group" id="pendingApprovalsList">
+                  
+                  <div class="list-item">
+                    <img src="https://ui-avatars.com/api/?name=Wira+M&background=f1f5f9&color=64748b" alt="Avatar" class="list-avatar">
+                    <div class="list-info">
+                      <p class="list-title">วิระวัฒน์ มั่นคง</p>
+                      <p class="list-subtitle">Plumber • 5 Yrs Exp.</p>
+                    </div>
+                    <div class="list-actions">
+                      <button class="btn-icon accept"><i class="fa-solid fa-check"></i></button>
+                      <button class="btn-icon reject"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                  </div>
+
+                  <div class="list-item">
+                    <img src="https://ui-avatars.com/api/?name=Surasak+J&background=f1f5f9&color=64748b" alt="Avatar" class="list-avatar">
+                    <div class="list-info">
+                      <p class="list-title">สุรศักดิ์ ใจกล้า</p>
+                      <p class="list-subtitle">Electrician • 3 Yrs Exp.</p>
+                    </div>
+                    <div class="list-actions">
+                      <button class="btn-icon accept"><i class="fa-solid fa-check"></i></button>
+                      <button class="btn-icon reject"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <!-- Promotion Banner -->
+            <div class="promo-card">
+              <div class="promo-content">
+                <div class="promo-icon"><i class="fa-solid fa-award"></i></div>
+                <h3>Summer Campaign</h3>
+                <p>Set up special discounts to drive more service bookings this month.</p>
+                <button class="btn btn-white-outline mt-2" onclick="window.location.href='admin-campaigns.html'">Manage Campaign</button>
+              </div>
+              <div class="promo-bg-shape"></div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Job App Detail Modal -->
+  <div class="modal-overlay" id="appModalOverlay">
+    <div class="modal" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 id="appModalTitle">รายละเอียดผู้สมัคร (Applicant Info)</h3>
+        <button class="modal-close" onclick="closeAppModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" id="appModalBody">
+        <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin fa-2x text-primary"></i></div>
+      </div>
+      <div class="modal-footer" id="appModalFooter">
+        <button class="btn btn-secondary" onclick="closeAppModal()">ปิดหน้าต่าง</button>
+      </div>
+    </div>
+  </div>
+
+  
+  <script src="admin.js"></script>
+  <script src="admin-theme.js"></script>
+</body>
+</html>
